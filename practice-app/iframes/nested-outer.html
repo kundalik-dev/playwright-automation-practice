@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Outer Frame</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: #eef2ff;
+      color: #1f2933;
+    }
+    h3 { margin-top: 0; color: #3730a3; }
+    p#outer-text { font-size: 14px; }
+    iframe {
+      width: 100%;
+      height: 150px;
+      border: 1px solid #a5b4fc;
+      border-radius: 6px;
+      background: #fff;
+    }
+    .inner-row { display: flex; gap: 12px; }
+    .inner-row iframe { flex: 1; }
+  </style>
+</head>
+<body>
+  <h3>Outer Frame</h3>
+  <p id="outer-text">This is the outer frame. It contains two inner iframes below.</p>
+
+  <div class="inner-row">
+    <iframe
+      id="inner-frame-1"
+      name="innerFrame1"
+      title="Inner Frame 1"
+      src="nested-inner-1.html"
+    ></iframe>
+    <iframe
+      id="inner-frame-2"
+      name="innerFrame2"
+      title="Inner Frame 2"
+      src="nested-inner-2.html"
+    ></iframe>
+  </div>
+</body>
+</html>

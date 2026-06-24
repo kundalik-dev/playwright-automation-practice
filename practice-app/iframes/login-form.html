@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Login Form</title>
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0;
+        padding: 16px;
+        color: #1f2933;
+        background: rgb(240, 244, 248);
+      }
+      .field {
+        margin-bottom: 12px;
+      }
+      label {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 14px;
+      }
+      input {
+        width: 220px;
+        padding: 8px;
+        border: 1px solid #bcccdc;
+        border-radius: 4px;
+      }
+      button {
+        padding: 8px 18px;
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #1d4ed8;
+      }
+      #login-message {
+        margin-top: 14px;
+        font-weight: bold;
+        color: #047857;
+      }
+      .error {
+        color: #b91c1c !important;
+      }
+    </style>
+  </head>
+  <body>
+    <form id="login-form">
+      <div class="field">
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          placeholder="Enter username"
+        />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="Enter password"
+        />
+      </div>
+      <button type="submit" id="login-btn">Login</button>
+    </form>
+
+    <p id="login-message"></p>
+
+    <p
+      id="credentials-hint"
+      style="font-size: 13px; color: #52606d; margin-top: 0"
+    >
+      Use <strong>username:</strong> admin &nbsp;
+      <strong>password:</strong> admin123
+    </p>
+
+    <script>
+      document
+        .getElementById("login-form")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          var username = document.getElementById("username").value.trim();
+          var password = document.getElementById("password").value.trim();
+          var message = document.getElementById("login-message");
+
+          if (username === "admin" && password === "admin123") {
+            message.classList.remove("error");
+            message.textContent = "Logged in successfully!";
+          } else {
+            message.classList.add("error");
+            message.textContent = "Invalid username or password.";
+          }
+        });
+    </script>
+  </body>
+</html>

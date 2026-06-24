@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Counter</title>
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0;
+        padding: 16px;
+        text-align: center;
+        color: #1f2933;
+      }
+      #counter-value {
+        font-size: 48px;
+        font-weight: bold;
+        margin: 12px 0;
+        color: #334e68;
+      }
+      .controls button {
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
+        margin: 0 8px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        color: #fff;
+      }
+      #increment-btn {
+        background: #16a34a;
+      }
+      #increment-btn:hover {
+        background: #15803d;
+      }
+      #decrement-btn {
+        background: #dc2626;
+      }
+      #decrement-btn:hover {
+        background: #b91c1c;
+      }
+      #reset-btn {
+        width: auto;
+        height: 40px;
+        padding: 0 16px;
+        font-size: 14px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: #64748b;
+        vertical-align: middle;
+      }
+      #reset-btn:hover {
+        background: #475569;
+      }
+    </style>
+  </head>
+  <body>
+    <p>Counter</p>
+    <div id="counter-value">0</div>
+    <div class="controls">
+      <button type="button" id="decrement-btn" aria-label="Decrease">-</button>
+      <button type="button" id="reset-btn" aria-label="reset">reset</button>
+      <button type="button" id="increment-btn" aria-label="Increase">+</button>
+    </div>
+
+    <script>
+      var count = 0;
+      var display = document.getElementById("counter-value");
+
+      document
+        .getElementById("increment-btn")
+        .addEventListener("click", function () {
+          count++;
+          display.textContent = count;
+        });
+
+      document
+        .getElementById("decrement-btn")
+        .addEventListener("click", function () {
+          count--;
+          display.textContent = count;
+        });
+
+      document
+        .getElementById("reset-btn")
+        .addEventListener("click", function () {
+          count = 0;
+          display.textContent = count;
+        });
+    </script>
+  </body>
+</html>

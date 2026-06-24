@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Inner Frame 2</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 12px;
+      background: #fef3c7;
+      color: #92400e;
+      text-align: center;
+    }
+    h4 { margin: 4px 0; }
+    input {
+      padding: 6px;
+      border: 1px solid #fbbf24;
+      border-radius: 4px;
+      width: 140px;
+    }
+    button {
+      padding: 6px 12px;
+      margin-top: 6px;
+      background: #d97706;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover { background: #b45309; }
+    #inner-2-output { font-weight: bold; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <h4>Inner Frame 2</h4>
+  <form id="inner-2-form">
+    <input type="text" id="inner-2-input" placeholder="Type here" />
+    <br />
+    <button type="submit" id="inner-2-submit">Submit</button>
+  </form>
+  <p id="inner-2-output"></p>
+
+  <script>
+    document.getElementById("inner-2-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var value = document.getElementById("inner-2-input").value;
+      document.getElementById("inner-2-output").textContent = "Submitted: " + value;
+    });
+  </script>
+</body>
+</html>
