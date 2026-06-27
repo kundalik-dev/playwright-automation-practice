@@ -6,7 +6,7 @@
   "scripts": {
     "serve": "npx --yes live-server practice-app --port=3000",
     "serve:static": "npx --yes http-server practice-app -p 3000 -c-1",
-    "test": "npx playwright test 01-iframes.spec.js"
+    "test": "npx playwright test 05-alerts.spec.js"
   },
   "keywords": [],
   "author": "",
