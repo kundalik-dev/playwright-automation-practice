@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alerts / Dialogs — Hard Scenarios</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0;
+        padding: 24px;
+        background: #f0f4f8;
+        color: #1f2933;
+      }
+      .container {
+        width: 90%;
+        max-width: 820px;
+        margin: 0 auto;
+      }
+      h1 {
+        margin-top: 0;
+        font-size: 26px;
+      }
+      .section {
+        background: #fff;
+        border: 1px solid #d9e2ec;
+        border-radius: 8px;
+        padding: 20px 24px;
+        margin-bottom: 28px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      }
+      .section h2 {
+        margin-top: 0;
+        font-size: 17px;
+        color: #334e68;
+        border-bottom: 1px solid #e8f0f7;
+        padding-bottom: 8px;
+      }
+      .hint {
+        font-size: 12px;
+        color: #829ab1;
+        margin-bottom: 12px;
+        font-style: italic;
+      }
+      .field {
+        margin-bottom: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .field label {
+        font-size: 14px;
+        font-weight: bold;
+      }
+      .field input[type="text"] {
+        padding: 8px 10px;
+        border: 1px solid #bcccdc;
+        border-radius: 5px;
+        font-size: 14px;
+        width: 100%;
+      }
+      .field input:focus {
+        outline: 2px solid #4a90d9;
+      }
+      .btn-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .output-box {
+        margin-top: 12px;
+        background: #f5f7fa;
+        border: 1px solid #d9e2ec;
+        border-radius: 5px;
+        padding: 10px 14px;
+        font-size: 13px;
+        min-height: 36px;
+        color: #334e68;
+        white-space: pre-wrap;
+      }
+      button {
+        margin-top: 10px;
+        padding: 8px 18px;
+        background: #4a90d9;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #357ac0;
+      }
+      button.secondary {
+        background: #627d98;
+      }
+      button.secondary:hover {
+        background: #486581;
+      }
+      button.danger {
+        background: #e12d39;
+      }
+      button.danger:hover {
+        background: #b0101a;
+      }
+      .badge {
+        display: inline-block;
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 20px;
+        margin-left: 6px;
+        vertical-align: middle;
+      }
+      .badge-blue {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+      .badge-orange {
+        background: #fff3cd;
+        color: #92400e;
+      }
+      .badge-red {
+        background: #fde2e2;
+        color: #b0101a;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      table th {
+        background: #f0f4f8;
+        text-align: left;
+        padding: 8px 10px;
+        border: 1px solid #d9e2ec;
+      }
+      table td {
+        padding: 8px 10px;
+        border: 1px solid #d9e2ec;
+      }
+      code {
+        background: #eef2f7;
+        padding: 1px 5px;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+      iframe {
+        width: 100%;
+        height: 130px;
+        border: 1px solid #bcccdc;
+        border-radius: 6px;
+      }
+      .hover-zone {
+        margin-top: 10px;
+        padding: 22px;
+        text-align: center;
+        background: #eef2f7;
+        border: 1px dashed #bcccdc;
+        border-radius: 6px;
+        font-size: 14px;
+        color: #486581;
+        user-select: none;
+      }
+
+      /* ── stacked / nested modals ── */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(31, 41, 51, 0.45);
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-overlay.open {
+        display: flex;
+      }
+      #overlay-1 {
+        z-index: 1000;
+      }
+      #overlay-2 {
+        z-index: 1010;
+        background: rgba(31, 41, 51, 0.55);
+      }
+      #overlay-trap {
+        z-index: 1020;
+      }
+      .modal {
+        background: #fff;
+        border-radius: 8px;
+        padding: 24px;
+        width: 90%;
+        max-width: 440px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+      }
+      .modal h3 {
+        margin-top: 0;
+        color: #334e68;
+      }
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 18px;
+      }
+
+      /* ── toasts ── */
+      .toast-stack {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 1100;
+      }
+      .toast {
+        background: #1f2933;
+        color: #fff;
+        padding: 12px 18px;
+        border-radius: 6px;
+        font-size: 14px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+        min-width: 240px;
+      }
+      .toast.success {
+        background: #166534;
+      }
+      .toast.error {
+        background: #b0101a;
+      }
+      .space {
+        padding: 12px 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>
+        Alerts / Dialogs — Hard Scenarios
+        <span class="badge badge-red">Advanced</span>
+      </h1>
+      <a href="/alerts" class="space">Soft Scenarios</a>
+      <p style="color: #627d98; font-size: 14px; margin-top: -8px">
+        Edge cases that break naive tests: chained native dialogs,
+        non-deterministic messages, looping dialogs, dialogs inside iframes
+        &amp; shadow DOM, non-click triggers, stacked/trapped modals, and async
+        race conditions. Pair with <code>page.on('dialog')</code> discipline.
+      </p>
+
+      <!-- =====================================================================
+       1 — CHAINED NATIVE DIALOGS
+  ====================================================================== -->
+      <section class="section">
+        <h2>
+          1. Chained Native Dialogs <span class="badge badge-orange">Hard</span>
+        </h2>
+        <p class="hint">
+          One click fires
+          <strong>alert → confirm → prompt</strong> back-to-back. A single
+          persistent <code>page.on('dialog')</code> handler must branch on
+          <code>d.type()</code>, because each dialog needs a different response.
+          The result depends on ALL three answers.
+        </p>
+        <div class="btn-row">
+          <button
+            id="chain-btn"
+            data-testid="chain-dialogs"
+            onclick="runChain()"
+          >
+            Start Checkout Flow
+          </button>
+        </div>
+        <div class="output-box" id="chain-result" data-testid="chain-result">
+          Outcome appears here…
+        </div>
+        <p class="hint" style="margin-top: 8px">
+          Interview trap: a <code>page.once('dialog')</code> handler only
+          catches the FIRST dialog — the next two would auto-dismiss. Use
+          <code>page.on</code> with type-based branching.
+        </p>
+      </section>
+
+      <!-- =====================================================================
+       2 — NON-DETERMINISTIC DIALOG MESSAGE
+  ====================================================================== -->
+      <section class="section">
+        <h2>
+          2. Dynamic / Random Dialog Message
+          <span class="badge badge-orange">Hard</span>
+        </h2>
+        <p class="hint">
+          The prompt embeds a fresh random OTP each time, then validates your
+          echo. You can't hardcode the message — capture it with
+          <code>dialog.message()</code>, extract the code via regex, and feed it
+          back with <code>dialog.accept(code)</code>.
+        </p>
+        <div class="btn-row">
+          <button id="otp-btn" data-testid="otp-verify" onclick="verifyOtp()">
+            Verify OTP
+          </button>
+        </div>
+        <div class="output-box" id="otp-result" data-testid="otp-result">
+          Verification result…
+        </div>
+        <p class="hint" style="margin-top: 8px">
+          Assert with <code>expect(message).toMatch(/code: \d{6}/)</code>, not
+          string equality.
+        </p>
+      </section>
+
+      <!-- =====================================================================
+       3 — LOOPING CONFIRM
+  ====================================================================== -->
+      <section class="section">
+        <h2>
+          3. Looping <code>confirm()</code>
+          <span class="badge badge-orange">Hard</span>
+        </h2>
+        <p class="hint">
+          Keeps asking “Add another item?” and re-fires
+          <code>confirm()</code> as long as you accept. Your handler must
+          <code>accept()</code> a bounded number of times, then
+          <code>dismiss()</code>
+          — otherwise the test loops forever. Count is reflected in the DOM.
+        </p>
+        <div class="btn-row">
+          <button
+            id="loop-btn"
+            data-testid="loop-confirm"
+            onclick="runLoopConfirm()"
+          >
+            Build Cart
+          </button>
+        </div>
+        <div class="output-box" id="loop-result" data-testid="loop-result">
+          Items added: 0
+        </div>
+        <p class="hint" style="margin-top: 8px">
+          Pattern: keep a counter in the handler —
+          <code
+            >let n=0; page.on('dialog', d =&gt; n++ &lt; 3 ? d.accept() :
+            d.dismiss())</code
+          >.
+        </p>
+      </section>
+
+      <!-- =====================================================================
+       4 — DIALOG INSIDE AN IFRAME
+  ====================================================================== -->
+      <section class="section">
+        <h2>
+          4. Native Dialog Fired From Inside an Iframe
+          <span class="badge badge-orange">Hard</span>
+        </h2>
+        <p class="hint">
+          The button lives in a cross-document iframe, but native dialogs are
+          page-level: you still catch them with <code>page.on('dialog')</code>.
+          The CLICK, however, needs
+          <code
+            >page.frameLocator('#child-frame').getByTestId('iframe-alert')</code
+          >.
+        </p>
+        <iframe
+          id="child-frame"
+          data-testid="child-frame"
+          title="child frame"
+          srcdoc='
+      <!DOCTYPE html><html><body style="font-family:Arial;margin:10px">
+        <p style="font-size:13px;color:#486581">I am inside an iframe.</p>
+        <button data-testid="iframe-alert" style="padding:8px 16px;background:#4a90d9;color:#fff;border:none;border-radius:5px;cursor:pointer"
+          onclick="alert("Alert raised from INSIDE the iframe!")">Alert From Iframe</button>
+      </body></html>'
+        ></iframe>
+        <p class="hint" style="margin-top: 10px">
+          Key point: the dialog is NOT scoped to the frame — there is no
+          <code>frame.on('dialog')</code>.
+        </p>
+      </section>
+
+      <!-- =====================================================================
+       5 — NON-CLICK TRIGGERS
+  ====================================================================== -->
+      <section class="section">
+        <h2>
+          5. Dialogs On Non-Click Events
+          <span class="badge badge-orange">Hard</span>
+        </h2>
+        <p class="hint">
+          Real apps fire dialogs on hover, blur, double-click, etc. You must
+          reproduce the exact event (<code>hover()</code>, <code>blur()</code>,
+          <code>dblclick()</code>) — a plain <code>click()</code> won't trigger
+          them.
+        </p>
+
+        <!-- hover -->
+        <div
+          class="hover-zone"
+          id="hover-zone"
+          data-testid="hover-zone"
+          onmouseenter="alert('Triggered by HOVER (mouseenter).')"
+        >
+          Hover over me — no click needed
+        </div>
+
+        <!-- blur -->
+        <div class="field" style="margin-top: 14px">
+          <label for="blur-input"
+            >Leave this field to trigger a dialog (blur)</label
+          >
+          <input
+            type="text"
+            id="blur-input"
+            data-testid="blur-input"
+            onblur="
+              if (this.value) alert('Field validated on BLUR: ' + this.value);
+            "
+            placeholder="Type something, then click away…"
+          />
+        </div>
+
+        <!-- double click -->
+        <div class="btn-row">
+          <button
+            id="dblclick-btn"
+            class="secondary"
+            data-testid="dblclick-confirm"
+            ondblclick="
+              document.getElementById('dbl-result').textContent = confirm(
+                'DOUBLE-CLICK detected — proceed?',
+              )
+                ? 'Proceeded'
+                : 'Cancelled'
+            "
+          >
+            Double-Click Me
+          </button>
+        </div>
+        <div class="output-box" id="dbl-result" data-testid="dbl-result">—</div>
+      </section>
+
+      <!-- =====================================================================
+       6 — STACKED / NESTED MODALS
+  ====================================================================== -->
+      <section class="section">
+        <h2>
+          6. Stacked (Nested) Modals
+          <span class="badge badge-orange">Hard</span>
+        </h2>
+        <p class="hint">
+          Modal A opens Modal B on top of it. Two elements with
+          <code>role="dialog"</code> exist at once —
+          <code>getByRole('dialog')</code> becomes strict-mode ambiguous.
+          Disambiguate with <code>.last()</code>, testid, or
+          <code>aria-label</code>, and close in LIFO order.
+        </p>
+        <div class="btn-row">
+          <button
+            id="open-stack"
+            data-testid="open-stack"
+            onclick="openOverlay('overlay-1')"
+          >
+            Open First Modal
+          </button>
+        </div>
+        <div class="output-box" id="stack-result" data-testid="stack-result">
+          —
+        </div>
+      </section>
+
+      <!-- =====================================================================
+       7 — FOCUS-TRAP MODAL (no Esc, no overlay close)
+  ====================================================================== -->
+      <section class="section">
+        <h2>
+          7. Focus-Trap Modal — Esc &amp; Overlay Disabled
+          <span class="badge badge-red">Hard</span>
+        </h2>
+        <p class="hint">
+          Esc does nothing and clicking the backdrop does nothing — the ONLY way
+          out is a specific button. Tests that blindly press Escape or click the
+          overlay will hang. Must locate and click the explicit dismiss control.
+        </p>
+        <div class="btn-row">
+          <button
+            id="open-trap"
+            class="danger"
+            data-testid="open-trap"
+            onclick="openOverlay('overlay-trap')"
+          >
+            Open Trap Modal
+          </button>
+        </div>
+        <div class="output-box" id="trap-result" data-testid="trap-result">
+          —
+        </div>
+      </section>
+
+      <!-- =====================================================================
+       8 — SHADOW DOM MODAL
+  ====================================================================== -->
+      <section class="section">
+        <h2>
+          8. Modal Inside Shadow DOM <span class="badge badge-red">Hard</span>
+        </h2>
+        <p class="hint">
+          The dialog is rendered inside a shadow root. Playwright's
+          <code>getByRole</code>/ <code>getByText</code> pierce open shadow DOM
+          automatically — but raw CSS chains and XPath do NOT. Good test:
+          confirm <code>getByTestId('shadow-confirm')</code> works.
+        </p>
+        <div class="btn-row">
+          <button
+            id="open-shadow"
+            data-testid="open-shadow"
+            onclick="openShadowModal()"
+          >
+            Open Shadow Modal
+          </button>
+        </div>
+        <shadow-modal id="shadow-host"></shadow-modal>
+        <div class="output-box" id="shadow-result" data-testid="shadow-result">
+          —
+        </div>
+      </section>
+
+      <!-- =====================================================================
+       9 — ASYNC RACE: confirm after fetch + queued toasts
+  ====================================================================== -->
+      <section class="section">
+        <h2>
+          9. Async Race — Delayed Confirm &amp; Queued Toasts
+          <span class="badge badge-red">Hard</span>
+        </h2>
+        <p class="hint">
+          The <code>confirm()</code> only appears AFTER a simulated 1.2s API
+          call, and on accept three toasts fire in sequence (200ms apart) then
+          auto-dismiss. Register the dialog handler up front; assert toasts with
+          web-first waits, never fixed sleeps.
+        </p>
+        <div class="btn-row">
+          <button id="async-btn" data-testid="async-save" onclick="asyncSave()">
+            Save (async)
+          </button>
+        </div>
+        <div class="output-box" id="async-result" data-testid="async-result">
+          —
+        </div>
+      </section>
+
+      <!-- =====================================================================
+       10 — HARD-PATTERN CHEAT SHEET
+  ====================================================================== -->
+      <section class="section">
+        <h2>10. Hard-Pattern Cheat Sheet</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>Why it breaks naive tests</th>
+              <th>Fix</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Chained dialogs</td>
+              <td><code>page.once</code> catches only the first</td>
+              <td><code>page.on</code> + branch on <code>d.type()</code></td>
+            </tr>
+            <tr>
+              <td>Random message</td>
+              <td>Hardcoded assertion fails</td>
+              <td>
+                Regex on <code>d.message()</code>, echo via
+                <code>accept(text)</code>
+              </td>
+            </tr>
+            <tr>
+              <td>Looping confirm</td>
+              <td>Handler accepts forever</td>
+              <td>Bounded counter, then <code>dismiss()</code></td>
+            </tr>
+            <tr>
+              <td>Dialog in iframe</td>
+              <td>No <code>frame.on('dialog')</code></td>
+              <td>
+                Click via <code>frameLocator</code>, catch at
+                <code>page</code> level
+              </td>
+            </tr>
+            <tr>
+              <td>Hover/blur/dblclick</td>
+              <td><code>click()</code> never fires it</td>
+              <td>
+                Use <code>hover()</code>/<code>blur()</code>/<code
+                  >dblclick()</code
+                >
+              </td>
+            </tr>
+            <tr>
+              <td>Stacked modals</td>
+              <td>Strict-mode: 2 dialogs match</td>
+              <td><code>.last()</code> / testid / aria-label</td>
+            </tr>
+            <tr>
+              <td>Focus-trap modal</td>
+              <td>Esc/overlay click hang the test</td>
+              <td>Click the explicit dismiss button</td>
+            </tr>
+            <tr>
+              <td>Shadow DOM</td>
+              <td>CSS/XPath can't pierce</td>
+              <td><code>getByRole/getByTestId</code> pierce open roots</td>
+            </tr>
+            <tr>
+              <td>Async/queued toasts</td>
+              <td>Fixed sleeps are flaky</td>
+              <td>
+                Web-first <code>toBeVisible()</code>/<code>toBeHidden()</code>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+    <!-- /container -->
+
+    <!-- ── Nested modals ── -->
+    <div
+      class="modal-overlay"
+      id="overlay-1"
+      data-testid="overlay-1"
+      onclick="if (event.target === this) closeOverlay('overlay-1');"
+    >
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="First Modal"
+        data-testid="modal-1"
+      >
+        <h3>First Modal</h3>
+        <p>This is the first modal. Open a second one stacked on top.</p>
+        <div class="modal-actions">
+          <button
+            class="secondary"
+            data-testid="modal-1-close"
+            onclick="closeOverlay('overlay-1')"
+          >
+            Close
+          </button>
+          <button data-testid="open-second" onclick="openOverlay('overlay-2')">
+            Open Second Modal
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal-overlay"
+      id="overlay-2"
+      data-testid="overlay-2"
+      onclick="if (event.target === this) closeOverlay('overlay-2');"
+    >
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Second Modal"
+        data-testid="modal-2"
+      >
+        <h3>Second Modal (on top)</h3>
+        <p>
+          Close me first (LIFO), then the first modal becomes interactive again.
+        </p>
+        <div class="modal-actions">
+          <button
+            class="danger"
+            data-testid="modal-2-confirm"
+            onclick="
+              closeOverlay('overlay-2');
+              document.getElementById('stack-result').textContent =
+                'Second modal confirmed';
+            "
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Focus-trap modal ── -->
+    <div class="modal-overlay" id="overlay-trap" data-testid="overlay-trap">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Trap Modal"
+        data-testid="modal-trap"
+      >
+        <h3>Action Required</h3>
+        <p>
+          Esc and backdrop clicks are disabled. You must click
+          <strong>Acknowledge</strong> to continue.
+        </p>
+        <div class="modal-actions">
+          <button
+            data-testid="trap-acknowledge"
+            onclick="
+              closeOverlay('overlay-trap');
+              document.getElementById('trap-result').textContent =
+                'Acknowledged via button';
+            "
+          >
+            Acknowledge
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- toast mount -->
+    <div class="toast-stack" id="toast-stack"></div>
+
+    <script>
+      /* ── 1: chained dialogs ── */
+      function runChain() {
+        alert("Step 1 of 3: Your cart is ready.");
+        const proceed = confirm("Step 2 of 3: Proceed to payment?");
+        if (!proceed) {
+          setResult("chain-result", "Checkout cancelled at payment step.");
+          return;
+        }
+        const coupon = prompt(
+          "Step 3 of 3: Enter a coupon code (or leave blank):",
+          "",
+        );
+        const msg =
+          coupon && coupon.trim()
+            ? `Order placed with coupon "${coupon.trim()}".`
+            : "Order placed with no coupon.";
+        setResult("chain-result", msg);
+      }
+
+      /* ── 2: random OTP ── */
+      function verifyOtp() {
+        const otp = String(Math.floor(100000 + Math.random() * 900000));
+        const entered = prompt(`Enter the verification code: ${otp}`);
+        const ok = entered !== null && entered.trim() === otp;
+        setResult(
+          "otp-result",
+          ok
+            ? `Verified! (code ${otp})`
+            : `Verification failed (expected ${otp}).`,
+        );
+      }
+
+      /* ── 3: looping confirm ── */
+      function runLoopConfirm() {
+        let count = 0;
+        while (confirm(`Item ${count + 1} added. Add another item?`)) {
+          count++;
+          if (count >= 50) break; // safety cap
+        }
+        setResult("loop-result", `Items added: ${count}`);
+      }
+
+      /* ── 5: (handlers inline in HTML) ── */
+
+      /* ── 6 & 7: overlay helpers ── */
+      function openOverlay(id) {
+        document.getElementById(id).classList.add("open");
+      }
+      function closeOverlay(id) {
+        document.getElementById(id).classList.remove("open");
+      }
+      // Esc closes overlay-1 / overlay-2 ONLY (trap modal intentionally ignores Esc)
+      document.addEventListener("keydown", (e) => {
+        if (e.key !== "Escape") return;
+        ["overlay-2", "overlay-1"].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el && el.classList.contains("open")) el.classList.remove("open");
+        });
+      });
+
+      /* ── 8: shadow DOM custom element ── */
+      class ShadowModal extends HTMLElement {
+        constructor() {
+          super();
+          this.attachShadow({ mode: "open" });
+        }
+        open() {
+          this.shadowRoot.innerHTML = `
+        <style>
+          .ov { position: fixed; inset: 0; background: rgba(31,41,51,0.45);
+                display: flex; align-items: center; justify-content: center; z-index: 1030; }
+          .m { background:#fff; border-radius:8px; padding:24px; max-width:420px;
+               box-shadow:0 8px 30px rgba(0,0,0,0.25); font-family: Arial, sans-serif; }
+          h3 { margin-top:0; color:#334e68; }
+          button { margin-top:16px; padding:8px 18px; border:none; border-radius:5px;
+                   color:#fff; background:#4a90d9; cursor:pointer; font-size:14px; }
+        </style>
+        <div class="ov" part="overlay">
+          <div class="m" role="dialog" aria-modal="true" aria-label="Shadow Modal">
+            <h3>Shadow DOM Modal</h3>
+            <p>Rendered inside a shadow root. Confirm to close.</p>
+            <button data-testid="shadow-confirm">Confirm (Shadow)</button>
+          </div>
+        </div>`;
+          this.shadowRoot
+            .querySelector('[data-testid="shadow-confirm"]')
+            .addEventListener("click", () => {
+              this.shadowRoot.innerHTML = "";
+              document.getElementById("shadow-result").textContent =
+                "Shadow modal confirmed";
+            });
+        }
+      }
+      customElements.define("shadow-modal", ShadowModal);
+      function openShadowModal() {
+        document.getElementById("shadow-host").open();
+      }
+
+      /* ── 9: async confirm + queued toasts ── */
+      function asyncSave() {
+        setResult("async-result", "Saving…");
+        setTimeout(() => {
+          const ok = confirm("Server responded. Commit these changes?");
+          if (!ok) {
+            setResult("async-result", "Changes discarded.");
+            return;
+          }
+          setResult("async-result", "Changes committed.");
+          const msgs = [
+            ["Validating…", ""],
+            ["Uploading…", ""],
+            ["Done!", "success"],
+          ];
+          msgs.forEach(([text, type], i) =>
+            setTimeout(() => showToast(text, type), i * 200),
+          );
+        }, 1200);
+      }
+
+      /* ── shared helpers ── */
+      function setResult(id, text) {
+        document.getElementById(id).textContent = text;
+      }
+
+      function showToast(message, type) {
+        const stack = document.getElementById("toast-stack");
+        const toast = document.createElement("div");
+        toast.className = "toast" + (type ? " " + type : "");
+        toast.setAttribute("role", "status");
+        toast.setAttribute("data-testid", "toast");
+        toast.textContent = message;
+        stack.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      }
+    </script>
+  </body>
+</html>
