@@ -36,25 +36,24 @@ test.describe("handle dialog", () => {
 
   test.skip("handling two simple alerts inside one test", async ({ page }) => {
     await page.goto("/alerts");
-    page.once("dialog", (dialog) => {
+    page.once("dialog", async (dialog) => {
       expect(dialog.type()).toContain("alert");
       expect(dialog.message()).toContain("Hello! This is a simple alert.");
       console.log(
         `alert type is - ${dialog.type()} and alert message is - ${dialog.message()}`,
       );
-      dialog.accept();
+      await dialog.accept();
     });
 
     await page.click("#simple-alert-btn");
 
-    page.once("dialog", (d) => {
+    page.once("dialog", async (d) => {
       expect(d.type()).toContain("alert");
       expect(d.message()).toContain("Delayed alert after 1.5s");
-      page.waitForTimeout(2000);
       console.log(
         `alert type is - ${d.type()} and alert message is - ${d.message()}`,
       );
-      d.accept();
+      await d.accept();
     });
 
     await page.click("#delayed-alert-btn");
