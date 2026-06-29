@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tabs &amp; Windows — Playwright &amp; Selenium Practice</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0; padding: 24px;
+        background: #f0f4f8; color: #1f2933;
+      }
+      .container { width: 90%; max-width: 880px; margin: 0 auto; }
+      h1 { margin-top: 0; font-size: 26px; }
+      .section {
+        background: #fff; border: 1px solid #d9e2ec;
+        border-radius: 8px; padding: 20px 24px;
+        margin-bottom: 28px; box-shadow: 0 1px 3px rgba(0,0,0,.06);
+      }
+      .section h2 { margin-top: 0; font-size: 17px; color: #334e68; border-bottom: 1px solid #e8f0f7; padding-bottom: 8px; }
+      .hint { font-size: 12px; color: #829ab1; margin-bottom: 12px; font-style: italic; }
+      .btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+      .output-box {
+        margin-top: 12px; background: #f5f7fa; border: 1px solid #d9e2ec;
+        border-radius: 5px; padding: 10px 14px; font-size: 13px;
+        min-height: 36px; color: #334e68; white-space: pre-wrap;
+      }
+      button {
+        margin-top: 10px; padding: 8px 18px; background: #4a90d9;
+        color: #fff; border: none; border-radius: 5px; font-size: 14px; cursor: pointer;
+      }
+      button:hover { background: #357ac0; }
+      button.secondary { background: #627d98; }
+      button.secondary:hover { background: #486581; }
+      button.danger { background: #e12d39; }
+      button.danger:hover { background: #b0101a; }
+      button.success { background: #166534; }
+      button.success:hover { background: #14532d; }
+      .badge {
+        display: inline-block; font-size: 11px; padding: 2px 8px;
+        border-radius: 20px; margin-left: 6px; vertical-align: middle;
+      }
+      .badge-green { background: #dcfce7; color: #166534; }
+      .badge-blue  { background: #dbeafe; color: #1d4ed8; }
+      .badge-orange{ background: #fff3cd; color: #92400e; }
+      .link-btn {
+        display: inline-block; margin-top: 10px; padding: 8px 18px;
+        background: #4a90d9; color: #fff; text-decoration: none;
+        border-radius: 5px; font-size: 14px;
+      }
+      .link-btn:hover { background: #357ac0; }
+      .link-btn.secondary { background: #627d98; }
+      .link-btn.secondary:hover { background: #486581; }
+      code { background: #eef2f7; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+      .locator-hint {
+        margin-top: 8px; padding: 8px 12px; background: #f8fafc;
+        border-left: 3px solid #4a90d9; border-radius: 0 4px 4px 0; font-size: 11px; color: #486581;
+      }
+      .locator-hint strong { color: #334e68; }
+      .tag {
+        display: inline-block; font-size: 10px; padding: 1px 5px;
+        border-radius: 3px; margin-right: 3px; font-weight: bold;
+      }
+      .tag-id     { background: #e0e7ff; color: #3730a3; }
+      .tag-testid { background: #dcfce7; color: #166534; }
+      .tag-aria   { background: #fef3c7; color: #92400e; }
+      .tag-text   { background: #f3e8ff; color: #7c3aed; }
+      .tag-dyn    { background: #ffedd5; color: #c2410c; }
+      .tag-axes   { background: #f1f5f9; color: #475569; }
+      .auth-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold;
+      }
+      .auth-badge.unauth { background: #fee2e2; color: #991b1b; }
+      .auth-badge.authed { background: #dcfce7; color: #166534; }
+      .window-list { list-style: none; padding: 0; margin: 10px 0 0; }
+      .window-list li {
+        display: flex; gap: 8px; align-items: center;
+        padding: 7px 0; border-bottom: 1px solid #e8f0f7; font-size: 13px;
+      }
+      .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+      .dot.open   { background: #166534; }
+      .dot.closed { background: #e12d39; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      table th { background: #f0f4f8; text-align: left; padding: 8px 10px; border: 1px solid #d9e2ec; }
+      table td { padding: 8px 10px; border: 1px solid #d9e2ec; vertical-align: top; }
+      nav a { color: #4a90d9; font-size: 13px; text-decoration: none; margin-right: 12px; }
+      nav a:hover { text-decoration: underline; }
+      .field { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      .field input[type="text"] {
+        padding: 8px 10px; border: 1px solid #bcccdc; border-radius: 5px;
+        font-size: 14px; flex: 1; min-width: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Tabs &amp; Windows — Playwright &amp; Selenium Practice</h1>
+      <p style="color:#627d98; font-size:14px; margin-top:-8px">
+        Practice opening, switching, and closing tabs/windows.
+        Playwright key API: <code>page.waitForEvent('popup')</code>, <code>context.pages()</code>.
+        Selenium key API: <code>getWindowHandles()</code>, <code>switchTo().window(handle)</code>.
+      </p>
+      <nav style="margin-bottom:20px">
+        <a href="/tabs-windows/new-tab.html">→ new-tab.html (product page)</a>
+        <a href="/tabs-windows/popup.html">→ popup.html (child window)</a>
+      </nav>
+
+      <!-- =================================================================
+           SECTION 1 — Anchor target="_blank"  (Beginner)
+      ================================================================== -->
+      <section class="section">
+        <h2>
+          1. Anchor <code>target="_blank"</code>
+          <span class="badge badge-green">Beginner</span>
+        </h2>
+        <p class="hint">
+          Playwright: await <code>Promise.all([page.waitForEvent('popup'), link.click()])</code> —
+          the promise must be set up BEFORE the click or you'll miss the event.
+          Selenium: save current handle → click → diff <code>getWindowHandles()</code> for the new one.
+        </p>
+
+        <div class="btn-row">
+          <!-- Richest: id + data-testid + aria-label -->
+          <a
+            id="link-product-tab"
+            href="/tabs-windows/new-tab.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="link-product-tab"
+            aria-label="Open product details in a new tab"
+            class="link-btn"
+          >Open Product Tab</a>
+
+          <!-- Only role+text — must use getByRole('link',{name:…}) or getByText -->
+          <a href="/tabs-windows/new-tab.html?ref=report" target="_blank" rel="noopener noreferrer" class="link-btn secondary">
+            View Report
+          </a>
+
+          <!-- Dynamic data attribute — locate by [data-action] or [data-page] -->
+          <a
+            href="/tabs-windows/new-tab.html?ref=docs"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-action="open-docs-tab"
+            data-page="documentation"
+            aria-label="Open documentation"
+            class="link-btn secondary"
+          >Documentation</a>
+        </div>
+
+        <div class="locator-hint">
+          <strong>Locator strategies:</strong><br/>
+          <span class="tag tag-id">id</span><code>#link-product-tab</code> &nbsp;
+          <span class="tag tag-testid">testid</span><code>[data-testid="link-product-tab"]</code> &nbsp;
+          <span class="tag tag-aria">aria</span><code>getByRole('link', {name:'Open product details in a new tab'})</code><br/>
+          <span class="tag tag-text">text</span><code>getByText('View Report')</code> &nbsp;
+          <span class="tag tag-dyn">dynamic</span><code>[data-action="open-docs-tab"]</code> &nbsp;
+          <span class="tag tag-axes">axes</span><code>locator('nav').getByRole('link').nth(0)</code>
+        </div>
+      </section>
+
+      <!-- =================================================================
+           SECTION 2 — window.open() popup  (Beginner → Intermediate)
+      ================================================================== -->
+      <section class="section">
+        <h2>
+          2. Programmatic Popup (<code>window.open()</code>)
+          <span class="badge badge-green">Beginner</span>
+        </h2>
+        <p class="hint">
+          Playwright: <code>const [popup] = await Promise.all([page.waitForEvent('popup'), page.click('#btn-basic-popup')])</code>.
+          Then interact with <code>popup</code> as a full <code>Page</code> object.
+          Selenium: works same as anchor-based new window — grab new handle after click.
+        </p>
+
+        <div class="btn-row">
+          <button id="btn-basic-popup" data-testid="open-basic-popup" onclick="openBasicPopup()">
+            Open Basic Popup
+          </button>
+          <button id="btn-sized-popup" data-testid="open-sized-popup" class="secondary" onclick="openSizedPopup()">
+            Open Sized Window (600×400)
+          </button>
+          <button id="btn-noopener-popup" data-testid="open-noopener-popup" class="secondary" onclick="openNoopenerPopup()">
+            Open (noopener — opener is null)
+          </button>
+        </div>
+
+        <div class="output-box" id="popup-status" data-testid="popup-status">No popup opened yet.</div>
+
+        <div class="locator-hint">
+          <strong>Locator strategies:</strong><br/>
+          <span class="tag tag-id">id</span><code>#btn-basic-popup</code> &nbsp;
+          <span class="tag tag-testid">testid</span><code>[data-testid="open-basic-popup"]</code> &nbsp;
+          <span class="tag tag-text">text</span><code>getByRole('button', {name:'Open Basic Popup'})</code> &nbsp;
+          <span class="tag tag-axes">axes</span><code>.section:nth-child(2) button:first-of-type</code>
+        </div>
+      </section>
+
+      <!-- =================================================================
+           SECTION 3 — Named Window (Intermediate)
+      ================================================================== -->
+      <section class="section">
+        <h2>
+          3. Named Window — Reuse Behavior
+          <span class="badge badge-blue">Intermediate</span>
+        </h2>
+        <p class="hint">
+          <code>window.open(url, 'myWindow')</code>: if a window named <em>myWindow</em> is already open,
+          the browser reuses it (navigates) instead of opening a new one.
+          Interview Q: "Will clicking twice open two popups?" — Answer: No, only one named window exists.
+          Playwright: <code>context.pages()</code> will show just one extra page after two clicks.
+        </p>
+
+        <div class="btn-row">
+          <button id="btn-named-window" data-testid="named-window-btn" onclick="openNamedWindow('/tabs-windows/new-tab.html')">
+            Open / Reuse "reportWindow"
+          </button>
+          <button id="btn-named-window-alt" data-testid="named-window-alt-btn" class="secondary" onclick="openNamedWindow('/tabs-windows/popup.html')">
+            Navigate "reportWindow" → popup.html
+          </button>
+        </div>
+        <div class="output-box" id="named-window-status" data-testid="named-window-status">
+          Click a button to open / reuse the named window…
+        </div>
+
+        <div class="locator-hint">
+          <strong>Locator strategies:</strong><br/>
+          <span class="tag tag-id">id</span><code>#btn-named-window</code> &nbsp;
+          <span class="tag tag-testid">testid</span><code>[data-testid="named-window-btn"]</code> &nbsp;
+          <span class="tag tag-text">text</span><code>getByText('Open / Reuse')</code>
+        </div>
+      </section>
+
+      <!-- =================================================================
+           SECTION 4 — Multiple Windows (Intermediate)
+      ================================================================== -->
+      <section class="section">
+        <h2>
+          4. Multiple Windows Management
+          <span class="badge badge-blue">Intermediate</span>
+        </h2>
+        <p class="hint">
+          Playwright: <code>const pages = context.pages()</code> returns all open pages as an array.
+          Selenium: <code>Set&lt;String&gt; handles = driver.getWindowHandles()</code> — iterate with a loop.
+          Practice: open 3 windows, switch to each, assert title/URL, close Window 2, verify only 2 remain.
+        </p>
+
+        <div class="btn-row">
+          <!-- no id — locate by data-testid or data-window-id attribute (dynamic) -->
+          <button data-testid="open-window-1" data-window-id="1" onclick="openProductWindow(1)">
+            Open Window 1
+          </button>
+          <button data-testid="open-window-2" data-window-id="2" class="secondary" onclick="openProductWindow(2)">
+            Open Window 2
+          </button>
+          <button data-testid="open-window-3" data-window-id="3" class="secondary" onclick="openProductWindow(3)">
+            Open Window 3
+          </button>
+          <button class="danger" data-testid="close-all-windows" id="close-all-btn" onclick="closeAllTrackedWindows()">
+            Close All
+          </button>
+        </div>
+
+        <ul class="window-list" id="window-list" data-testid="window-list" aria-label="Open windows list"></ul>
+        <div class="output-box" id="windows-count-box" data-testid="windows-count-box">
+          Open windows: 0
+        </div>
+
+        <div class="locator-hint">
+          <strong>Locator strategies:</strong><br/>
+          <span class="tag tag-testid">testid</span><code>[data-testid="open-window-2"]</code> &nbsp;
+          <span class="tag tag-dyn">dynamic</span><code>[data-window-id="2"]</code> &nbsp;
+          <span class="tag tag-id">id</span><code>#close-all-btn</code> &nbsp;
+          <span class="tag tag-axes">axes</span><code>getByRole('list', {name:'Open windows list'}).getByRole('listitem').nth(1)</code>
+        </div>
+      </section>
+
+      <!-- =================================================================
+           SECTION 5 — OAuth Popup Flow (Advanced)
+      ================================================================== -->
+      <section class="section">
+        <h2>
+          5. Auth Popup Flow (OAuth Simulation)
+          <span class="badge badge-orange">Advanced</span>
+        </h2>
+        <p class="hint">
+          Real-world: user clicks "Login" → small popup opens (simulating OAuth provider page) →
+          user fills credentials and authenticates → popup closes → main window receives token via
+          <code>window.opener.postMessage()</code> and shows authenticated state.
+          Playwright: listen on popup, fill form, then <code>await popup.waitForEvent('close')</code>.
+        </p>
+
+        <div id="auth-badge-wrap" style="margin-bottom:10px">
+          <span class="auth-badge unauth" id="auth-status" data-testid="auth-status" role="status" aria-live="polite">
+            &#9679; Not Authenticated
+          </span>
+        </div>
+
+        <div class="btn-row">
+          <button id="btn-oauth-login" data-testid="oauth-login-btn" aria-label="Login with OAuth provider" onclick="startOAuthFlow()">
+            Login with OAuth
+          </button>
+          <button id="btn-logout" data-testid="logout-btn" class="secondary" style="display:none" onclick="logout()">
+            Logout
+          </button>
+        </div>
+
+        <div class="output-box" id="auth-result" data-testid="auth-result">
+          Authentication state will appear here…
+        </div>
+
+        <div class="locator-hint">
+          <strong>Locator strategies:</strong><br/>
+          <span class="tag tag-id">id</span><code>#btn-oauth-login</code> &nbsp;
+          <span class="tag tag-testid">testid</span><code>[data-testid="oauth-login-btn"]</code> &nbsp;
+          <span class="tag tag-aria">aria</span><code>getByLabel('Login with OAuth provider')</code> &nbsp;
+          <span class="tag tag-aria">role</span><code>getByRole('status')</code> for auth badge
+        </div>
+      </section>
+
+      <!-- =================================================================
+           SECTION 6 — Cross-Window postMessage (Advanced)
+      ================================================================== -->
+      <section class="section">
+        <h2>
+          6. Cross-Window Communication (<code>postMessage</code>)
+          <span class="badge badge-orange">Advanced</span>
+        </h2>
+        <p class="hint">
+          Open popup → send a message from main → assert popup updates. Popup replies → assert main log updates.
+          In Playwright: use <code>page.evaluate()</code> to dispatch postMessage or interact directly.
+          Real-world: embedded widgets, payment iframes, micro-frontends.
+        </p>
+
+        <div class="btn-row">
+          <button id="btn-open-comms-popup" data-testid="open-comms-popup" onclick="openCommsPopup()">
+            Open Communication Popup
+          </button>
+        </div>
+
+        <div class="field" style="margin-top:12px">
+          <input
+            type="text"
+            id="msg-input"
+            data-testid="msg-input"
+            name="popupMessage"
+            placeholder="Type a message to send to popup…"
+            aria-label="Message to send to popup"
+          />
+          <button id="btn-send-msg" data-testid="send-msg-btn" class="success" onclick="sendMessageToPopup()" style="margin-top:0">
+            Send to Popup
+          </button>
+        </div>
+
+        <div class="output-box" id="comms-log" data-testid="comms-log" aria-label="Communication log" aria-live="polite">
+          Messages will appear here…
+        </div>
+
+        <div class="locator-hint">
+          <strong>Locator strategies:</strong><br/>
+          <span class="tag tag-id">id</span><code>#msg-input</code> &nbsp;
+          <span class="tag tag-testid">testid</span><code>[data-testid="msg-input"]</code> &nbsp;
+          <span class="tag tag-aria">aria</span><code>getByLabel('Message to send to popup')</code> &nbsp;
+          <span class="tag tag-text">name</span><code>getByRole('textbox', {name:'Message to send to popup'})</code> &nbsp;
+          <span class="tag tag-aria">live</span><code>getByRole('log')</code> for comms-log (aria-live)
+        </div>
+      </section>
+
+      <!-- =================================================================
+           SECTION 7 — Cheat Sheet
+      ================================================================== -->
+      <section class="section">
+        <h2>7. Playwright vs Selenium — Cheat Sheet</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Action</th>
+              <th>Playwright (JS)</th>
+              <th>Selenium (Java)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Intercept new tab / popup</td>
+              <td><code>page.waitForEvent('popup')</code> — set up BEFORE click</td>
+              <td>Store handles before click → diff after</td>
+            </tr>
+            <tr>
+              <td>Get all open pages</td>
+              <td><code>context.pages()</code></td>
+              <td><code>driver.getWindowHandles()</code></td>
+            </tr>
+            <tr>
+              <td>Switch to page / window</td>
+              <td>Use the returned Page object directly (no switch needed)</td>
+              <td><code>driver.switchTo().window(handle)</code></td>
+            </tr>
+            <tr>
+              <td>Get opener of popup</td>
+              <td><code>await popup.opener()</code> — returns parent Page</td>
+              <td>No direct API; switch back by stored handle</td>
+            </tr>
+            <tr>
+              <td>Close specific tab</td>
+              <td><code>await popup.close()</code></td>
+              <td>Switch to it then <code>driver.close()</code>, then switch back</td>
+            </tr>
+            <tr>
+              <td>Wait for popup to close</td>
+              <td><code>await popup.waitForEvent('close')</code></td>
+              <td>Poll <code>getWindowHandles().size()</code> until it decreases</td>
+            </tr>
+            <tr>
+              <td>Get URL / title of popup</td>
+              <td><code>popup.url()</code> / <code>await popup.title()</code></td>
+              <td>Switch first → <code>driver.getCurrentUrl()</code> / <code>getTitle()</code></td>
+            </tr>
+            <tr>
+              <td>Context-level page listener</td>
+              <td><code>context.on('page', async page =&gt; { … })</code></td>
+              <td>No direct equivalent — must poll handles</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="hint" style="margin-top:12px">
+          ⭐ Playwright tip: <code>waitForEvent('popup')</code> must be awaited BEFORE the action that opens
+          the window — Promise.all() pattern prevents race conditions.
+        </p>
+      </section>
+    </div>
+
+    <script>
+      /* ── Section 2: window.open() ── */
+      function openBasicPopup() {
+        window.open('/tabs-windows/popup.html', '', 'width=700,height=500');
+        document.getElementById('popup-status').textContent = 'Basic popup opened. Check context.pages() for the new page.';
+      }
+
+      function openSizedPopup() {
+        const w = 600, h = 400;
+        const left = Math.round((screen.width - w) / 2);
+        const top  = Math.round((screen.height - h) / 2);
+        window.open('/tabs-windows/popup.html', '', `width=${w},height=${h},left=${left},top=${top},resizable=yes`);
+        document.getElementById('popup-status').textContent = `Sized popup opened: ${w}×${h}, centered.`;
+      }
+
+      function openNoopenerPopup() {
+        window.open('/tabs-windows/popup.html', '_blank', 'noopener,noreferrer');
+        document.getElementById('popup-status').textContent =
+          'Opened with noopener — window.opener will be null inside the popup. Playwright still catches it via waitForEvent.';
+      }
+
+      /* ── Section 3: Named window ── */
+      let namedClickCount = 0;
+
+      function openNamedWindow(url) {
+        namedClickCount++;
+        window.open(url, 'reportWindow');
+        document.getElementById('named-window-status').textContent =
+          `Click #${namedClickCount}. Window name: "reportWindow". ` +
+          (namedClickCount === 1
+            ? 'New window opened.'
+            : `Reused existing window — navigated to: ${url}`);
+      }
+
+      /* ── Section 4: Multiple windows ── */
+      const trackedWindows = {};
+
+      function openProductWindow(id) {
+        if (trackedWindows[id] && !trackedWindows[id].closed) {
+          trackedWindows[id].focus();
+          return;
+        }
+        const win = window.open(
+          `/tabs-windows/new-tab.html?product=${id}`,
+          `productWindow${id}`,
+          'width=820,height=600'
+        );
+        trackedWindows[id] = win;
+        renderWindowList();
+      }
+
+      function closeAllTrackedWindows() {
+        Object.values(trackedWindows).forEach(w => { if (w && !w.closed) w.close(); });
+        renderWindowList();
+      }
+
+      function closeTrackedWindow(id) {
+        if (trackedWindows[id] && !trackedWindows[id].closed) trackedWindows[id].close();
+        renderWindowList();
+      }
+
+      function renderWindowList() {
+        const list = document.getElementById('window-list');
+        list.innerHTML = '';
+        let openCount = 0;
+        Object.entries(trackedWindows).forEach(([id, win]) => {
+          const isClosed = !win || win.closed;
+          if (!isClosed) openCount++;
+          const li = document.createElement('li');
+          li.setAttribute('data-window-item', id);
+          li.innerHTML = `
+            <span class="dot ${isClosed ? 'closed' : 'open'}"></span>
+            <strong>Window ${id}</strong>
+            <code>/new-tab.html?product=${id}</code>
+            ${!isClosed
+              ? `<button class="danger" style="margin:0;padding:3px 10px;font-size:12px" onclick="closeTrackedWindow(${id})">Close</button>`
+              : '<em style="color:#829ab1;font-size:12px">closed</em>'}
+          `;
+          list.appendChild(li);
+        });
+        document.getElementById('windows-count-box').textContent = `Open windows: ${openCount}`;
+      }
+
+      /* ── Section 5: OAuth flow ── */
+      function startOAuthFlow() {
+        const w = 480, h = 560;
+        const left = Math.round((screen.width - w) / 2);
+        const top  = Math.round((screen.height - h) / 2);
+        window.open(
+          '/tabs-windows/popup.html?mode=auth',
+          'oauthPopup',
+          `width=${w},height=${h},left=${left},top=${top}`
+        );
+        document.getElementById('auth-result').textContent = 'OAuth popup opened — waiting for authentication…';
+      }
+
+      function receiveAuthToken(token, user) {
+        const badge = document.getElementById('auth-status');
+        badge.textContent = `✓ Authenticated as ${user}`;
+        badge.className = 'auth-badge authed';
+        document.getElementById('auth-result').textContent =
+          `Token: ${token}\nUser: ${user}\nAuthenticated at: ${new Date().toLocaleTimeString()}`;
+        document.getElementById('btn-logout').style.display = '';
+        document.getElementById('btn-oauth-login').style.display = 'none';
+      }
+
+      function logout() {
+        const badge = document.getElementById('auth-status');
+        badge.textContent = '● Not Authenticated';
+        badge.className = 'auth-badge unauth';
+        document.getElementById('auth-result').textContent = 'Logged out.';
+        document.getElementById('btn-logout').style.display = 'none';
+        document.getElementById('btn-oauth-login').style.display = '';
+      }
+
+      /* ── Section 6: Cross-window postMessage ── */
+      let commsPopup = null;
+
+      function openCommsPopup() {
+        commsPopup = window.open('/tabs-windows/popup.html?mode=comms', 'commsWindow', 'width=600,height=460');
+        appendLog('Opened communication popup.');
+      }
+
+      function sendMessageToPopup() {
+        const msg = document.getElementById('msg-input').value.trim();
+        if (!msg) { appendLog('Nothing to send — enter a message first.'); return; }
+        if (!commsPopup || commsPopup.closed) { appendLog('Popup is not open. Click "Open Communication Popup" first.'); return; }
+        commsPopup.postMessage({ type: 'FROM_MAIN', text: msg }, '*');
+        appendLog(`→ Sent to popup: "${msg}"`);
+        document.getElementById('msg-input').value = '';
+      }
+
+      function appendLog(line) {
+        const box = document.getElementById('comms-log');
+        const ts = new Date().toLocaleTimeString();
+        if (box.textContent.startsWith('Messages')) box.textContent = '';
+        box.textContent += `[${ts}] ${line}\n`;
+        box.scrollTop = box.scrollHeight;
+      }
+
+      /* ── Global message listener (receives from popup) ── */
+      window.addEventListener('message', (event) => {
+        if (!event.data || !event.data.type) return;
+        if (event.data.type === 'AUTH_SUCCESS') {
+          receiveAuthToken(event.data.token, event.data.user);
+        } else if (event.data.type === 'FROM_POPUP') {
+          appendLog(`← Received from popup: "${event.data.text}"`);
+        }
+      });
+    </script>
+  </body>
+</html>

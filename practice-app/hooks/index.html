@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hooks Practice — Playwright</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0;
+        padding: 24px;
+        background: #f0f4f8;
+        color: #1f2933;
+      }
+      .container { width: 90%; max-width: 900px; margin: 0 auto; }
+      h1 { margin-top: 0; font-size: 26px; }
+      h2 { margin-top: 0; font-size: 17px; color: #334e68; border-bottom: 1px solid #e8f0f7; padding-bottom: 8px; }
+      .section {
+        background: #fff;
+        border: 1px solid #d9e2ec;
+        border-radius: 8px;
+        padding: 20px 24px;
+        margin-bottom: 28px;
+        box-shadow: 0 1px 3px rgba(0,0,0,.06);
+      }
+      .hint { font-size: 12px; color: #829ab1; margin-bottom: 12px; font-style: italic; }
+      .badge {
+        display: inline-block; font-size: 11px; padding: 2px 8px;
+        border-radius: 20px; margin-left: 6px; vertical-align: middle;
+      }
+      .badge-green  { background: #dcfce7; color: #166534; }
+      .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+      .badge-orange { background: #fff3cd; color: #92400e; }
+      .field { margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px; }
+      .field label { font-size: 14px; font-weight: bold; }
+      .field input, .field select {
+        padding: 8px 10px; border: 1px solid #bcccdc; border-radius: 5px;
+        font-size: 14px; width: 100%;
+      }
+      .field input:focus, .field select:focus { outline: 2px solid #4a90d9; }
+      .field-error { font-size: 12px; color: #b0101a; margin-top: 2px; display: none; }
+      .field-error.visible { display: block; }
+      .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+      button {
+        padding: 8px 18px; background: #4a90d9; color: #fff;
+        border: none; border-radius: 5px; font-size: 14px; cursor: pointer;
+      }
+      button:hover { background: #357ac0; }
+      button.secondary { background: #627d98; }
+      button.secondary:hover { background: #486581; }
+      button.danger { background: #e12d39; }
+      button.danger:hover { background: #b0101a; }
+      button.success { background: #166534; }
+      button.success:hover { background: #14532d; }
+      button:disabled { background: #bcccdc; cursor: not-allowed; }
+      .output-box {
+        margin-top: 12px; background: #f5f7fa; border: 1px solid #d9e2ec;
+        border-radius: 5px; padding: 10px 14px; font-size: 13px;
+        min-height: 36px; color: #334e68; white-space: pre-wrap;
+      }
+      code { background: #eef2f7; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+
+      /* ── Hook lifecycle visual ── */
+      .hook-flow {
+        display: flex; gap: 0; align-items: center; flex-wrap: wrap; margin: 12px 0;
+      }
+      .hook-node {
+        padding: 6px 14px; border-radius: 20px; font-size: 12px;
+        font-weight: bold; white-space: nowrap;
+      }
+      .hook-node.before-all  { background: #fde68a; color: #78350f; }
+      .hook-node.before-each { background: #bfdbfe; color: #1e3a8a; }
+      .hook-node.test        { background: #d1fae5; color: #064e3b; }
+      .hook-node.after-each  { background: #e0e7ff; color: #3730a3; }
+      .hook-node.after-all   { background: #fecaca; color: #7f1d1d; }
+      .hook-arrow { color: #829ab1; font-size: 16px; margin: 0 4px; }
+
+      /* ── Session / Auth ── */
+      .session-bar {
+        display: flex; align-items: center; gap: 12px;
+        background: #f5f7fa; border: 1px solid #d9e2ec;
+        border-radius: 6px; padding: 10px 16px; margin-bottom: 16px;
+      }
+      .session-dot {
+        width: 10px; height: 10px; border-radius: 50%;
+        background: #bcccdc; flex-shrink: 0;
+      }
+      .session-dot.online { background: #22c55e; }
+      #session-status { font-size: 13px; color: #334e68; flex: 1; }
+
+      /* ── Product grid ── */
+      .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      @media (max-width: 600px) { .product-grid { grid-template-columns: 1fr; } }
+      .product-card {
+        border: 1px solid #d9e2ec; border-radius: 8px; padding: 14px;
+        background: #fafcff; display: flex; flex-direction: column; gap: 8px;
+      }
+      .product-card .product-name { font-weight: bold; font-size: 14px; }
+      .product-card .product-price { color: #334e68; font-size: 13px; }
+      .product-card button { margin-top: auto; }
+      .cart-bar {
+        display: flex; align-items: center; gap: 12px; margin-top: 16px;
+        background: #f5f7fa; border: 1px solid #d9e2ec;
+        border-radius: 6px; padding: 10px 16px;
+      }
+      .cart-badge {
+        background: #4a90d9; color: #fff; border-radius: 12px;
+        padding: 2px 10px; font-size: 13px; font-weight: bold;
+        min-width: 28px; text-align: center;
+      }
+
+      /* ── User table ── */
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      table th { background: #f0f4f8; text-align: left; padding: 8px 10px; border: 1px solid #d9e2ec; }
+      table td { padding: 8px 10px; border: 1px solid #d9e2ec; vertical-align: middle; }
+      .user-count-bar {
+        margin-top: 12px; display: flex; align-items: center; gap: 10px;
+        font-size: 13px;
+      }
+
+      /* ── Hook log panel ── */
+      .hook-log {
+        background: #1f2933; color: #d1fae5; border-radius: 6px;
+        padding: 14px; font-family: monospace; font-size: 12px;
+        max-height: 200px; overflow-y: auto; margin-top: 12px;
+      }
+      .hook-log .log-entry { margin-bottom: 4px; }
+      .log-before-all  { color: #fbbf24; }
+      .log-before-each { color: #60a5fa; }
+      .log-test        { color: #34d399; }
+      .log-after-each  { color: #a78bfa; }
+      .log-after-all   { color: #f87171; }
+      .sim-btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Hooks in Playwright — Practice App</h1>
+      <p style="color:#627d98;font-size:14px;margin-top:-8px">
+        Three real-world scenarios to practice
+        <code>beforeAll</code>, <code>afterAll</code>, <code>beforeEach</code>, <code>afterEach</code>.
+      </p>
+
+      <!-- ================================================================
+           HOOKS LIFECYCLE OVERVIEW
+      ================================================================= -->
+      <section class="section">
+        <h2>Hook Execution Order</h2>
+        <div class="hook-flow">
+          <span class="hook-node before-all">beforeAll</span>
+          <span class="hook-arrow">→</span>
+          <span class="hook-node before-each">beforeEach</span>
+          <span class="hook-arrow">→</span>
+          <span class="hook-node test">test 1</span>
+          <span class="hook-arrow">→</span>
+          <span class="hook-node after-each">afterEach</span>
+          <span class="hook-arrow">→</span>
+          <span class="hook-node before-each">beforeEach</span>
+          <span class="hook-arrow">→</span>
+          <span class="hook-node test">test 2</span>
+          <span class="hook-arrow">→</span>
+          <span class="hook-node after-each">afterEach</span>
+          <span class="hook-arrow">→</span>
+          <span class="hook-node after-all">afterAll</span>
+        </div>
+        <p class="hint">
+          Simulate the hook execution order using the buttons below — the log panel shows what runs and when.
+        </p>
+        <div class="sim-btn-row">
+          <button class="secondary"  onclick="logHook('beforeAll',  'beforeAll  → DB seeded, browser launched')"  id="sim-before-all">Run beforeAll</button>
+          <button style="background:#3b82f6" onclick="logHook('beforeEach', 'beforeEach → page reloaded, state reset')"  id="sim-before-each">Run beforeEach</button>
+          <button class="success"    onclick="logHook('test',       'test       → actions executed, assertions made')" id="sim-test">Run test</button>
+          <button style="background:#7c3aed" onclick="logHook('afterEach',  'afterEach  → screenshot taken on failure')" id="sim-after-each">Run afterEach</button>
+          <button class="danger"     onclick="logHook('afterAll',   'afterAll   → logged out, DB cleaned')"           id="sim-after-all">Run afterAll</button>
+          <button class="secondary"  onclick="clearLog()" id="clear-log-btn">Clear Log</button>
+        </div>
+        <div class="hook-log" id="hook-log" data-testid="hook-log">
+          <div class="log-entry" style="color:#829ab1">// Hook execution log will appear here…</div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           SCENARIO 1 — E-Commerce: Login → Cart → Logout
+           Hooks: beforeAll (login), beforeEach (clear cart + navigate),
+                  afterEach (verify toast gone), afterAll (logout)
+      ================================================================= -->
+      <section class="section" id="scenario-ecommerce">
+        <h2>
+          Scenario 1: E-Commerce — Cart Flow
+          <span class="badge badge-green">Beginner</span>
+        </h2>
+        <p class="hint">
+          <strong>beforeAll</strong>: login once.
+          <strong>beforeEach</strong>: clear cart, go to products page.
+          <strong>afterEach</strong>: verify cart state.
+          <strong>afterAll</strong>: logout. Locators: id, name, data-testid, aria-label, class.
+        </p>
+
+        <!-- Auth panel -->
+        <div class="session-bar">
+          <div class="session-dot" id="session-dot" data-testid="session-dot"></div>
+          <span id="session-status" data-testid="session-status">Not logged in</span>
+          <button class="danger" id="logout-btn" data-testid="logout-btn"
+                  onclick="doLogout()" style="display:none;margin-top:0;padding:5px 12px;font-size:12px">
+            Logout
+          </button>
+        </div>
+
+        <!-- Login form -->
+        <div id="login-panel" data-testid="login-panel">
+          <div class="row">
+            <div class="field" style="flex:1">
+              <label for="login-username">Username</label>
+              <input type="text" id="login-username" name="username"
+                     data-testid="login-username" placeholder="e.g. standard_user" />
+            </div>
+            <div class="field" style="flex:1">
+              <label for="login-password">Password</label>
+              <input type="password" id="login-password" name="password"
+                     data-testid="login-password" placeholder="Enter password" />
+            </div>
+          </div>
+          <button id="login-btn" data-testid="login-btn" onclick="doLogin()">Login</button>
+          <div class="output-box" id="login-error" data-testid="login-error" style="display:none;color:#b0101a"></div>
+          <p class="hint" style="margin-top:8px">
+            Valid credentials: <code>standard_user / password123</code> &nbsp;|&nbsp;
+            <code>admin_user / admin456</code>. Locators: <code>#login-username</code>,
+            <code>[name="password"]</code>, <code>data-testid="login-btn"</code>.
+          </p>
+        </div>
+
+        <!-- Products (visible after login) -->
+        <div id="products-panel" data-testid="products-panel" style="display:none">
+          <div class="product-grid" id="product-grid" data-testid="product-grid">
+
+            <div class="product-card" data-testid="product-backpack" data-product-id="1" role="article" aria-label="Sauce Labs Backpack">
+              <div class="product-name">Sauce Labs Backpack</div>
+              <div class="product-price" data-testid="price-backpack">$29.99</div>
+              <button class="add-to-cart-btn" id="add-to-cart-backpack"
+                      data-testid="add-to-cart-backpack"
+                      aria-label="Add Sauce Labs Backpack to cart"
+                      data-product-id="1"
+                      onclick="addToCart(this, 'Sauce Labs Backpack')">
+                Add to Cart
+              </button>
+            </div>
+
+            <div class="product-card" data-testid="product-tshirt" data-product-id="2" role="article" aria-label="Sauce Labs T-Shirt">
+              <div class="product-name">Sauce Labs T-Shirt</div>
+              <div class="product-price" data-testid="price-tshirt">$15.99</div>
+              <button class="add-to-cart-btn" id="add-to-cart-tshirt"
+                      data-testid="add-to-cart-tshirt"
+                      aria-label="Add Sauce Labs T-Shirt to cart"
+                      data-product-id="2"
+                      onclick="addToCart(this, 'Sauce Labs T-Shirt')">
+                Add to Cart
+              </button>
+            </div>
+
+            <!-- No stable ID — use text or nth locator (intermediate/advanced) -->
+            <div class="product-card" data-testid="product-onesie" data-product-id="3" role="article" aria-label="Sauce Labs Onesie">
+              <div class="product-name">Sauce Labs Onesie</div>
+              <div class="product-price" data-testid="price-onesie">$7.99</div>
+              <button class="add-to-cart-btn"
+                      aria-label="Add Sauce Labs Onesie to cart"
+                      data-product-id="3"
+                      onclick="addToCart(this, 'Sauce Labs Onesie')">
+                Add to Cart
+              </button>
+            </div>
+
+          </div>
+
+          <div class="cart-bar">
+            <span>🛒 Cart:</span>
+            <span class="cart-badge" id="cart-count" data-testid="cart-count" aria-label="Cart items count">0</span>
+            <span id="cart-items-text" data-testid="cart-items-text" style="flex:1;font-size:13px;color:#627d98">Cart is empty</span>
+            <button class="secondary" id="clear-cart-btn" data-testid="clear-cart-btn"
+                    onclick="clearCart()" style="margin-top:0;padding:6px 14px;font-size:12px">
+              Clear Cart
+            </button>
+            <button id="checkout-btn" data-testid="checkout-btn"
+                    onclick="checkout()" style="margin-top:0;padding:6px 14px;font-size:12px" disabled>
+              Checkout
+            </button>
+          </div>
+          <div class="output-box" id="checkout-result" data-testid="checkout-result" style="display:none"></div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           SCENARIO 2 — Registration Form
+           Hooks: beforeEach (reset form), afterEach (clear messages)
+      ================================================================= -->
+      <section class="section" id="scenario-registration">
+        <h2>
+          Scenario 2: User Registration Form — Validation
+          <span class="badge badge-blue">Intermediate</span>
+        </h2>
+        <p class="hint">
+          <strong>beforeEach</strong>: click Reset to clear all fields and messages.
+          <strong>afterEach</strong>: verify no stale success/error messages remain.
+          Locators: <code>id</code>, <code>[name]</code>, <code>[placeholder]</code>,
+          <code>[type]</code>, <code>getByRole('button')</code>, <code>getByLabel()</code>.
+        </p>
+
+        <form id="registration-form" data-testid="registration-form" novalidate onsubmit="return false">
+
+          <div class="row">
+            <div class="field" style="flex:1">
+              <label for="full-name">Full Name <span style="color:#b0101a">*</span></label>
+              <input type="text" id="full-name" name="fullName"
+                     data-testid="input-full-name"
+                     placeholder="John Doe"
+                     aria-label="Full name" />
+              <span class="field-error" id="err-full-name" data-testid="err-full-name">Full name is required.</span>
+            </div>
+            <div class="field" style="flex:1">
+              <label for="reg-email">Email <span style="color:#b0101a">*</span></label>
+              <input type="email" id="reg-email" name="email"
+                     data-testid="input-email"
+                     placeholder="john@example.com"
+                     aria-label="Email address" />
+              <span class="field-error" id="err-email" data-testid="err-email">Enter a valid email.</span>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field" style="flex:1">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" name="phone"
+                     data-testid="input-phone"
+                     placeholder="Enter phone number"
+                     aria-label="Phone number" />
+              <span class="field-error" id="err-phone" data-testid="err-phone">Enter a 10-digit phone number.</span>
+            </div>
+            <div class="field" style="flex:1">
+              <label for="reg-password">Password <span style="color:#b0101a">*</span></label>
+              <input type="password" id="reg-password" name="regPassword"
+                     data-testid="input-password"
+                     placeholder="Min 8 characters"
+                     aria-label="Password" />
+              <span class="field-error" id="err-password" data-testid="err-password">Password must be at least 8 characters.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="role-select">Role</label>
+            <select id="role-select" name="role" data-testid="role-select" aria-label="Select role">
+              <option value="">-- Select a role --</option>
+              <option value="tester">QA Tester</option>
+              <option value="developer">Developer</option>
+              <option value="manager">Manager</option>
+            </select>
+          </div>
+
+          <!-- Checkbox — various locator strategies -->
+          <div class="field" style="flex-direction:row;align-items:center;gap:10px">
+            <input type="checkbox" id="terms-checkbox" name="terms"
+                   data-testid="terms-checkbox"
+                   aria-label="I agree to the terms and conditions" />
+            <label for="terms-checkbox" style="font-weight:normal;font-size:14px">
+              I agree to the <span style="color:#4a90d9;text-decoration:underline;cursor:pointer">Terms &amp; Conditions</span>
+            </label>
+          </div>
+          <span class="field-error" id="err-terms" data-testid="err-terms">You must accept the terms.</span>
+
+          <div class="row" style="margin-top:14px">
+            <button type="submit" id="create-account-btn" data-testid="create-account-btn"
+                    aria-label="Create account" onclick="submitRegistration()">
+              Create Account
+            </button>
+            <button type="button" id="reset-form-btn" data-testid="reset-form-btn"
+                    class="secondary" onclick="resetForm()">
+              Reset Form
+            </button>
+          </div>
+        </form>
+
+        <div class="output-box" id="form-success" data-testid="form-success" style="display:none;border-color:#22c55e;color:#166534"></div>
+        <div class="output-box" id="form-error"   data-testid="form-error"   style="display:none;border-color:#e12d39;color:#b0101a"></div>
+      </section>
+
+      <!-- ================================================================
+           SCENARIO 3 — Admin User Table (CRUD)
+           Hooks: beforeAll (seed users), afterAll (delete all / reset),
+                  beforeEach (verify count), afterEach (log state)
+      ================================================================= -->
+      <section class="section" id="scenario-admin">
+        <h2>
+          Scenario 3: Admin — User Management Table
+          <span class="badge badge-orange">Advanced</span>
+        </h2>
+        <p class="hint">
+          <strong>beforeAll</strong>: seed the table with 3 users.
+          <strong>afterAll</strong>: click "Reset Data" to clean up.
+          <strong>beforeEach</strong>: assert row count before each test.
+          Locators: <code>role="table"</code>, <code>[aria-rowindex]</code>,
+          <code>[data-user-id]</code>, dynamic <code>aria-label</code>, positional <code>:nth-child</code>.
+        </p>
+
+        <div class="row" style="margin-bottom:12px">
+          <button id="seed-data-btn" data-testid="seed-data-btn"
+                  class="success" onclick="seedUsers()"
+                  aria-label="Seed user data">
+            Seed Users (beforeAll)
+          </button>
+          <button id="clear-data-btn" data-testid="clear-data-btn"
+                  class="danger" onclick="clearUsers()"
+                  aria-label="Clear all user data">
+            Reset Data (afterAll)
+          </button>
+          <button id="add-user-btn" data-testid="add-user-btn"
+                  onclick="addUser()"
+                  aria-label="Add new user">
+            + Add User
+          </button>
+        </div>
+
+        <table id="users-table" data-testid="users-table" role="table" aria-label="Users table">
+          <thead>
+            <tr role="row">
+              <th scope="col" role="columnheader">ID</th>
+              <th scope="col" role="columnheader">Name</th>
+              <th scope="col" role="columnheader">Email</th>
+              <th scope="col" role="columnheader">Role</th>
+              <th scope="col" role="columnheader">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody" data-testid="users-tbody">
+            <tr id="no-data-row" data-testid="no-data-row">
+              <td colspan="5" style="text-align:center;color:#829ab1">No users. Click "Seed Users" to populate.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="user-count-bar">
+          <span>Total users:</span>
+          <strong id="user-count" data-testid="user-count" aria-label="Total user count">0</strong>
+          <span style="color:#829ab1;font-size:12px">(assert this in beforeEach)</span>
+        </div>
+        <div class="output-box" id="table-action-result" data-testid="table-action-result" style="margin-top:10px"></div>
+      </section>
+
+    </div><!-- /container -->
+
+    <script>
+      /* ================================================================
+         HOOK LOG PANEL
+      ================================================================ */
+      let logCount = 0;
+      function logHook(type, message) {
+        const log = document.getElementById('hook-log');
+        if (logCount === 0) log.innerHTML = '';
+        logCount++;
+        const ts = new Date().toLocaleTimeString();
+        const entry = document.createElement('div');
+        entry.className = `log-entry log-${type.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
+        entry.textContent = `[${ts}] ${message}`;
+        log.appendChild(entry);
+        log.scrollTop = log.scrollHeight;
+      }
+      function clearLog() {
+        document.getElementById('hook-log').innerHTML =
+          '<div class="log-entry" style="color:#829ab1">// Hook execution log will appear here…</div>';
+        logCount = 0;
+      }
+
+      /* ================================================================
+         SCENARIO 1 — Auth + Cart
+      ================================================================ */
+      const VALID_CREDS = { standard_user: 'password123', admin_user: 'admin456' };
+      let cartItems = [];
+
+      function doLogin() {
+        const user = document.getElementById('login-username').value.trim();
+        const pass = document.getElementById('login-password').value;
+        const errBox = document.getElementById('login-error');
+        errBox.style.display = 'none';
+        if (!VALID_CREDS[user] || VALID_CREDS[user] !== pass) {
+          errBox.textContent = 'Invalid username or password.';
+          errBox.style.display = 'block';
+          return;
+        }
+        document.getElementById('login-panel').style.display = 'none';
+        document.getElementById('products-panel').style.display = 'block';
+        document.getElementById('session-status').textContent = `Logged in as ${user}`;
+        document.getElementById('session-dot').classList.add('online');
+        document.getElementById('logout-btn').style.display = 'inline-block';
+      }
+
+      function doLogout() {
+        clearCart();
+        document.getElementById('login-panel').style.display = 'block';
+        document.getElementById('products-panel').style.display = 'none';
+        document.getElementById('session-status').textContent = 'Not logged in';
+        document.getElementById('session-dot').classList.remove('online');
+        document.getElementById('logout-btn').style.display = 'none';
+        document.getElementById('login-username').value = '';
+        document.getElementById('login-password').value = '';
+        document.getElementById('login-error').style.display = 'none';
+        document.getElementById('checkout-result').style.display = 'none';
+      }
+
+      function addToCart(btn, name) {
+        cartItems.push(name);
+        btn.textContent = 'Remove';
+        btn.classList.add('danger');
+        btn.onclick = function() { removeFromCart(btn, name); };
+        updateCart();
+      }
+
+      function removeFromCart(btn, name) {
+        cartItems = cartItems.filter((_, i) => cartItems.indexOf(name) !== i || (cartItems.splice(cartItems.indexOf(name), 1), false));
+        const idx = cartItems.indexOf(name);
+        if (idx !== -1) cartItems.splice(idx, 1);
+        // simple: just remove first occurrence
+        cartItems = cartItems.filter((v, i) => !(v === name && i === cartItems.lastIndexOf(name)));
+        btn.textContent = 'Add to Cart';
+        btn.classList.remove('danger');
+        btn.onclick = function() { addToCart(btn, name); };
+        updateCart();
+      }
+
+      function updateCart() {
+        const count = cartItems.length;
+        document.getElementById('cart-count').textContent = count;
+        document.getElementById('cart-items-text').textContent =
+          count === 0 ? 'Cart is empty' : cartItems.join(', ');
+        document.getElementById('checkout-btn').disabled = count === 0;
+      }
+
+      function clearCart() {
+        cartItems = [];
+        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+          const name = btn.closest('.product-card').querySelector('.product-name').textContent;
+          btn.textContent = 'Add to Cart';
+          btn.classList.remove('danger');
+          btn.onclick = function() { addToCart(btn, name); };
+        });
+        updateCart();
+        document.getElementById('checkout-result').style.display = 'none';
+      }
+
+      function checkout() {
+        const result = document.getElementById('checkout-result');
+        result.textContent = `Order placed! Items: ${cartItems.join(', ')}. Order ID: ORD-${Date.now()}`;
+        result.style.display = 'block';
+        clearCart();
+      }
+
+      /* ================================================================
+         SCENARIO 2 — Registration Form
+      ================================================================ */
+      function submitRegistration() {
+        let valid = true;
+        const name  = document.getElementById('full-name').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const pass  = document.getElementById('reg-password').value;
+        const role  = document.getElementById('role-select').value;
+        const terms = document.getElementById('terms-checkbox').checked;
+
+        hideAll(['form-success', 'form-error']);
+        document.querySelectorAll('.field-error').forEach(e => e.classList.remove('visible'));
+
+        if (!name) { showErr('err-full-name'); valid = false; }
+        if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { showErr('err-email'); valid = false; }
+        if (phone && !/^\d{10}$/.test(phone.replace(/\D/g,''))) { showErr('err-phone'); valid = false; }
+        if (pass.length < 8) { showErr('err-password'); valid = false; }
+        if (!terms) { showErr('err-terms'); valid = false; }
+
+        const success = document.getElementById('form-success');
+        const error   = document.getElementById('form-error');
+        if (valid) {
+          success.textContent = `Account created for ${name} (${email}) as ${role || 'No role'}.`;
+          success.style.display = 'block';
+        } else {
+          error.textContent = 'Please fix the errors above and try again.';
+          error.style.display = 'block';
+        }
+      }
+
+      function showErr(id) { document.getElementById(id).classList.add('visible'); }
+      function hideAll(ids) { ids.forEach(id => { document.getElementById(id).style.display = 'none'; }); }
+
+      function resetForm() {
+        document.getElementById('registration-form').reset();
+        document.querySelectorAll('.field-error').forEach(e => e.classList.remove('visible'));
+        hideAll(['form-success', 'form-error']);
+      }
+
+      /* ================================================================
+         SCENARIO 3 — Admin User Table
+      ================================================================ */
+      const SEED_USERS = [
+        { id: 1, name: 'Alice Johnson', email: 'alice@example.com', role: 'Developer' },
+        { id: 2, name: 'Bob Smith',     email: 'bob@example.com',   role: 'QA Tester' },
+        { id: 3, name: 'Carol White',   email: 'carol@example.com', role: 'Manager'   },
+      ];
+      let users = [];
+      let nextId = 10;
+
+      function renderTable() {
+        const tbody = document.getElementById('users-tbody');
+        tbody.innerHTML = '';
+        if (users.length === 0) {
+          tbody.innerHTML = '<tr id="no-data-row" data-testid="no-data-row"><td colspan="5" style="text-align:center;color:#829ab1">No users. Click "Seed Users" to populate.</td></tr>';
+        } else {
+          users.forEach((u, idx) => {
+            const tr = document.createElement('tr');
+            tr.setAttribute('role', 'row');
+            tr.setAttribute('aria-rowindex', idx + 2);
+            tr.setAttribute('data-user-id', u.id);
+            tr.setAttribute('data-testid', `user-row-${u.id}`);
+            tr.innerHTML = `
+              <td>${u.id}</td>
+              <td data-testid="user-name-${u.id}">${u.name}</td>
+              <td data-testid="user-email-${u.id}">${u.email}</td>
+              <td data-testid="user-role-${u.id}">${u.role}</td>
+              <td>
+                <button class="danger delete-user-btn"
+                        data-testid="delete-user-${u.id}"
+                        data-user-id="${u.id}"
+                        aria-label="Delete ${u.name}"
+                        onclick="deleteUser(${u.id})"
+                        style="margin:0;padding:4px 10px;font-size:12px">
+                  Delete
+                </button>
+              </td>`;
+            tbody.appendChild(tr);
+          });
+        }
+        document.getElementById('user-count').textContent = users.length;
+      }
+
+      function seedUsers() {
+        users = SEED_USERS.map(u => ({ ...u }));
+        renderTable();
+        document.getElementById('table-action-result').textContent =
+          `Seeded ${users.length} users. (Simulates beforeAll DB seed)`;
+      }
+
+      function clearUsers() {
+        users = [];
+        renderTable();
+        document.getElementById('table-action-result').textContent =
+          'All users deleted. (Simulates afterAll cleanup)';
+      }
+
+      function deleteUser(id) {
+        const u = users.find(x => x.id === id);
+        users = users.filter(x => x.id !== id);
+        renderTable();
+        document.getElementById('table-action-result').textContent =
+          `Deleted user: ${u ? u.name : id}`;
+      }
+
+      function addUser() {
+        const newUser = {
+          id: nextId++,
+          name: `New User ${nextId}`,
+          email: `user${nextId}@example.com`,
+          role: 'QA Tester',
+        };
+        users.push(newUser);
+        renderTable();
+        document.getElementById('table-action-result').textContent =
+          `Added user: ${newUser.name}`;
+      }
+    </script>
+  </body>
+</html>

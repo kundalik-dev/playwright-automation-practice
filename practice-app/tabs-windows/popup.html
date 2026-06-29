@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Popup Window</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0; padding: 24px;
+        background: #f0f4f8; color: #1f2933;
+      }
+      h1 { margin-top: 0; font-size: 22px; }
+      .section {
+        background: #fff; border: 1px solid #d9e2ec;
+        border-radius: 8px; padding: 18px 20px; margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,.06);
+      }
+      .section h2 { margin-top: 0; font-size: 15px; color: #334e68; }
+      .hint { font-size: 12px; color: #829ab1; margin-bottom: 12px; font-style: italic; }
+      .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+      .field label { font-size: 13px; font-weight: bold; }
+      .field input[type="text"], .field input[type="email"], .field input[type="password"] {
+        padding: 8px 10px; border: 1px solid #bcccdc; border-radius: 5px; font-size: 14px;
+      }
+      .field input:focus { outline: 2px solid #4a90d9; }
+      button {
+        padding: 8px 18px; background: #4a90d9; color: #fff;
+        border: none; border-radius: 5px; font-size: 14px; cursor: pointer;
+      }
+      button:hover { background: #357ac0; }
+      button.secondary { background: #627d98; }
+      button.secondary:hover { background: #486581; }
+      button.danger { background: #e12d39; }
+      button.danger:hover { background: #b0101a; }
+      button.success { background: #166534; }
+      button.success:hover { background: #14532d; }
+      .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+      .output-box {
+        margin-top: 10px; background: #f5f7fa; border: 1px solid #d9e2ec;
+        border-radius: 5px; padding: 10px 14px; font-size: 13px;
+        min-height: 36px; white-space: pre-wrap; color: #334e68;
+      }
+      code { background: #eef2f7; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+      .error-msg { color: #e12d39; font-size: 13px; margin-top: 6px; display: none; }
+      .spinner {
+        display: inline-block; width: 14px; height: 14px;
+        border: 2px solid #fff; border-top-color: transparent;
+        border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; margin-left: 6px;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .mode-section { display: none; }
+    </style>
+  </head>
+  <body>
+    <!-- ── Default mode header ── -->
+    <h1 id="page-title">Popup Window</h1>
+    <p id="page-subtitle" style="color:#627d98; font-size:13px; margin-top:-8px">
+      This page opens as a child window / popup. Check <code>window.opener</code> availability below.
+    </p>
+
+    <!-- ================================================================
+         DEFAULT MODE — Generic popup content
+    ================================================================ -->
+    <div id="mode-default" class="mode-section">
+      <section class="section">
+        <h2>Window Info</h2>
+        <p class="hint">Details about this popup window — useful for asserting in tests.</p>
+        <div class="output-box" id="window-info" data-testid="window-info"></div>
+      </section>
+
+      <section class="section">
+        <h2>Interaction Panel</h2>
+        <p class="hint">
+          Interact with this popup from your test: fill the field, click buttons, assert the result.
+          In Playwright, use the returned <code>popup</code> Page object directly.
+        </p>
+
+        <div class="field">
+          <label for="popup-input">Your Input</label>
+          <input
+            type="text"
+            id="popup-input"
+            data-testid="popup-input"
+            name="popupInput"
+            placeholder="Type something…"
+            aria-label="Popup input field"
+          />
+        </div>
+
+        <div class="btn-row">
+          <button id="popup-submit-btn" data-testid="popup-submit" onclick="submitPopupInput()">
+            Submit
+          </button>
+          <button class="secondary" data-testid="popup-clear" onclick="clearPopupInput()">
+            Clear
+          </button>
+          <button class="danger" data-testid="popup-close-btn" onclick="window.close()">
+            Close Popup
+          </button>
+        </div>
+
+        <div class="output-box" id="popup-result" data-testid="popup-result">
+          Result will appear here…
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Send Reply to Opener</h2>
+        <p class="hint">
+          Sends a <code>postMessage</code> back to the main window.
+          In Playwright: main page's <code>page.on('message')</code> or evaluating <code>page.evaluate()</code>.
+        </p>
+        <div class="field">
+          <label for="reply-input">Reply Message</label>
+          <input
+            type="text"
+            id="reply-input"
+            data-testid="reply-input"
+            name="replyMessage"
+            placeholder="Type reply to main window…"
+            aria-label="Reply message"
+          />
+        </div>
+        <button id="btn-send-reply" data-testid="send-reply-btn" onclick="sendReplyToMain()">
+          Send to Main Window
+        </button>
+        <div class="output-box" id="reply-status" data-testid="reply-status">
+          Status…
+        </div>
+      </section>
+    </div>
+
+    <!-- ================================================================
+         AUTH MODE — OAuth simulation
+    ================================================================ -->
+    <div id="mode-auth" class="mode-section">
+      <section class="section">
+        <h2>OAuth Login — Mock Provider</h2>
+        <p class="hint">
+          Simulate OAuth authentication. After clicking "Authenticate", this popup closes and
+          sends a token back to the main window via <code>window.opener.postMessage()</code>.
+        </p>
+
+        <div class="field">
+          <label for="auth-email">Email</label>
+          <input
+            type="email"
+            id="auth-email"
+            data-testid="auth-email"
+            name="email"
+            placeholder="test@example.com"
+            aria-label="Email address"
+            value="test@example.com"
+          />
+        </div>
+
+        <div class="field">
+          <label for="auth-password">Password</label>
+          <input
+            type="password"
+            id="auth-password"
+            data-testid="auth-password"
+            name="password"
+            placeholder="Enter password"
+            aria-label="Password"
+            value="password123"
+          />
+        </div>
+
+        <p id="auth-error" class="error-msg" data-testid="auth-error" role="alert">
+          Invalid credentials. Try again.
+        </p>
+
+        <div class="btn-row">
+          <button id="btn-authenticate" data-testid="authenticate-btn" onclick="authenticate()">
+            Authenticate
+          </button>
+          <button class="secondary" data-testid="auth-cancel-btn" onclick="window.close()">
+            Cancel
+          </button>
+        </div>
+
+        <div class="output-box" id="auth-popup-status" data-testid="auth-popup-status">
+          Enter credentials and click Authenticate…
+        </div>
+      </section>
+    </div>
+
+    <!-- ================================================================
+         COMMS MODE — Cross-window communication
+    ================================================================ -->
+    <div id="mode-comms" class="mode-section">
+      <section class="section">
+        <h2>Communication Panel — Popup Side</h2>
+        <p class="hint">
+          Messages from the main window appear below. Reply using the send field.
+          In tests: use <code>popup.evaluate()</code> or <code>popup.locator()</code> to interact.
+        </p>
+
+        <div class="output-box" id="incoming-messages" data-testid="incoming-messages" aria-label="Incoming messages" aria-live="polite">
+          Waiting for messages from main window…
+        </div>
+
+        <div class="field" style="margin-top:12px">
+          <label for="popup-msg-input">Send to Main Window</label>
+          <input
+            type="text"
+            id="popup-msg-input"
+            data-testid="popup-msg-input"
+            name="popupMessage"
+            placeholder="Type reply…"
+            aria-label="Message to main window"
+          />
+        </div>
+
+        <div class="btn-row">
+          <button id="btn-popup-send" data-testid="popup-send-btn" onclick="sendToMain()">
+            Send to Main
+          </button>
+          <button class="danger" data-testid="popup-comms-close" onclick="window.close()">
+            Close Popup
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const params = new URLSearchParams(location.search);
+      const mode   = params.get('mode') || 'default';
+
+      /* show correct mode section */
+      document.getElementById(`mode-${mode}`).style.display = 'block';
+
+      if (mode === 'auth') {
+        document.getElementById('page-title').textContent     = 'OAuth Login';
+        document.getElementById('page-subtitle').textContent  = 'Mock OAuth provider — authenticate to return a token.';
+      } else if (mode === 'comms') {
+        document.getElementById('page-title').textContent     = 'Communication Popup';
+        document.getElementById('page-subtitle').textContent  = 'Send and receive messages with the main window.';
+      }
+
+      /* ── Default mode: window info ── */
+      if (mode === 'default') {
+        const info = document.getElementById('window-info');
+        info.textContent = [
+          `URL: ${location.href}`,
+          `Title: ${document.title}`,
+          `window.opener: ${window.opener ? 'available (has reference to main window)' : 'null (noopener was set)'}`,
+          `Window size: ${window.innerWidth}×${window.innerHeight}`,
+          `Opened at: ${new Date().toLocaleTimeString()}`,
+        ].join('\n');
+      }
+
+      /* ── Default mode: interaction ── */
+      function submitPopupInput() {
+        const val = document.getElementById('popup-input').value;
+        document.getElementById('popup-result').textContent =
+          val ? `Submitted: "${val}" at ${new Date().toLocaleTimeString()}` : 'Nothing submitted (field is empty).';
+      }
+
+      function clearPopupInput() {
+        document.getElementById('popup-input').value = '';
+        document.getElementById('popup-result').textContent = 'Cleared.';
+      }
+
+      function sendReplyToMain() {
+        const msg = document.getElementById('reply-input').value.trim();
+        if (!msg) { document.getElementById('reply-status').textContent = 'Enter a message first.'; return; }
+        if (!window.opener || window.opener.closed) {
+          document.getElementById('reply-status').textContent = 'No opener — opened with noopener or opener closed.';
+          return;
+        }
+        window.opener.postMessage({ type: 'FROM_POPUP', text: msg }, '*');
+        document.getElementById('reply-status').textContent = `Sent to main: "${msg}"`;
+        document.getElementById('reply-input').value = '';
+      }
+
+      /* ── Auth mode ── */
+      function authenticate() {
+        const email    = document.getElementById('auth-email').value.trim();
+        const password = document.getElementById('auth-password').value;
+        const errEl    = document.getElementById('auth-error');
+        const statusEl = document.getElementById('auth-popup-status');
+        const btn      = document.getElementById('btn-authenticate');
+
+        errEl.style.display = 'none';
+
+        if (!email || !password) {
+          errEl.textContent    = 'Email and password are required.';
+          errEl.style.display  = 'block';
+          return;
+        }
+
+        /* simulate wrong credentials */
+        if (password === 'wrong') {
+          errEl.textContent   = 'Invalid credentials. Try again.';
+          errEl.style.display = 'block';
+          return;
+        }
+
+        btn.disabled    = true;
+        btn.innerHTML   = 'Authenticating…<span class="spinner"></span>';
+        statusEl.textContent = 'Authenticating — please wait…';
+
+        setTimeout(() => {
+          const token = 'mock-jwt-' + Math.random().toString(36).slice(2, 10);
+          statusEl.textContent = `Authenticated! Token: ${token}\nClosing popup…`;
+
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage({ type: 'AUTH_SUCCESS', token, user: email }, '*');
+          }
+
+          setTimeout(() => window.close(), 800);
+        }, 1200);
+      }
+
+      /* ── Comms mode ── */
+      function sendToMain() {
+        const msg = document.getElementById('popup-msg-input').value.trim();
+        if (!msg) return;
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({ type: 'FROM_POPUP', text: msg }, '*');
+          appendIncoming(`→ Sent to main: "${msg}"`);
+          document.getElementById('popup-msg-input').value = '';
+        } else {
+          appendIncoming('Cannot send — no opener or opener closed.');
+        }
+      }
+
+      function appendIncoming(line) {
+        const box = document.getElementById('incoming-messages');
+        if (!box) return;
+        const ts = new Date().toLocaleTimeString();
+        if (box.textContent.startsWith('Waiting')) box.textContent = '';
+        box.textContent += `[${ts}] ${line}\n`;
+        box.scrollTop = box.scrollHeight;
+      }
+
+      window.addEventListener('message', (event) => {
+        if (!event.data || !event.data.type) return;
+        if (event.data.type === 'FROM_MAIN') {
+          appendIncoming(`← From main: "${event.data.text}"`);
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -29,3 +29,48 @@ This will help me to practice
 - Different ways of creation of elements also consider
 - Consider industry standards and interview questions importance wise
 - Dont create too much items just focus with my current requirement i am automation tester with 1 yrs experience in playwrigh but overall automation exp is 4+ yrs
+
+# Hooks in playwright
+
+Create HTML file for practicing locators and automation concept for playwright with JS and Selenium with java. I want to practice `hooks` concept. For that create html file under `practice-app/hooks`.
+
+## My Goal
+
+To practice
+
+- Different hooks present in selenium and playwright.
+- 2-3 real world scenarios which will help me to understand hooks concep better.
+- create .md file under `practice-app/scenarios/hooks.md` which will contain scenarios with steps and expected result so i can practice.
+
+## Do's
+
+- add beginner to advance locators finding strategy and elements so i can practice all type of scenarios
+- While creating different elements always consider multiple ways of locator from static, dynamic, no locator, axeses etc.
+- App will be run using server which is preconfigure in package.json file.
+- Different ways of creation of elements also consider.
+- Consider industry standards and interview questions importance wise.
+- Dont create too much items just focus with my current requirement.
+- I am automation tester with 1 yrs experience in playwright and overall automation exp is 4+ yrs
+
+# Tabs/Windows in playwright
+
+Create HTML file for practicing locators and automation concept for playwright with JS and Selenium with java. I want to practice `Tabs`and `windows` concept. For that create html file under `practice-app/tabs-windows`.
+
+## My Goal
+
+To practice
+
+- Different tabs, windows present in selenium and playwright.
+- 2-3 real world scenarios which will help me to understand hooks concep better.
+- create .md file under `practice-app/scenarios/tabs-windows.md` which will contain scenarios with steps and expected result so i can practice.
+- create begginer to advance elements for my practice
+
+## Do's
+
+- add beginner to advance locators finding strategy and elements so i can practice all type of scenarios
+- While creating different elements always consider multiple ways of locator from static, dynamic, no locator, axeses etc.
+- App will be run using server which is preconfigure in package.json file.
+- Different ways of creation of elements also consider.
+- Consider industry standards and interview questions importance wise.
+- Dont create too much items just focus with my current requirement.
+- I am automation tester with 1 yrs experience in playwright and overall automation exp is 4+ yrs
