@@ -74,3 +74,54 @@ To practice
 - Consider industry standards and interview questions importance wise.
 - Dont create too much items just focus with my current requirement.
 - I am automation tester with 1 yrs experience in playwright and overall automation exp is 4+ yrs
+
+# Annotations in playwright
+
+Create HTML file for practicing locators and automation concept for playwright with JS and Selenium with java. I want to practice `Annotations` concept. For that create html file under `practice-app/annotations`.
+
+## My Goal
+
+To practice
+
+- Different annotations present in selenium and playwright.
+- 2-3 real world scenarios which will help me to understand annotations concept and use cases in better way.
+- create .md file under `practice-app/scenarios/annotatiosn.md` which will contain scenarios with steps and expected result so i can practice.
+- create begginer to advance elements for my practice.
+
+## Do's
+
+- add beginner to advance locators finding strategy and elements so i can practice all type of scenarios
+- While creating different elements always consider multiple ways of locator from static, dynamic, no locator, axeses etc.
+- App will be run using server which is preconfigure in package.json file.
+- Different ways of creation of elements also consider.
+- Consider industry standards and interview questions importance wise.
+- Dont create too much items just focus with my current requirement.
+- I am automation tester with 1 yrs experience in playwright and overall automation exp is 4+ yrs
+
+# Screenshot, video, trace, retries in playwright
+
+## Assumptions
+
+- `@conceptName` = playwright-config
+- Consider this as a varriable to use in below some places consider its value as concept or use for file, foder name generations.
+
+Create HTML file for practicing locators and automation concept for `playwright with JS`. I want to practice `playwright-configs` concept. For that create html file under `practice-app/@conceptName`.
+
+## My Goal
+
+To practice
+
+- Different `playwright configs` present in playwright.
+- 2-3 real world scenarios which will help me to understand `playwright configs` concept and use cases in better way.
+- create .md file under `practice-app/scenarios/@conceptName.md` which will contain scenarios with steps and expected result so i can practice.
+- create begginer to advance elements for my practice.
+
+## Do's
+
+- add beginner to advance locators finding strategy and elements so i can practice all type of scenarios
+- While creating different elements always consider multiple ways of locator from static, dynamic, no locator, axeses etc.
+- App will be run using server which is preconfigure in package.json file.
+- Different ways of creation of elements also consider.
+- Consider industry standards and interview questions importance wise.
+- Dont create too much items just focus with my current requirement.
+- I am automation tester with 1 yrs experience in playwright and overall automation exp is 4+ yrs

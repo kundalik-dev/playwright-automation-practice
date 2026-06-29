@@ -1,0 +1,1158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Annotations — Playwright &amp; Selenium Practice</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0; padding: 24px;
+        background: #f0f4f8; color: #1f2933;
+      }
+      .container { width: 90%; max-width: 900px; margin: 0 auto; }
+      h1 { margin-top: 0; font-size: 26px; }
+      .section {
+        background: #fff; border: 1px solid #d9e2ec;
+        border-radius: 8px; padding: 20px 24px; margin-bottom: 28px;
+        box-shadow: 0 1px 3px rgba(0,0,0,.06);
+      }
+      .section h2 { margin-top: 0; font-size: 17px; color: #334e68; border-bottom: 1px solid #e8f0f7; padding-bottom: 8px; }
+      .hint { font-size: 12px; color: #829ab1; margin-bottom: 12px; font-style: italic; }
+      .btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+      .output-box {
+        margin-top: 12px; background: #f5f7fa; border: 1px solid #d9e2ec;
+        border-radius: 5px; padding: 10px 14px; font-size: 13px;
+        min-height: 36px; color: #334e68; white-space: pre-wrap;
+      }
+      button {
+        margin-top: 10px; padding: 8px 18px; background: #4a90d9;
+        color: #fff; border: none; border-radius: 5px; font-size: 14px; cursor: pointer;
+      }
+      button:hover { background: #357ac0; }
+      button.secondary { background: #627d98; }
+      button.secondary:hover { background: #486581; }
+      button.danger { background: #e12d39; }
+      button.danger:hover { background: #b0101a; }
+      button.success { background: #166534; }
+      button.success:hover { background: #14532d; }
+      button:disabled { background: #bcccdc; cursor: not-allowed; opacity: .7; }
+      .badge {
+        display: inline-block; font-size: 11px; padding: 2px 8px;
+        border-radius: 20px; margin-left: 6px; vertical-align: middle;
+      }
+      .badge-green  { background: #dcfce7; color: #166534; }
+      .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+      .badge-orange { background: #fff3cd; color: #92400e; }
+      .badge-red    { background: #fee2e2; color: #991b1b; }
+      .badge-gray   { background: #f1f5f9; color: #475569; }
+      code { background: #eef2f7; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+      .ann-code {
+        display: inline-block; background: #1e293b; color: #93c5fd;
+        font-family: monospace; font-size: 11px; padding: 2px 8px;
+        border-radius: 4px; margin-left: 4px; vertical-align: middle;
+      }
+      .locator-hint {
+        margin-top: 10px; padding: 8px 12px; background: #f8fafc;
+        border-left: 3px solid #4a90d9; border-radius: 0 4px 4px 0;
+        font-size: 11px; color: #486581;
+      }
+      .tag { display: inline-block; font-size: 10px; padding: 1px 5px; border-radius: 3px; margin-right: 3px; font-weight: bold; }
+      .tag-id     { background: #e0e7ff; color: #3730a3; }
+      .tag-testid { background: #dcfce7; color: #166534; }
+      .tag-aria   { background: #fef3c7; color: #92400e; }
+      .tag-text   { background: #f3e8ff; color: #7c3aed; }
+      .tag-dyn    { background: #ffedd5; color: #c2410c; }
+      .tag-axes   { background: #f1f5f9; color: #475569; }
+      .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+      .field label { font-size: 13px; font-weight: bold; color: #334e68; }
+      .field input, .field select {
+        padding: 8px 10px; border: 1px solid #bcccdc; border-radius: 5px; font-size: 14px;
+      }
+      .field input:focus, .field select:focus { outline: 2px solid #4a90d9; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      table th { background: #f0f4f8; text-align: left; padding: 8px 10px; border: 1px solid #d9e2ec; }
+      table td { padding: 8px 10px; border: 1px solid #d9e2ec; vertical-align: top; }
+
+      /* Feature flag toggle switch */
+      .flag-row {
+        display: flex; align-items: center; gap: 12px; padding: 8px 0;
+        border-bottom: 1px solid #f0f4f8;
+      }
+      .flag-row:last-child { border-bottom: none; }
+      .flag-label { font-size: 13px; min-width: 180px; }
+      .switch-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: none; border: none; cursor: pointer; padding: 0; margin: 0; font-size: 13px;
+      }
+      .switch-track {
+        width: 42px; height: 22px; background: #bcccdc; border-radius: 11px;
+        position: relative; transition: background .2s; flex-shrink: 0;
+      }
+      .switch-track::after {
+        content: ''; width: 18px; height: 18px; background: #fff; border-radius: 50%;
+        position: absolute; top: 2px; left: 2px; transition: left .2s;
+        box-shadow: 0 1px 3px rgba(0,0,0,.2);
+      }
+      .switch-btn[aria-checked="true"] .switch-track { background: #4a90d9; }
+      .switch-btn[aria-checked="true"] .switch-track::after { left: 22px; }
+      .switch-state { font-size: 12px; color: #829ab1; min-width: 28px; }
+      .switch-btn[aria-checked="true"] .switch-state { color: #4a90d9; font-weight: bold; }
+      .env-pill {
+        display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px;
+        border-radius: 20px; font-size: 12px; font-weight: bold;
+      }
+      .env-staging { background: #fff3cd; color: #92400e; }
+      .env-prod    { background: #dcfce7; color: #166534; }
+
+      /* Progress bar */
+      .progress-wrap { height: 6px; background: #e8f0f7; border-radius: 3px; margin-top: 8px; overflow: hidden; }
+      .progress-bar  { height: 100%; background: #4a90d9; border-radius: 3px; width: 0; transition: width .2s; }
+      .skeleton {
+        height: 14px; border-radius: 4px; margin: 5px 0;
+        background: linear-gradient(90deg, #e8f0f7 25%, #d9e2ec 50%, #e8f0f7 75%);
+        background-size: 200% 100%; animation: shimmer 1.4s infinite;
+      }
+      @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+      /* Bug card */
+      .bug-card {
+        background: #fff7f7; border: 1px solid #fca5a5; border-radius: 6px;
+        padding: 14px 18px; flex: 1; min-width: 200px;
+      }
+      .bug-card-header { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 13px; font-weight: bold; }
+      .bug-badge {
+        display: inline-flex; align-items: center; gap: 3px;
+        background: #fee2e2; color: #991b1b; font-size: 10px; font-weight: bold;
+        padding: 2px 7px; border-radius: 4px;
+      }
+      .info-card {
+        background: #f0f9ff; border: 1px solid #93c5fd; border-radius: 6px;
+        padding: 14px 18px; flex: 1; min-width: 200px;
+      }
+
+      /* Stepper */
+      .stepper { display: flex; margin-bottom: 20px; }
+      .step-tab {
+        flex: 1; padding: 10px 6px; text-align: center; font-size: 12px;
+        background: #f0f4f8; border: 1px solid #d9e2ec; cursor: default;
+      }
+      .step-tab:first-child { border-radius: 6px 0 0 6px; }
+      .step-tab:last-child  { border-radius: 0 6px 6px 0; }
+      .step-tab.active { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+      .step-tab.done   { background: #dcfce7; color: #166534; border-color: #86efac; }
+      .step-num {
+        display: inline-block; width: 20px; height: 20px; border-radius: 50%;
+        background: rgba(0,0,0,.12); line-height: 20px; font-size: 11px;
+        font-weight: bold; margin-right: 4px;
+      }
+      .step-tab.active .step-num { background: rgba(255,255,255,.3); }
+      .step-tab.done   .step-num { background: #166534; color: #fff; }
+      .step-panel { display: none; }
+      .step-panel.active { display: block; }
+
+      /* Tags for scenarios */
+      .scenario-card { border: 1px solid #d9e2ec; border-radius: 6px; padding: 12px 16px; margin-bottom: 10px; }
+      .scenario-card h4 { margin: 0 0 6px; font-size: 14px; }
+      .tag-pill {
+        font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: bold;
+        display: inline-block; margin-right: 4px;
+      }
+      .tag-smoke      { background: #fef3c7; color: #92400e; }
+      .tag-regression { background: #dbeafe; color: #1d4ed8; }
+      .tag-critical   { background: #fee2e2; color: #991b1b; }
+      .tag-slow-pill  { background: #f3e8ff; color: #7c3aed; }
+      .tag-fixme      { background: #ffedd5; color: #c2410c; }
+
+      /* Grid layouts */
+      .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+      @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+      .card-row { display: flex; gap: 14px; flex-wrap: wrap; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Annotations — Playwright &amp; Selenium Practice</h1>
+      <p style="color:#627d98; font-size:14px; margin-top:-8px">
+        Each section demonstrates <em>why</em> you'd use a specific annotation and what UI to interact with.
+        Playwright: <code>test.skip()</code> · <code>test.fixme()</code> · <code>test.slow()</code> · <code>test.step()</code> · <code>test.fail()</code>.
+        Selenium/TestNG: <code>@Test(enabled=false)</code> · <code>@DataProvider</code> · <code>@Test(timeOut=)</code> · <code>@Test(groups={})</code>.
+      </p>
+
+      <!-- ================================================================
+           SECTION 1 — test.skip() | Feature Flags & Environment
+      ================================================================ -->
+      <section class="section">
+        <h2>
+          1. Feature Flags &amp; Environment Conditions
+          <span class="badge badge-green">Beginner</span>
+          <span class="ann-code">test.skip(condition, 'reason')</span>
+        </h2>
+        <p class="hint">
+          Real-world: skip a test when a feature is behind a flag, or when running in production.
+          Playwright: <code>test.skip(!betaEnabled, 'Beta feature not active')</code>.
+          TestNG: <code>@Test(enabled=false)</code> or throw <code>new SkipException("reason")</code>.
+          JUnit5: <code>@Disabled("reason")</code> · <code>@DisabledIfSystemProperty</code>.
+        </p>
+
+        <!-- Environment badge -->
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap">
+          <span style="font-size:13px; font-weight:bold">Environment:</span>
+          <span
+            id="env-badge"
+            data-testid="env-badge"
+            class="env-pill env-staging"
+            role="status"
+            aria-label="Current environment: Staging"
+          >⚙ Staging</span>
+          <button
+            id="btn-switch-env"
+            data-testid="btn-switch-env"
+            class="secondary"
+            style="margin-top:0; padding:4px 12px; font-size:12px"
+            onclick="switchEnv()"
+          >Switch to Production</button>
+        </div>
+
+        <!-- Feature flag toggles -->
+        <div id="feature-flags" data-testid="feature-flags" role="group" aria-label="Feature flags">
+
+          <!-- Flag 1: id + data-testid + aria (richest) -->
+          <div class="flag-row">
+            <span class="flag-label" id="dark-mode-label">Dark Mode</span>
+            <button
+              id="toggle-dark-mode"
+              data-testid="toggle-dark-mode"
+              data-feature="dark-mode"
+              role="switch"
+              aria-checked="false"
+              aria-labelledby="dark-mode-label"
+              class="switch-btn"
+              onclick="toggleFlag(this)"
+            >
+              <span class="switch-track"></span>
+              <span class="switch-state">OFF</span>
+            </button>
+          </div>
+
+          <!-- Flag 2: data-testid + data-feature (dynamic) -->
+          <div class="flag-row">
+            <span class="flag-label" id="beta-ui-label">Beta UI</span>
+            <button
+              id="toggle-beta-ui"
+              data-testid="toggle-beta-ui"
+              data-feature="beta-ui"
+              role="switch"
+              aria-checked="false"
+              aria-labelledby="beta-ui-label"
+              class="switch-btn"
+              onclick="toggleFlag(this)"
+            >
+              <span class="switch-track"></span>
+              <span class="switch-state">OFF</span>
+            </button>
+          </div>
+
+          <!-- Flag 3: no id — locate by role+label text or axes -->
+          <div class="flag-row">
+            <span class="flag-label" id="analytics-label">Advanced Analytics</span>
+            <button
+              data-testid="toggle-analytics"
+              data-feature="analytics"
+              role="switch"
+              aria-checked="false"
+              aria-labelledby="analytics-label"
+              class="switch-btn"
+              onclick="toggleFlag(this)"
+            >
+              <span class="switch-track"></span>
+              <span class="switch-state">OFF</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Beta-only panel (hidden until beta-ui ON) -->
+        <div
+          id="beta-panel"
+          data-testid="beta-panel"
+          aria-label="Beta feature panel"
+          aria-hidden="true"
+          style="display:none; margin-top:14px; padding:14px; background:#f0f9ff; border:1px dashed #4a90d9; border-radius:6px"
+        >
+          <strong style="color:#4a90d9">Beta Feature Visible</strong>
+          <p style="font-size:13px; margin:6px 0 0">
+            Only visible when "Beta UI" flag is ON. Test: <code>test.skip(!betaOn, 'Beta UI not enabled')</code>
+          </p>
+          <button id="btn-beta-action" data-testid="btn-beta-action" class="secondary" style="margin-top:8px; padding:5px 14px">
+            Beta Action
+          </button>
+        </div>
+
+        <div class="output-box" id="flag-status-box" data-testid="flag-status-box" role="status" aria-live="polite">
+          Environment: Staging | Dark Mode: OFF | Beta UI: OFF | Analytics: OFF
+        </div>
+
+        <div class="locator-hint">
+          <strong>Locator strategies:</strong><br/>
+          <span class="tag tag-id">id</span><code>#toggle-dark-mode</code> &nbsp;
+          <span class="tag tag-testid">testid</span><code>[data-testid="toggle-beta-ui"]</code> &nbsp;
+          <span class="tag tag-aria">aria</span><code>getByRole('switch', {name:'Dark Mode'})</code> &nbsp;
+          <span class="tag tag-dyn">dynamic</span><code>[data-feature="beta-ui"]</code> &nbsp;
+          <span class="tag tag-text">role</span><code>getByRole('group', {name:'Feature flags'})</code> &nbsp;
+          <span class="tag tag-axes">axes</span><code>locator('#feature-flags button[role="switch"]').nth(2)</code> (Advanced Analytics — no id)
+        </div>
+      </section>
+
+      <!-- ================================================================
+           SECTION 2 — test.slow() | Async heavy operations
+      ================================================================ -->
+      <section class="section">
+        <h2>
+          2. Slow Operations — Async Data Loading
+          <span class="badge badge-green">Beginner</span>
+          <span class="ann-code">test.slow()</span>
+        </h2>
+        <p class="hint">
+          Real-world: reports, file exports, heavy API calls exceed the default 30s timeout.
+          Playwright: <code>test.slow()</code> triples timeout (30s → 90s). No condition needed — just call it.
+          TestNG: <code>@Test(timeOut = 10000)</code>. JUnit5: <code>@Timeout(value=10, unit=SECONDS)</code>.
+        </p>
+
+        <div class="btn-row">
+          <button id="btn-gen-report" data-testid="btn-gen-report" aria-label="Generate sales report" onclick="runSlowOp('Generate sales report', 5, 'report')">
+            Generate Report (5s)
+          </button>
+          <button id="btn-load-data" data-testid="btn-load-data" class="secondary" aria-label="Load dashboard data" onclick="runSlowOp('Load dashboard data', 3, 'data')">
+            Load Dashboard Data (3s)
+          </button>
+          <button id="btn-export-csv" data-testid="btn-export-csv" class="secondary" aria-label="Export CSV file" onclick="runSlowOp('Export CSV', 8, 'export')">
+            Export CSV (8s)
+          </button>
+        </div>
+
+        <!-- Loading indicator -->
+        <div id="loading-indicator" data-testid="loading-indicator" role="status" aria-busy="false" aria-label="Operation in progress" style="display:none; margin-top:12px">
+          <div style="font-size:13px; color:#627d98" id="loading-label" data-testid="loading-label"></div>
+          <div class="progress-wrap">
+            <div class="progress-bar" id="progress-bar" data-testid="progress-bar"></div>
+          </div>
+          <div style="margin-top:6px">
+            <div class="skeleton" style="width:85%"></div>
+            <div class="skeleton" style="width:60%"></div>
+            <div class="skeleton" style="width:78%"></div>
+          </div>
+        </div>
+
+        <!-- Report table (shown after generate report) -->
+        <div id="report-result" data-testid="report-result" style="display:none; margin-top:12px">
+          <table id="report-table" data-testid="report-table" aria-label="Sales report">
+            <thead><tr><th>Month</th><th>Revenue</th><th>Orders</th><th>Status</th></tr></thead>
+            <tbody id="report-tbody" data-testid="report-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="output-box" id="slow-status" data-testid="slow-status" role="status" aria-live="polite">
+          Trigger a slow operation above. Playwright tip: call test.slow() at the top of the test.
+        </div>
+
+        <div class="locator-hint">
+          <strong>Locator strategies:</strong><br/>
+          <span class="tag tag-id">id</span><code>#btn-gen-report</code> &nbsp;
+          <span class="tag tag-testid">testid</span><code>[data-testid="btn-export-csv"]</code> &nbsp;
+          <span class="tag tag-aria">aria</span><code>getByLabel('Generate sales report')</code> &nbsp;
+          <span class="tag tag-aria">aria-busy</span><code>[aria-busy="true"]</code> — assert loading state &nbsp;
+          <span class="tag tag-aria">role</span><code>getByRole('table', {name:'Sales report'})</code> &nbsp;
+          <span class="tag tag-axes">axes</span><code>locator('#report-tbody tr').nth(0).getByText('January')</code>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           SECTION 3 — test.fixme() + test.fail() | Known bugs
+      ================================================================ -->
+      <section class="section">
+        <h2>
+          3. Known Bugs &amp; Expected Failures
+          <span class="badge badge-blue">Intermediate</span>
+          <span class="ann-code">test.fixme()</span>
+          <span class="ann-code">test.fail()</span>
+        </h2>
+        <p class="hint">
+          <code>test.fixme('BUG-123')</code> — test is skipped but flagged in report so the team tracks the broken feature.
+          <code>test.fail()</code> — test is expected to fail; it passes only if the assertion actually fails (confirms bug still exists).
+          TestNG: <code>@Test(expectedExceptions=RuntimeException.class)</code>.
+        </p>
+
+        <div class="card-row">
+          <!-- Buggy counter -->
+          <div class="bug-card">
+            <div class="bug-card-header">
+              Buggy Counter
+              <span class="bug-badge" data-testid="bug-tag-101" data-bug-id="BUG-101">⚠ BUG-101</span>
+            </div>
+            <p class="hint" style="margin:0 0 10px">
+              Increments by 2 instead of 1. Annotate: <code>test.fixme('BUG-101')</code>
+            </p>
+            <div style="display:flex; align-items:center; gap:8px">
+              <button
+                id="btn-dec"
+                data-testid="btn-buggy-dec"
+                aria-label="Decrease counter"
+                style="margin-top:0; padding:6px 14px"
+                onclick="buggyChange(-1)"
+              >−</button>
+              <span
+                id="buggy-counter"
+                data-testid="buggy-counter"
+                role="status"
+                aria-label="Counter value"
+                aria-live="polite"
+                style="font-size:24px; font-weight:bold; min-width:40px; text-align:center"
+              >0</span>
+              <button
+                id="btn-inc"
+                data-testid="btn-buggy-inc"
+                aria-label="Increase counter"
+                style="margin-top:0; padding:6px 14px"
+                onclick="buggyChange(1)"
+              >+</button>
+            </div>
+            <p style="font-size:11px; color:#991b1b; margin-top:6px">Bug: +1 click adds 2. Decrement is correct.</p>
+          </div>
+
+          <!-- Flaky button -->
+          <div class="bug-card">
+            <div class="bug-card-header">
+              Flaky Action
+              <span class="bug-badge" data-testid="bug-tag-202" data-bug-id="BUG-202">⚠ BUG-202</span>
+            </div>
+            <p class="hint" style="margin:0 0 10px">
+              Succeeds ~50% of runs. Use <code>test.fixme()</code> or configure <code>retries: 2</code>.
+            </p>
+            <button
+              id="btn-flaky"
+              data-testid="btn-flaky"
+              data-reliability="50pct"
+              class="danger"
+              style="margin-top:0"
+              onclick="clickFlaky()"
+            >Flaky Action</button>
+            <div
+              class="output-box"
+              id="flaky-result"
+              data-testid="flaky-result"
+              role="alert"
+              style="margin-top:8px; min-height:28px; font-size:12px"
+            >Not clicked yet.</div>
+          </div>
+
+          <!-- Expected failure -->
+          <div class="info-card">
+            <div class="bug-card-header" style="color:#1d4ed8">
+              Always Errors
+              <span class="badge badge-blue" style="margin-left:0">test.fail()</span>
+            </div>
+            <p class="hint" style="margin:0 0 10px">
+              Always returns an error. <code>test.fail()</code> confirms the bug exists — test "passes" if it fails.
+            </p>
+            <button
+              id="btn-expected-fail"
+              data-testid="btn-expected-fail"
+              data-outcome="always-error"
+              class="secondary"
+              style="margin-top:0"
+              onclick="triggerExpectedFail()"
+            >Submit (always errors)</button>
+            <div
+              class="output-box"
+              id="expected-fail-result"
+              data-testid="expected-fail-result"
+              role="alert"
+              style="margin-top:8px; min-height:28px; font-size:12px"
+            >Not submitted yet.</div>
+          </div>
+        </div>
+
+        <div class="locator-hint" style="margin-top:12px">
+          <strong>Locator strategies:</strong><br/>
+          <span class="tag tag-id">id</span><code>#btn-inc</code> &nbsp;
+          <span class="tag tag-testid">testid</span><code>[data-testid="buggy-counter"]</code> &nbsp;
+          <span class="tag tag-aria">aria</span><code>getByRole('status', {name:'Counter value'})</code> &nbsp;
+          <span class="tag tag-aria">aria</span><code>getByLabel('Increase counter')</code> &nbsp;
+          <span class="tag tag-dyn">dynamic</span><code>[data-bug-id="BUG-101"]</code> &nbsp;
+          <span class="tag tag-dyn">dynamic</span><code>[data-reliability="50pct"]</code> &nbsp;
+          <span class="tag tag-dyn">dynamic</span><code>[data-outcome="always-error"]</code> &nbsp;
+          <span class="tag tag-axes">axes</span><code>locator('[data-testid="bug-tag-101"]').locator('..')</code> (parent bug-card)
+        </div>
+      </section>
+
+      <!-- ================================================================
+           SECTION 4 — test.step() | Multi-step checkout
+      ================================================================ -->
+      <section class="section">
+        <h2>
+          4. Multi-Step Flow — <code>test.step()</code> Practice
+          <span class="badge badge-blue">Intermediate</span>
+          <span class="ann-code">test.step('name', async () =&gt; …)</span>
+        </h2>
+        <p class="hint">
+          <code>test.step()</code> groups actions into named steps — visible in the HTML report &amp; trace viewer.
+          Makes failures easier to locate: "Failed in step: Fill shipping form" vs a cryptic line number.
+          Allure for Selenium: <code>@Step("Step name")</code> on methods.
+        </p>
+
+        <!-- Stepper -->
+        <div class="stepper" role="tablist" aria-label="Checkout steps" data-testid="checkout-stepper">
+          <div id="step-tab-1" data-testid="step-tab-1" data-step="1" class="step-tab active" role="tab" aria-selected="true" aria-controls="step-panel-1">
+            <span class="step-num">1</span>Cart
+          </div>
+          <div id="step-tab-2" data-testid="step-tab-2" data-step="2" class="step-tab" role="tab" aria-selected="false" aria-controls="step-panel-2">
+            <span class="step-num">2</span>Shipping
+          </div>
+          <div id="step-tab-3" data-testid="step-tab-3" data-step="3" class="step-tab" role="tab" aria-selected="false" aria-controls="step-panel-3">
+            <span class="step-num">3</span>Payment
+          </div>
+        </div>
+
+        <!-- Step 1: Cart -->
+        <div id="step-panel-1" data-testid="step-panel-1" class="step-panel active" role="tabpanel" aria-labelledby="step-tab-1">
+          <h3 style="margin-top:0; font-size:15px">Cart Review</h3>
+          <table aria-label="Cart items" data-testid="cart-table">
+            <thead><tr><th>Product</th><th>Qty</th><th>Unit Price</th></tr></thead>
+            <tbody>
+              <tr data-testid="cart-row-headphones">
+                <td data-testid="cart-name-1">Wireless Headphones</td>
+                <td>
+                  <input type="number" id="qty-1" data-testid="cart-qty-1" name="qty1"
+                    value="1" min="1" aria-label="Quantity for Wireless Headphones"
+                    style="width:52px; padding:4px; border:1px solid #bcccdc; border-radius:4px"
+                    onchange="recalcTotal()" />
+                </td>
+                <td data-testid="cart-price-1" data-price="149.99">$149.99</td>
+              </tr>
+              <tr data-testid="cart-row-hub">
+                <td data-testid="cart-name-2">USB-C Hub</td>
+                <td>
+                  <input type="number" id="qty-2" data-testid="cart-qty-2" name="qty2"
+                    value="2" min="1" aria-label="Quantity for USB-C Hub"
+                    style="width:52px; padding:4px; border:1px solid #bcccdc; border-radius:4px"
+                    onchange="recalcTotal()" />
+                </td>
+                <td data-testid="cart-price-2" data-price="39.99">$39.99</td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="margin-top:10px; font-weight:bold; font-size:14px">
+            Total: <span id="cart-total" data-testid="cart-total">$229.97</span>
+          </div>
+          <div class="btn-row">
+            <button id="btn-to-shipping" data-testid="btn-to-shipping" onclick="goToStep(2)">
+              Continue to Shipping →
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Shipping -->
+        <div id="step-panel-2" data-testid="step-panel-2" class="step-panel" role="tabpanel" aria-labelledby="step-tab-2">
+          <h3 style="margin-top:0; font-size:15px">Shipping Details</h3>
+          <div class="two-col">
+            <div class="field">
+              <label for="ship-name">Full Name</label>
+              <input type="text" id="ship-name" data-testid="ship-name" name="fullName"
+                placeholder="Jane Smith" aria-label="Full name" aria-required="true" />
+            </div>
+            <div class="field">
+              <label for="ship-zip">ZIP Code</label>
+              <input type="text" id="ship-zip" data-testid="ship-zip" name="zip"
+                placeholder="10001" aria-label="ZIP code" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="ship-address">Address</label>
+            <input type="text" id="ship-address" data-testid="ship-address" name="address"
+              placeholder="123 Main St" aria-label="Street address" />
+          </div>
+          <div class="field">
+            <label for="ship-method">Shipping Method</label>
+            <select id="ship-method" data-testid="ship-method" name="shippingMethod" aria-label="Select shipping method">
+              <option value="standard">Standard (5-7 days) — Free</option>
+              <option value="express">Express (2-3 days) — $12.99</option>
+              <option value="overnight">Overnight — $24.99</option>
+            </select>
+          </div>
+          <div class="btn-row">
+            <button class="secondary" data-testid="btn-back-cart" onclick="goToStep(1)">← Back</button>
+            <button id="btn-to-payment" data-testid="btn-to-payment" onclick="goToStep(3)">Continue to Payment →</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Payment -->
+        <div id="step-panel-3" data-testid="step-panel-3" class="step-panel" role="tabpanel" aria-labelledby="step-tab-3">
+          <h3 style="margin-top:0; font-size:15px">Payment</h3>
+          <div class="field">
+            <label for="pay-card">Card Number</label>
+            <input type="text" id="pay-card" data-testid="pay-card" name="cardNumber"
+              placeholder="4111 1111 1111 1111" maxlength="19" aria-label="Card number" />
+          </div>
+          <div class="two-col">
+            <div class="field">
+              <label for="pay-expiry">Expiry (MM/YY)</label>
+              <input type="text" id="pay-expiry" data-testid="pay-expiry" name="expiry"
+                placeholder="12/27" maxlength="5" aria-label="Card expiry" />
+            </div>
+            <div class="field">
+              <label for="pay-cvv">CVV</label>
+              <input type="text" id="pay-cvv" data-testid="pay-cvv" name="cvv"
+                placeholder="123" maxlength="3" aria-label="CVV code" />
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="secondary" data-testid="btn-back-shipping" onclick="goToStep(2)">← Back</button>
+            <button id="btn-place-order" data-testid="btn-place-order" class="success" onclick="placeOrder()">Place Order</button>
+          </div>
+        </div>
+
+        <!-- Confirmation -->
+        <div
+          id="order-confirmation"
+          data-testid="order-confirmation"
+          style="display:none; padding:16px; background:#dcfce7; border:1px solid #86efac; border-radius:6px; margin-top:12px"
+          role="status"
+          aria-live="assertive"
+        >
+          <strong>✓ Order Placed!</strong>
+          Order ID: <strong id="order-id" data-testid="order-id"></strong>
+        </div>
+
+        <div class="locator-hint" style="margin-top:14px">
+          <strong>Locator strategies:</strong><br/>
+          <span class="tag tag-id">id</span><code>#ship-name</code> &nbsp;
+          <span class="tag tag-testid">testid</span><code>[data-testid="step-panel-2"]</code> &nbsp;
+          <span class="tag tag-aria">aria</span><code>getByRole('tabpanel', {name:'step-tab-2'})</code> &nbsp;
+          <span class="tag tag-aria">aria</span><code>getByLabel('Select shipping method')</code> &nbsp;
+          <span class="tag tag-text">name</span><code>getByRole('textbox', {name:'Full name'})</code> &nbsp;
+          <span class="tag tag-dyn">dynamic</span><code>[data-step="2"]</code> &nbsp;
+          <span class="tag tag-axes">axes</span><code>locator('[data-testid="cart-table"] tbody tr').filter({hasText:'USB-C Hub'})</code>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           SECTION 5 — @DataProvider | Parameterized login
+      ================================================================ -->
+      <section class="section">
+        <h2>
+          5. Data-Driven / Parameterized Tests
+          <span class="badge badge-blue">Intermediate</span>
+          <span class="ann-code">test.each(data)</span>
+          <span class="ann-code">@DataProvider</span>
+        </h2>
+        <p class="hint">
+          Same test logic, multiple data sets. Playwright: <code>for (const user of users) { test(user.role, async ({page}) =&gt; { … }) }</code>.
+          TestNG: <code>@DataProvider(name="users")</code> + <code>@Test(dataProvider="users")</code>.
+          JUnit5: <code>@ParameterizedTest</code> + <code>@MethodSource("userData")</code>.
+        </p>
+
+        <div class="two-col">
+          <div>
+            <form id="login-form" data-testid="login-form" onsubmit="paramLogin(event)" novalidate>
+              <div class="field">
+                <label for="login-email">Email</label>
+                <input type="email" id="login-email" data-testid="login-email" name="email"
+                  placeholder="user@example.com" aria-label="Login email" aria-required="true" />
+              </div>
+              <div class="field">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" data-testid="login-password" name="password"
+                  placeholder="Password" aria-label="Login password" aria-required="true" />
+              </div>
+              <button type="submit" id="btn-login" data-testid="btn-login">Login</button>
+              <button type="button" id="btn-logout" data-testid="btn-logout" class="secondary" style="display:none" onclick="doLogout()">Logout</button>
+            </form>
+            <div class="output-box" id="login-result" data-testid="login-result" role="status" aria-live="polite" style="margin-top:10px">
+              Login result will appear here…
+            </div>
+          </div>
+
+          <div>
+            <p style="font-size:13px; font-weight:bold; margin:0 0 8px">Test Data — Valid Credentials:</p>
+            <table id="credentials-table" data-testid="credentials-table" aria-label="Valid login credentials">
+              <thead><tr><th>Role</th><th>Email</th><th>Password</th><th>Expects</th></tr></thead>
+              <tbody>
+                <tr data-testid="cred-admin" data-role="admin">
+                  <td><span class="badge badge-red">Admin</span></td>
+                  <td><code>admin@test.com</code></td>
+                  <td><code>admin123</code></td>
+                  <td>Full dashboard</td>
+                </tr>
+                <tr data-testid="cred-editor" data-role="editor">
+                  <td><span class="badge badge-blue">Editor</span></td>
+                  <td><code>editor@test.com</code></td>
+                  <td><code>editor123</code></td>
+                  <td>Edit panel only</td>
+                </tr>
+                <tr data-testid="cred-viewer" data-role="viewer">
+                  <td><span class="badge badge-green">Viewer</span></td>
+                  <td><code>viewer@test.com</code></td>
+                  <td><code>viewer123</code></td>
+                  <td>Read-only view</td>
+                </tr>
+                <tr data-testid="cred-invalid" data-role="invalid">
+                  <td><span class="badge badge-gray">Invalid</span></td>
+                  <td><code>bad@test.com</code></td>
+                  <td><code>wrong</code></td>
+                  <td>Error message shown</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Role dashboards -->
+        <div id="role-dashboard" data-testid="role-dashboard" style="display:none; margin-top:14px; padding:14px; background:#f5f7fa; border:1px solid #d9e2ec; border-radius:6px">
+          <div id="dash-admin" data-testid="dash-admin" data-role-panel="admin" style="display:none">
+            <strong>Admin Dashboard</strong>
+            <div class="btn-row" style="margin-top:6px">
+              <button data-testid="admin-manage-users" style="margin-top:0;padding:5px 12px;font-size:12px">Manage Users</button>
+              <button data-testid="admin-settings" class="secondary" style="margin-top:0;padding:5px 12px;font-size:12px">Settings</button>
+              <button data-testid="admin-billing" class="secondary" style="margin-top:0;padding:5px 12px;font-size:12px">Billing</button>
+            </div>
+          </div>
+          <div id="dash-editor" data-testid="dash-editor" data-role-panel="editor" style="display:none">
+            <strong>Editor Dashboard</strong>
+            <div class="btn-row" style="margin-top:6px">
+              <button data-testid="editor-new-post" style="margin-top:0;padding:5px 12px;font-size:12px">New Post</button>
+              <button data-testid="editor-drafts" class="secondary" style="margin-top:0;padding:5px 12px;font-size:12px">Drafts</button>
+            </div>
+          </div>
+          <div id="dash-viewer" data-testid="dash-viewer" data-role-panel="viewer" style="display:none">
+            <strong>Viewer Dashboard</strong>
+            <p style="font-size:13px; color:#627d98; margin:6px 0 0">Read-only access. No edit buttons visible.</p>
+          </div>
+        </div>
+
+        <div class="locator-hint">
+          <strong>Locator strategies:</strong><br/>
+          <span class="tag tag-id">id</span><code>#login-email</code> &nbsp;
+          <span class="tag tag-testid">testid</span><code>[data-testid="btn-login"]</code> &nbsp;
+          <span class="tag tag-aria">aria</span><code>getByLabel('Login email')</code> &nbsp;
+          <span class="tag tag-text">role+text</span><code>getByRole('button', {name:'Login'})</code> &nbsp;
+          <span class="tag tag-dyn">dynamic</span><code>[data-role="admin"]</code> on table row &nbsp;
+          <span class="tag tag-dyn">dynamic</span><code>[data-role-panel="admin"]</code> on dashboard &nbsp;
+          <span class="tag tag-axes">axes</span><code>locator('[data-testid="credentials-table"] tbody tr').filter({hasText:'Editor'}).getByText('editor@test.com')</code>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           SECTION 6 — Tags + Custom Annotations
+      ================================================================ -->
+      <section class="section">
+        <h2>
+          6. Test Tags &amp; Custom Annotations
+          <span class="badge badge-orange">Advanced</span>
+          <span class="ann-code">@smoke @regression @critical</span>
+        </h2>
+        <p class="hint">
+          Playwright: include tag in test name → <code>test('@smoke login', …)</code> → run with <code>--grep @smoke</code>.
+          Or use <code>test.info().annotations.push({type:'priority', description:'P0'})</code> for custom report data.
+          TestNG: <code>@Test(groups={"smoke","regression"})</code> + testng.xml filter. JUnit5: <code>@Tag("smoke")</code>.
+        </p>
+
+        <!-- Tag filter buttons -->
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:16px">
+          <span style="font-size:13px; font-weight:bold">Run by tag:</span>
+          <button id="filter-all" data-testid="filter-all" data-filter="all"
+            onclick="filterScenarios('all')"
+            style="margin-top:0;padding:4px 12px;font-size:12px;background:#334e68">All</button>
+          <button data-testid="filter-smoke" data-filter="smoke" onclick="filterScenarios('smoke')"
+            style="margin-top:0;padding:4px 12px;font-size:12px;background:#92400e">@smoke</button>
+          <button data-testid="filter-regression" data-filter="regression" onclick="filterScenarios('regression')"
+            style="margin-top:0;padding:4px 12px;font-size:12px;background:#1d4ed8">@regression</button>
+          <button data-testid="filter-critical" data-filter="critical" onclick="filterScenarios('critical')"
+            style="margin-top:0;padding:4px 12px;font-size:12px;background:#991b1b">@critical</button>
+          <button data-testid="filter-slow" data-filter="slow" onclick="filterScenarios('slow')"
+            style="margin-top:0;padding:4px 12px;font-size:12px;background:#7c3aed">@slow</button>
+          <button data-testid="filter-fixme" data-filter="fixme" onclick="filterScenarios('fixme')"
+            style="margin-top:0;padding:4px 12px;font-size:12px;background:#c2410c">@fixme</button>
+        </div>
+
+        <div id="scenario-list" data-testid="scenario-list" role="list" aria-label="Test scenarios">
+
+          <div class="scenario-card" data-testid="scenario-login" data-tags="smoke,critical" role="listitem">
+            <h4>Login Flow</h4>
+            <div style="margin-bottom:6px">
+              <span class="tag-pill tag-smoke">@smoke</span>
+              <span class="tag-pill tag-critical">@critical</span>
+            </div>
+            <p style="font-size:12px;color:#627d98;margin:0 0 8px">Core login. Runs in every CI check. Failure blocks the pipeline.</p>
+            <button data-testid="scenario-login-run" style="margin-top:0;padding:5px 12px;font-size:12px" onclick="runScenario(this, true)">
+              Run Scenario
+            </button>
+            <span data-testid="scenario-login-result" style="font-size:12px;color:#627d98;margin-left:8px"></span>
+          </div>
+
+          <div class="scenario-card" data-testid="scenario-search" data-tags="regression,slow" role="listitem">
+            <h4>Product Search with Filters</h4>
+            <div style="margin-bottom:6px">
+              <span class="tag-pill tag-regression">@regression</span>
+              <span class="tag-pill tag-slow-pill">@slow</span>
+            </div>
+            <p style="font-size:12px;color:#627d98;margin:0 0 8px">Full search + filter flow. Use <code>test.slow()</code> — API call takes ~6s.</p>
+            <button data-testid="scenario-search-run" class="secondary" style="margin-top:0;padding:5px 12px;font-size:12px" onclick="runScenario(this, true)">
+              Run Scenario
+            </button>
+            <span data-testid="scenario-search-result" style="font-size:12px;color:#627d98;margin-left:8px"></span>
+          </div>
+
+          <div class="scenario-card" data-testid="scenario-checkout" data-tags="critical,regression" role="listitem">
+            <h4>Checkout &amp; Payment</h4>
+            <div style="margin-bottom:6px">
+              <span class="tag-pill tag-critical">@critical</span>
+              <span class="tag-pill tag-regression">@regression</span>
+            </div>
+            <p style="font-size:12px;color:#627d98;margin:0 0 8px">E2E checkout. Always in regression suite. Deploy gate.</p>
+            <button data-testid="scenario-checkout-run" style="margin-top:0;padding:5px 12px;font-size:12px" onclick="runScenario(this, true)">
+              Run Scenario
+            </button>
+            <span data-testid="scenario-checkout-result" style="font-size:12px;color:#627d98;margin-left:8px"></span>
+          </div>
+
+          <div class="scenario-card" data-testid="scenario-export" data-tags="fixme,regression" role="listitem" style="opacity:.7">
+            <h4>CSV Export (Broken)</h4>
+            <div style="margin-bottom:6px">
+              <span class="tag-pill tag-fixme">@fixme</span>
+              <span class="tag-pill tag-regression">@regression</span>
+            </div>
+            <p style="font-size:12px;color:#627d98;margin:0 0 8px">BUG-303: export hangs. Annotated <code>test.fixme('BUG-303')</code> until fixed.</p>
+            <button data-testid="scenario-export-run" disabled style="margin-top:0;padding:5px 12px;font-size:12px">
+              Fixme'd — Skipped
+            </button>
+          </div>
+
+          <div class="scenario-card" data-testid="scenario-profile" data-tags="smoke,regression" role="listitem">
+            <h4>User Profile Update</h4>
+            <div style="margin-bottom:6px">
+              <span class="tag-pill tag-smoke">@smoke</span>
+              <span class="tag-pill tag-regression">@regression</span>
+            </div>
+            <p style="font-size:12px;color:#627d98;margin:0 0 8px">Update name/email. Part of smoke (name field only) and full regression.</p>
+            <button data-testid="scenario-profile-run" class="secondary" style="margin-top:0;padding:5px 12px;font-size:12px" onclick="runScenario(this, true)">
+              Run Scenario
+            </button>
+            <span data-testid="scenario-profile-result" style="font-size:12px;color:#627d98;margin-left:8px"></span>
+          </div>
+        </div>
+
+        <div class="output-box" id="filter-status" data-testid="filter-status" role="status" aria-live="polite" style="margin-top:12px">
+          Showing all 5 scenarios. Filter above to simulate tag-based test execution.
+        </div>
+
+        <div class="locator-hint">
+          <strong>Locator strategies:</strong><br/>
+          <span class="tag tag-testid">testid</span><code>[data-testid="filter-smoke"]</code> &nbsp;
+          <span class="tag tag-dyn">dynamic</span><code>[data-filter="critical"]</code> &nbsp;
+          <span class="tag tag-dyn">dynamic</span><code>[data-tags*="smoke"]</code> (substring) &nbsp;
+          <span class="tag tag-text">role+name</span><code>getByRole('list', {name:'Test scenarios'})</code> &nbsp;
+          <span class="tag tag-axes">axes</span><code>locator('.scenario-card').filter({has: locator('[data-tags*="critical"]')})</code> &nbsp;
+          <span class="tag tag-axes">axes</span><code>locator('[role="listitem"]').nth(0).getByRole('button', {name:'Run Scenario'})</code>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           SECTION 7 — Cheat Sheet
+      ================================================================ -->
+      <section class="section">
+        <h2>7. Playwright vs Selenium — Annotations Cheat Sheet</h2>
+        <table>
+          <thead>
+            <tr><th>Intent</th><th>Playwright (JS)</th><th>TestNG (Java)</th><th>JUnit5 (Java)</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Skip unconditionally</td>
+              <td><code>test.skip()</code></td>
+              <td><code>@Test(enabled=false)</code></td>
+              <td><code>@Disabled("reason")</code></td>
+            </tr>
+            <tr>
+              <td>Skip conditionally</td>
+              <td><code>test.skip(condition, 'reason')</code></td>
+              <td><code>throw new SkipException("reason")</code></td>
+              <td><code>@DisabledIfSystemProperty</code></td>
+            </tr>
+            <tr>
+              <td>Known broken (tracked)</td>
+              <td><code>test.fixme('BUG-123')</code></td>
+              <td><code>@Test(enabled=false)</code> + Jira comment</td>
+              <td><code>@Disabled("BUG-123")</code></td>
+            </tr>
+            <tr>
+              <td>Expected to fail</td>
+              <td><code>test.fail()</code></td>
+              <td><code>@Test(expectedExceptions=Exception.class)</code></td>
+              <td><code>assertThrows()</code></td>
+            </tr>
+            <tr>
+              <td>Increase timeout (3×)</td>
+              <td><code>test.slow()</code></td>
+              <td><code>@Test(timeOut = 90000)</code></td>
+              <td><code>@Timeout(value=90, unit=SECONDS)</code></td>
+            </tr>
+            <tr>
+              <td>Group / tag</td>
+              <td><code>test('@smoke name', …)</code></td>
+              <td><code>@Test(groups={"smoke"})</code></td>
+              <td><code>@Tag("smoke")</code></td>
+            </tr>
+            <tr>
+              <td>Data-driven</td>
+              <td><code>for (const d of data) test(d.name, …)</code></td>
+              <td><code>@DataProvider + @Test(dataProvider=)</code></td>
+              <td><code>@ParameterizedTest + @MethodSource</code></td>
+            </tr>
+            <tr>
+              <td>Group steps (report)</td>
+              <td><code>await test.step('name', async () =&gt; …)</code></td>
+              <td>Allure <code>@Step("name")</code></td>
+              <td>Allure <code>@Step</code></td>
+            </tr>
+            <tr>
+              <td>Custom annotation</td>
+              <td><code>test.info().annotations.push({type, description})</code></td>
+              <td>Custom Java <code>@interface</code></td>
+              <td>Custom annotation + Extension</td>
+            </tr>
+            <tr>
+              <td>Attach file to report</td>
+              <td><code>test.info().attach('name', {body, contentType})</code></td>
+              <td>Allure <code>@Attachment</code></td>
+              <td>Allure <code>@Attachment</code></td>
+            </tr>
+            <tr>
+              <td>Run only this</td>
+              <td><code>test.only(…)</code> or <code>describe.only(…)</code></td>
+              <td>Run specific class/method via IDE/Maven</td>
+              <td><code>@Test</code> + run single method</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="hint" style="margin-top:12px">
+          ⭐ Key Playwright distinction: <code>test.fixme()</code> keeps the test in the report as "skipped" so the team knows it's broken.
+          Never use <code>test.skip()</code> for bugs — use <code>test.fixme()</code> so it stays visible.
+        </p>
+      </section>
+    </div>
+
+    <script>
+      /* ── Section 1: Feature flags ── */
+      const flags = { env: 'staging', 'dark-mode': false, 'beta-ui': false, analytics: false };
+
+      function toggleFlag(btn) {
+        const isOn = btn.getAttribute('aria-checked') === 'true';
+        btn.setAttribute('aria-checked', !isOn);
+        btn.querySelector('.switch-state').textContent = !isOn ? 'ON' : 'OFF';
+        const feature = btn.dataset.feature;
+        flags[feature] = !isOn;
+        if (feature === 'beta-ui') {
+          const panel = document.getElementById('beta-panel');
+          panel.style.display = !isOn ? 'block' : 'none';
+          panel.setAttribute('aria-hidden', isOn);
+        }
+        updateFlagStatus();
+      }
+
+      function switchEnv() {
+        flags.env = flags.env === 'staging' ? 'production' : 'staging';
+        const badge = document.getElementById('env-badge');
+        const btn   = document.getElementById('btn-switch-env');
+        if (flags.env === 'staging') {
+          badge.className = 'env-pill env-staging';
+          badge.textContent = '⚙ Staging';
+          badge.setAttribute('aria-label', 'Current environment: Staging');
+          btn.textContent = 'Switch to Production';
+        } else {
+          badge.className = 'env-pill env-prod';
+          badge.textContent = '✓ Production';
+          badge.setAttribute('aria-label', 'Current environment: Production');
+          btn.textContent = 'Switch to Staging';
+        }
+        updateFlagStatus();
+      }
+
+      function updateFlagStatus() {
+        document.getElementById('flag-status-box').textContent =
+          `Environment: ${flags.env} | Dark Mode: ${flags['dark-mode'] ? 'ON' : 'OFF'} | Beta UI: ${flags['beta-ui'] ? 'ON' : 'OFF'} | Analytics: ${flags.analytics ? 'ON' : 'OFF'}`;
+      }
+
+      /* ── Section 2: Slow operations ── */
+      const REPORT_ROWS = [
+        { month: 'January',  revenue: '$42,300', orders: 218, status: 'Above target' },
+        { month: 'February', revenue: '$38,900', orders: 201, status: 'On target'    },
+        { month: 'March',    revenue: '$51,200', orders: 267, status: 'Above target' },
+        { month: 'April',    revenue: '$29,400', orders: 153, status: 'Below target' },
+      ];
+
+      function runSlowOp(label, seconds, type) {
+        const indicator = document.getElementById('loading-indicator');
+        const loadLabel = document.getElementById('loading-label');
+        const bar       = document.getElementById('progress-bar');
+        const status    = document.getElementById('slow-status');
+        const result    = document.getElementById('report-result');
+
+        result.style.display = 'none';
+        indicator.style.display = 'block';
+        indicator.setAttribute('aria-busy', 'true');
+        loadLabel.textContent = `${label}… please wait (${seconds}s)`;
+        status.textContent    = `Started: ${new Date().toLocaleTimeString()}`;
+        bar.style.width = '0';
+
+        let elapsed = 0;
+        const tick = setInterval(() => {
+          elapsed += 100;
+          bar.style.width = `${Math.min((elapsed / (seconds * 1000)) * 100, 100)}%`;
+        }, 100);
+
+        setTimeout(() => {
+          clearInterval(tick);
+          indicator.style.display = 'none';
+          indicator.setAttribute('aria-busy', 'false');
+          status.textContent = `✓ ${label} done at ${new Date().toLocaleTimeString()} (${seconds}s elapsed).`;
+          if (type === 'report') {
+            const tbody = document.getElementById('report-tbody');
+            tbody.innerHTML = '';
+            REPORT_ROWS.forEach((r, i) => {
+              const tr = document.createElement('tr');
+              tr.setAttribute('data-testid', `report-row-${i}`);
+              tr.setAttribute('data-month', r.month.toLowerCase());
+              tr.innerHTML = `<td>${r.month}</td><td>${r.revenue}</td><td>${r.orders}</td><td>${r.status}</td>`;
+              tbody.appendChild(tr);
+            });
+            result.style.display = 'block';
+          }
+        }, seconds * 1000);
+      }
+
+      /* ── Section 3: Bugs ── */
+      let bugCount = 0;
+
+      function buggyChange(dir) {
+        if (dir > 0) bugCount += 2; /* BUG: should be += 1 */
+        else         bugCount = Math.max(0, bugCount - 1);
+        document.getElementById('buggy-counter').textContent = bugCount;
+      }
+
+      function clickFlaky() {
+        const ok = Math.random() >= 0.5;
+        const box = document.getElementById('flaky-result');
+        box.textContent  = ok ? '✓ Success this time.' : '✗ Failed this time (50% chance).';
+        box.style.color  = ok ? '#166534' : '#991b1b';
+      }
+
+      function triggerExpectedFail() {
+        const box = document.getElementById('expected-fail-result');
+        box.textContent = '✗ Error 500: Internal Server Error — always fails. Use test.fail() to confirm bug is still present.';
+        box.style.color = '#991b1b';
+      }
+
+      /* ── Section 4: Stepper ── */
+      function goToStep(step) {
+        [1, 2, 3].forEach(n => {
+          const tab   = document.getElementById(`step-tab-${n}`);
+          const panel = document.getElementById(`step-panel-${n}`);
+          tab.className   = 'step-tab' + (n === step ? ' active' : n < step ? ' done' : '');
+          tab.setAttribute('aria-selected', n === step);
+          panel.classList.toggle('active', n === step);
+        });
+      }
+
+      function recalcTotal() {
+        const q1 = parseInt(document.getElementById('qty-1').value) || 0;
+        const q2 = parseInt(document.getElementById('qty-2').value) || 0;
+        document.getElementById('cart-total').textContent = `$${(q1 * 149.99 + q2 * 39.99).toFixed(2)}`;
+      }
+
+      function placeOrder() {
+        const card = document.getElementById('pay-card').value.replace(/\s/g, '');
+        if (card.length < 16) { alert('Enter a valid 16-digit card number.'); return; }
+        [1, 2, 3].forEach(n => {
+          document.getElementById(`step-tab-${n}`).className = 'step-tab done';
+          document.getElementById(`step-panel-${n}`).classList.remove('active');
+        });
+        const id = 'ORD-' + Math.random().toString(36).toUpperCase().slice(2, 9);
+        document.getElementById('order-id').textContent = id;
+        document.getElementById('order-confirmation').style.display = 'block';
+      }
+
+      /* ── Section 5: Data-driven login ── */
+      const USERS = {
+        'admin@test.com':  { pw: 'admin123',  role: 'admin'  },
+        'editor@test.com': { pw: 'editor123', role: 'editor' },
+        'viewer@test.com': { pw: 'viewer123', role: 'viewer' },
+      };
+
+      function paramLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value.trim();
+        const pw    = document.getElementById('login-password').value;
+        const res   = document.getElementById('login-result');
+        const dash  = document.getElementById('role-dashboard');
+
+        const user = USERS[email];
+        if (!user || user.pw !== pw) {
+          res.textContent = `✗ Invalid credentials for: ${email}`;
+          res.style.color = '#991b1b';
+          dash.style.display = 'none';
+          document.querySelectorAll('[data-role-panel]').forEach(el => el.style.display = 'none');
+          return;
+        }
+        res.textContent = `✓ Logged in as ${email} (role: ${user.role})`;
+        res.style.color = '#166534';
+        dash.style.display = 'block';
+        document.querySelectorAll('[data-role-panel]').forEach(el => el.style.display = 'none');
+        document.getElementById(`dash-${user.role}`).style.display = 'block';
+        document.getElementById('btn-login').style.display  = 'none';
+        document.getElementById('btn-logout').style.display = '';
+      }
+
+      function doLogout() {
+        document.getElementById('login-result').textContent = 'Logged out.';
+        document.getElementById('login-result').style.color = '#334e68';
+        document.getElementById('role-dashboard').style.display = 'none';
+        document.querySelectorAll('[data-role-panel]').forEach(el => el.style.display = 'none');
+        document.getElementById('btn-login').style.display  = '';
+        document.getElementById('btn-logout').style.display = 'none';
+        document.getElementById('login-email').value = '';
+        document.getElementById('login-password').value = '';
+      }
+
+      /* ── Section 6: Tag filtering ── */
+      function filterScenarios(tag) {
+        const cards = document.querySelectorAll('.scenario-card');
+        let count = 0;
+        cards.forEach(card => {
+          const tags   = (card.dataset.tags || '').split(',');
+          const show   = tag === 'all' || tags.includes(tag);
+          card.style.display = show ? '' : 'none';
+          if (show) count++;
+        });
+        document.getElementById('filter-status').textContent =
+          tag === 'all'
+            ? `Showing all ${count} scenarios.`
+            : `@${tag} — ${count} scenario${count !== 1 ? 's' : ''} matched.`;
+      }
+
+      function runScenario(btn, success) {
+        const card   = btn.closest('.scenario-card');
+        const result = card.querySelector('[data-testid$="-result"]');
+        if (!result) return;
+        btn.disabled    = true;
+        btn.textContent = 'Running…';
+        setTimeout(() => {
+          result.textContent = success ? '✓ Passed' : '✗ Failed';
+          result.style.color = success ? '#166634' : '#991b1b';
+          btn.disabled    = false;
+          btn.textContent = 'Run Scenario';
+        }, 800);
+      }
+    </script>
+  </body>
+</html>
