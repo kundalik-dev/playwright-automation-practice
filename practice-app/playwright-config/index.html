@@ -1,0 +1,1014 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Playwright Config Practice</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0; padding: 24px;
+        background: #f0f4f8; color: #1f2933;
+      }
+      .container { width: 90%; max-width: 960px; margin: 0 auto; }
+      h1 { margin-top: 0; font-size: 26px; }
+      h2 { margin-top: 0; font-size: 17px; color: #334e68; border-bottom: 1px solid #e8f0f7; padding-bottom: 8px; }
+      .section {
+        background: #fff; border: 1px solid #d9e2ec;
+        border-radius: 8px; padding: 20px 24px;
+        margin-bottom: 28px; box-shadow: 0 1px 3px rgba(0,0,0,.06);
+      }
+      .hint { font-size: 12px; color: #829ab1; margin-bottom: 12px; font-style: italic; }
+      .badge {
+        display: inline-block; font-size: 11px; padding: 2px 8px;
+        border-radius: 20px; margin-left: 6px; vertical-align: middle;
+      }
+      .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+      .badge-green  { background: #dcfce7; color: #166534; }
+      .badge-orange { background: #fff3cd; color: #92400e; }
+      .badge-red    { background: #fee2e2; color: #991b1b; }
+      .badge-purple { background: #ede9fe; color: #5b21b6; }
+      .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+      .field { margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px; }
+      .field label { font-size: 14px; font-weight: bold; }
+      .field input, .field select {
+        padding: 8px 10px; border: 1px solid #bcccdc;
+        border-radius: 5px; font-size: 14px; width: 100%;
+      }
+      .field input:focus, .field select:focus { outline: 2px solid #4a90d9; }
+      button {
+        padding: 8px 18px; background: #4a90d9; color: #fff;
+        border: none; border-radius: 5px; font-size: 14px; cursor: pointer;
+      }
+      button:hover { background: #357ac0; }
+      button.secondary { background: #627d98; }
+      button.secondary:hover { background: #486581; }
+      button.danger { background: #e12d39; }
+      button.danger:hover { background: #b0101a; }
+      button.success { background: #166534; }
+      button.success:hover { background: #14532d; }
+      button:disabled { background: #bcccdc; cursor: not-allowed; }
+      .output-box {
+        margin-top: 12px; background: #f5f7fa; border: 1px solid #d9e2ec;
+        border-radius: 5px; padding: 10px 14px; font-size: 13px;
+        min-height: 36px; color: #334e68; white-space: pre-wrap;
+      }
+      code { background: #eef2f7; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+
+      /* ── Config Reference Banner ── */
+      .config-grid {
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px;
+      }
+      @media (max-width: 600px) { .config-grid { grid-template-columns: 1fr; } }
+      .config-card {
+        background: #f5f7fa; border: 1px solid #d9e2ec; border-radius: 6px;
+        padding: 10px 14px; font-size: 12px;
+      }
+      .config-card .config-key { font-weight: bold; color: #1d4ed8; font-size: 13px; display: block; margin-bottom: 4px; }
+      .config-card .config-val { color: #334e68; font-family: monospace; }
+
+      /* ── Slow Loader ── */
+      .skeleton {
+        background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 4px; height: 20px; margin-bottom: 8px;
+      }
+      @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+      .inventory-item {
+        display: flex; align-items: center; gap: 12px;
+        padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 8px;
+      }
+      .inventory-item .item-dot {
+        width: 10px; height: 10px; border-radius: 50%; background: #22c55e; flex-shrink: 0;
+      }
+      .inventory-item .item-dot.low { background: #f59e0b; }
+      .inventory-item .item-dot.out  { background: #ef4444; }
+
+      /* ── Retry / Flaky ── */
+      .attempt-log {
+        list-style: none; margin: 0; padding: 0; font-size: 12px; max-height: 130px; overflow-y: auto;
+      }
+      .attempt-log li { padding: 4px 0; border-bottom: 1px solid #f0f4f8; }
+      .attempt-log li.pass { color: #166534; }
+      .attempt-log li.fail { color: #991b1b; }
+
+      /* ── Screenshot States ── */
+      .alert-banner {
+        padding: 10px 16px; border-radius: 6px; font-size: 13px;
+        margin-bottom: 10px; display: none; align-items: center; gap: 8px;
+      }
+      .alert-banner.show { display: flex; }
+      .alert-banner.success-banner { background: #dcfce7; border: 1px solid #86efac; color: #166534; }
+      .alert-banner.error-banner   { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
+      .alert-banner.warning-banner { background: #fef9c3; border: 1px solid #fde047; color: #713f12; }
+
+      /* ── Modal ── */
+      .modal-overlay {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,.5); z-index: 100;
+        align-items: center; justify-content: center;
+      }
+      .modal-overlay.open { display: flex; }
+      .modal-box {
+        background: #fff; border-radius: 10px; padding: 28px 32px;
+        max-width: 420px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,.18);
+      }
+      .modal-box h3 { margin-top: 0; font-size: 18px; }
+      .modal-box .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+
+      /* ── Multi-step Checkout (Video/Trace) ── */
+      .stepper {
+        display: flex; gap: 0; margin-bottom: 24px; align-items: center;
+      }
+      .step-node {
+        width: 32px; height: 32px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 13px; font-weight: bold; flex-shrink: 0;
+        background: #d9e2ec; color: #627d98;
+      }
+      .step-node.active  { background: #4a90d9; color: #fff; }
+      .step-node.done    { background: #22c55e; color: #fff; }
+      .step-label { font-size: 12px; margin: 0 6px; color: #627d98; }
+      .step-label.active { color: #1d4ed8; font-weight: bold; }
+      .step-connector { flex: 1; height: 2px; background: #d9e2ec; }
+      .step-connector.done { background: #22c55e; }
+      .step-panel { display: none; }
+      .step-panel.active { display: block; }
+      .order-summary {
+        background: #f5f7fa; border: 1px solid #d9e2ec; border-radius: 6px;
+        padding: 16px; font-size: 13px;
+      }
+      .order-summary tr td:first-child { color: #627d98; width: 120px; }
+      .order-summary .total-row td { font-weight: bold; border-top: 1px solid #d9e2ec; padding-top: 8px; }
+
+      /* ── Viewport / Responsive ── */
+      .viewport-bar {
+        background: #ede9fe; border: 1px solid #c4b5fd; border-radius: 6px;
+        padding: 8px 16px; font-size: 13px; margin-bottom: 12px;
+        display: flex; align-items: center; gap: 10px;
+      }
+      .responsive-grid {
+        display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+      }
+      @media (max-width: 768px) { .responsive-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (max-width: 480px) { .responsive-grid { grid-template-columns: 1fr; } }
+      .resp-card {
+        background: #fafcff; border: 1px solid #d9e2ec; border-radius: 6px;
+        padding: 14px; text-align: center; font-size: 13px;
+      }
+      .resp-card .resp-icon { font-size: 24px; margin-bottom: 6px; }
+      .nav-desktop { display: flex; gap: 16px; align-items: center; }
+      .nav-mobile  { display: none; }
+      @media (max-width: 600px) {
+        .nav-desktop { display: none; }
+        .nav-mobile  { display: block; }
+      }
+      .hamburger-btn { background: #4a90d9; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+      .mobile-menu { display: none; background: #fff; border: 1px solid #d9e2ec; border-radius: 6px; padding: 10px; margin-top: 8px; }
+      .mobile-menu.open { display: block; }
+      .mobile-menu a { display: block; padding: 6px 0; font-size: 14px; color: #334e68; text-decoration: none; border-bottom: 1px solid #f0f4f8; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Playwright Config — Practice App</h1>
+      <p class="hint">Covers: <code>timeout</code> · <code>retries</code> · <code>screenshot</code> · <code>video</code> · <code>trace</code> · <code>viewport</code> · <code>baseURL</code> · <code>workers</code> · <code>reporter</code></p>
+
+      <!-- ═══════════════════════════════════════════════
+           SECTION 0 — Config Quick Reference
+      ═══════════════════════════════════════════════ -->
+      <div class="section" id="config-reference" data-testid="config-reference">
+        <h2>0. Playwright Config — Quick Reference
+          <span class="badge badge-blue">playwright.config.js</span>
+        </h2>
+        <div class="hint">Common options in <code>defineConfig({})</code>. Click a card to copy the key.</div>
+        <div class="config-grid">
+          <div class="config-card" data-testid="config-card-timeout" role="article" aria-label="timeout config">
+            <span class="config-key">timeout</span>
+            <span class="config-val">30_000</span>
+            <div style="font-size:11px;color:#829ab1;margin-top:4px;">Per-test ms. Override: test.setTimeout()</div>
+          </div>
+          <div class="config-card" data-testid="config-card-retries" role="article" aria-label="retries config">
+            <span class="config-key">retries</span>
+            <span class="config-val">2</span>
+            <div style="font-size:11px;color:#829ab1;margin-top:4px;">CI retries; local: 0 recommended</div>
+          </div>
+          <div class="config-card" data-testid="config-card-workers" role="article" aria-label="workers config">
+            <span class="config-key">workers</span>
+            <span class="config-val">'50%'</span>
+            <div style="font-size:11px;color:#829ab1;margin-top:4px;">Parallel threads. fullyParallel: true</div>
+          </div>
+          <div class="config-card" data-testid="config-card-screenshot" role="article" aria-label="screenshot config">
+            <span class="config-key">screenshot</span>
+            <span class="config-val">'only-on-failure'</span>
+            <div style="font-size:11px;color:#829ab1;margin-top:4px;">'on' | 'off' | 'only-on-failure'</div>
+          </div>
+          <div class="config-card" data-testid="config-card-video" role="article" aria-label="video config">
+            <span class="config-key">video</span>
+            <span class="config-val">'retain-on-failure'</span>
+            <div style="font-size:11px;color:#829ab1;margin-top:4px;">'on' | 'off' | 'on-first-retry'</div>
+          </div>
+          <div class="config-card" data-testid="config-card-trace" role="article" aria-label="trace config">
+            <span class="config-key">trace</span>
+            <span class="config-val">'retain-on-failure'</span>
+            <div style="font-size:11px;color:#829ab1;margin-top:4px;">'on' | 'off' | 'on-first-retry'</div>
+          </div>
+          <div class="config-card" data-testid="config-card-baseurl" role="article" aria-label="baseURL config">
+            <span class="config-key">baseURL</span>
+            <span class="config-val">'http://localhost:3000'</span>
+            <div style="font-size:11px;color:#829ab1;margin-top:4px;">Use page.goto('/path') in tests</div>
+          </div>
+          <div class="config-card" data-testid="config-card-viewport" role="article" aria-label="viewport config">
+            <span class="config-key">viewport</span>
+            <span class="config-val">{ width:1280, height:720 }</span>
+            <div style="font-size:11px;color:#829ab1;margin-top:4px;">Override per test with page.setViewportSize()</div>
+          </div>
+          <div class="config-card" data-testid="config-card-reporter" role="article" aria-label="reporter config">
+            <span class="config-key">reporter</span>
+            <span class="config-val">[['html'],['list']]</span>
+            <div style="font-size:11px;color:#829ab1;margin-top:4px;">html · list · json · dot · junit</div>
+          </div>
+        </div>
+        <div id="config-copy-feedback" data-testid="config-copy-feedback" class="output-box" style="min-height:28px; display:none;"></div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════
+           SECTION 1 — Timeout Practice
+           Configs: timeout, navigationTimeout, expect.timeout
+      ═══════════════════════════════════════════════ -->
+      <div class="section" id="timeout-section" data-testid="timeout-section">
+        <h2>1. Timeout Scenarios
+          <span class="badge badge-orange">timeout · navigationTimeout · expect.timeout</span>
+        </h2>
+        <div class="hint">
+          Practice: <code>timeout: 30000</code> · <code>navigationTimeout: 10000</code> ·
+          <code>expect: { timeout: 5000 }</code> · <code>test.setTimeout(60000)</code>
+        </div>
+
+        <!-- 1a — Fast load (passes with default timeout) -->
+        <h3 style="font-size:14px; margin-bottom:8px;">1a. Dashboard Quick Load <span class="badge badge-green">~500ms</span></h3>
+        <div class="row" style="margin-bottom:12px;">
+          <button id="btn-load-dashboard" data-testid="btn-load-dashboard" aria-label="Load dashboard data">
+            Load Dashboard
+          </button>
+          <span id="dashboard-status" data-testid="dashboard-status" role="status" aria-live="polite" style="font-size:13px; color:#627d98;"></span>
+        </div>
+        <div id="dashboard-result" data-testid="dashboard-result" role="region" aria-label="Dashboard data" style="display:none;">
+          <div class="inventory-item" data-testid="metric-revenue">
+            <div class="item-dot"></div>
+            <span><strong>Revenue:</strong> <span data-testid="metric-revenue-value">$124,500</span></span>
+          </div>
+          <div class="inventory-item" data-testid="metric-orders">
+            <div class="item-dot"></div>
+            <span><strong>Orders:</strong> <span data-testid="metric-orders-value">1,842</span></span>
+          </div>
+          <div class="inventory-item" data-testid="metric-users">
+            <div class="item-dot low"></div>
+            <span><strong>Active Users:</strong> <span data-testid="metric-users-value">342</span></span>
+          </div>
+        </div>
+        <div id="dashboard-skeleton" data-testid="dashboard-skeleton" aria-busy="false" style="display:none;">
+          <div class="skeleton" style="width:60%;"></div>
+          <div class="skeleton" style="width:80%;"></div>
+          <div class="skeleton" style="width:45%;"></div>
+        </div>
+
+        <hr style="border:none; border-top:1px solid #e8f0f7; margin:16px 0;" />
+
+        <!-- 1b — Slow load (needs extended timeout or test.slow()) -->
+        <h3 style="font-size:14px; margin-bottom:8px;">1b. Inventory Slow Load <span class="badge badge-red">~5000ms — use test.slow()</span></h3>
+        <div class="row" style="margin-bottom:12px;">
+          <button id="btn-load-inventory" data-testid="btn-load-inventory" aria-label="Fetch inventory data">
+            Fetch Inventory
+          </button>
+          <button id="btn-reset-inventory" data-testid="btn-reset-inventory" class="secondary" aria-label="Reset inventory panel">
+            Reset
+          </button>
+          <span id="inventory-status" data-testid="inventory-status" role="status" aria-live="polite" aria-busy="false" style="font-size:13px; color:#627d98;"></span>
+        </div>
+        <div id="inventory-loading" data-testid="inventory-loading" aria-busy="false" style="display:none;">
+          <div class="skeleton"></div><div class="skeleton" style="width:70%;"></div><div class="skeleton" style="width:85%;"></div>
+        </div>
+        <div id="inventory-result" data-testid="inventory-result" role="table" aria-label="Inventory data" style="display:none;">
+          <div class="inventory-item" data-testid="inv-item-0" data-sku="SKU-001" data-stock="high">
+            <div class="item-dot"></div>
+            <span><strong>Laptop Pro 15</strong> — SKU-001 — Stock: <span data-testid="inv-stock-0">248</span></span>
+          </div>
+          <div class="inventory-item" data-testid="inv-item-1" data-sku="SKU-002" data-stock="low">
+            <div class="item-dot low"></div>
+            <span><strong>Wireless Mouse</strong> — SKU-002 — Stock: <span data-testid="inv-stock-1">12</span></span>
+          </div>
+          <div class="inventory-item" data-testid="inv-item-2" data-sku="SKU-003" data-stock="out">
+            <div class="item-dot out"></div>
+            <span><strong>USB-C Hub</strong> — SKU-003 — Stock: <span data-testid="inv-stock-2">0</span></span>
+          </div>
+        </div>
+
+        <hr style="border:none; border-top:1px solid #e8f0f7; margin:16px 0;" />
+
+        <!-- 1c — Expect timeout (element appears after delay) -->
+        <h3 style="font-size:14px; margin-bottom:8px;">1c. Notification Delayed Appearance <span class="badge badge-orange">~3000ms — expect.timeout</span></h3>
+        <div class="row" style="margin-bottom:12px;">
+          <button id="btn-trigger-notification" data-testid="btn-trigger-notification" aria-label="Trigger delayed notification">
+            Trigger Notification
+          </button>
+        </div>
+        <div id="notification-banner" data-testid="notification-banner" role="alert" aria-live="assertive" class="alert-banner success-banner" style="display:none;">
+          <span>&#10003;</span>
+          <span data-testid="notification-text">Report generated successfully at <span id="notif-time"></span></span>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════
+           SECTION 2 — Retries / Flaky Behavior
+           Configs: retries, test.info().retry
+      ═══════════════════════════════════════════════ -->
+      <div class="section" id="retry-section" data-testid="retry-section">
+        <h2>2. Retries &amp; Flaky Behaviour
+          <span class="badge badge-red">retries: 2 · test.info().retry</span>
+        </h2>
+        <div class="hint">
+          Practice: <code>retries: 2</code> in config · <code>test.info().retry</code> to check attempt number ·
+          <code>test.fixme()</code> to mark known-flaky
+        </div>
+
+        <!-- 2a — Unstable API button (fails randomly) -->
+        <h3 style="font-size:14px; margin-bottom:8px;">2a. Unstable API Call <span class="badge badge-red">70% failure rate on 1st call</span></h3>
+        <div class="hint">Simulates a flaky API. Will succeed after retries. Retry count resets on page reload.</div>
+        <div class="row" style="margin-bottom:12px;">
+          <button id="btn-unstable-api" data-testid="btn-unstable-api" aria-label="Call unstable API endpoint">
+            Call Unstable API
+          </button>
+          <button id="btn-reset-flaky" data-testid="btn-reset-flaky" class="secondary" aria-label="Reset flaky counter">
+            Reset
+          </button>
+        </div>
+        <div id="api-result" data-testid="api-result" role="status" aria-live="polite" style="display:none; padding:8px 12px; border-radius:5px; font-size:13px;"></div>
+        <div style="margin-top:12px;">
+          <div style="font-size:12px; font-weight:bold; color:#627d98; margin-bottom:6px;">Attempt Log:</div>
+          <ul id="attempt-log" data-testid="attempt-log" class="attempt-log" aria-label="API call attempt log"></ul>
+        </div>
+        <div style="margin-top:10px; font-size:13px; color:#627d98;">
+          Total calls: <strong id="total-calls" data-testid="total-calls">0</strong> |
+          Successes: <strong id="total-success" data-testid="total-success" style="color:#166534;">0</strong> |
+          Failures: <strong id="total-failures" data-testid="total-failures" style="color:#991b1b;">0</strong>
+        </div>
+
+        <hr style="border:none; border-top:1px solid #e8f0f7; margin:16px 0;" />
+
+        <!-- 2b — Conditional element (appears intermittently) -->
+        <h3 style="font-size:14px; margin-bottom:8px;">2b. Conditional Payment Gateway <span class="badge badge-orange">Appears ~50% of refreshes</span></h3>
+        <div class="hint">Element is shown/hidden randomly on page load. Mirrors real-world A/B test or race conditions.</div>
+        <div id="payment-gateway" data-testid="payment-gateway" role="region" aria-label="Payment gateway" style="display:none;">
+          <div class="alert-banner success-banner show" style="margin-bottom:0;">
+            <span>&#10003;</span>
+            <span>PayPal gateway is <strong data-testid="gateway-status">available</strong> — <a href="#" data-testid="gateway-link" id="gateway-link">Connect now</a></span>
+          </div>
+        </div>
+        <div id="gateway-unavailable" data-testid="gateway-unavailable" style="display:none;">
+          <div class="alert-banner warning-banner show" style="margin-bottom:0;">
+            <span>&#9888;</span>
+            <span>Payment gateway is currently <strong>unavailable</strong>. Retry the test.</span>
+          </div>
+        </div>
+        <div class="row" style="margin-top:12px;">
+          <button id="btn-simulate-refresh" data-testid="btn-simulate-refresh" class="secondary" aria-label="Simulate page refresh to toggle gateway">
+            Simulate Refresh (toggle)
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════
+           SECTION 3 — Screenshot States
+           Configs: screenshot: 'only-on-failure' | 'on' | 'off'
+      ═══════════════════════════════════════════════ -->
+      <div class="section" id="screenshot-section" data-testid="screenshot-section">
+        <h2>3. Screenshot Capture States
+          <span class="badge badge-purple">screenshot: 'only-on-failure'</span>
+        </h2>
+        <div class="hint">
+          Practice: <code>screenshot: 'only-on-failure'</code> · <code>page.screenshot()</code> ·
+          <code>expect().toHaveScreenshot()</code>
+        </div>
+
+        <!-- 3a — Login form with success/error states -->
+        <h3 style="font-size:14px; margin-bottom:8px;">3a. Login Form — Success / Error States</h3>
+        <div class="hint">Valid: admin / admin@123. Invalid credentials trigger error state (good screenshot capture).</div>
+        <form id="login-form" data-testid="login-form" novalidate style="max-width:340px;">
+          <div class="field">
+            <label for="login-username">Username</label>
+            <input
+              type="text" id="login-username"
+              data-testid="login-username"
+              name="username"
+              placeholder="Enter username"
+              autocomplete="username"
+              aria-required="true"
+            />
+            <span id="username-error" data-testid="username-error" class="field-error" role="alert">Username is required</span>
+          </div>
+          <div class="field">
+            <label for="login-password">Password</label>
+            <input
+              type="password" id="login-password"
+              data-testid="login-password"
+              name="password"
+              placeholder="Enter password"
+              autocomplete="current-password"
+              aria-required="true"
+            />
+            <span id="password-error" data-testid="password-error" class="field-error" role="alert">Password is required</span>
+          </div>
+          <div class="row">
+            <button type="submit" id="btn-login" data-testid="btn-login" aria-label="Log in">Login</button>
+            <button type="button" id="btn-clear-login" data-testid="btn-clear-login" class="secondary" aria-label="Clear login form">Clear</button>
+          </div>
+          <div id="login-result" data-testid="login-result" role="alert" aria-live="polite" style="margin-top:12px; display:none;"></div>
+        </form>
+
+        <hr style="border:none; border-top:1px solid #e8f0f7; margin:16px 0;" />
+
+        <!-- 3b — Alert banners (visual states for screenshot) -->
+        <h3 style="font-size:14px; margin-bottom:8px;">3b. Alert Banner States</h3>
+        <div class="hint">Each banner is a distinct visual state — great for <code>toHaveScreenshot()</code> visual regression.</div>
+        <div class="row" style="margin-bottom:12px; flex-wrap:wrap;">
+          <button data-testid="btn-show-success" onclick="showBanner('success')" class="success" aria-label="Show success banner">Success</button>
+          <button data-testid="btn-show-error"   onclick="showBanner('error')"   class="danger"  aria-label="Show error banner">Error</button>
+          <button data-testid="btn-show-warning" onclick="showBanner('warning')" class="secondary" aria-label="Show warning banner">Warning</button>
+          <button data-testid="btn-hide-banners" onclick="hideBanners()"         aria-label="Hide all banners">Hide All</button>
+        </div>
+        <div id="banner-success" data-testid="banner-success" role="alert" class="alert-banner success-banner">
+          <span>&#10003;</span> <span data-testid="banner-success-text">Record saved successfully. Screenshot will capture this green state.</span>
+        </div>
+        <div id="banner-error"   data-testid="banner-error"   role="alert" class="alert-banner error-banner">
+          <span>&#10008;</span> <span data-testid="banner-error-text">Save failed: Server returned 500. Screenshot captures this red error state.</span>
+        </div>
+        <div id="banner-warning" data-testid="banner-warning" role="alert" class="alert-banner warning-banner">
+          <span>&#9888;</span> <span data-testid="banner-warning-text">Unsaved changes detected. Review before leaving this page.</span>
+        </div>
+
+        <hr style="border:none; border-top:1px solid #e8f0f7; margin:16px 0;" />
+
+        <!-- 3c — Confirmation modal -->
+        <h3 style="font-size:14px; margin-bottom:8px;">3c. Confirmation Modal <span class="badge badge-purple">Full-page overlay screenshot</span></h3>
+        <div class="row">
+          <button id="btn-open-modal" data-testid="btn-open-modal" class="danger" aria-label="Open delete confirmation modal">
+            Delete Record
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal (outside section so overlay is full-page) -->
+      <div id="modal-overlay" data-testid="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc">
+        <div class="modal-box" data-testid="modal-box">
+          <h3 id="modal-title" data-testid="modal-title">Confirm Deletion</h3>
+          <p id="modal-desc" data-testid="modal-desc" style="font-size:14px; color:#627d98;">
+            Are you sure you want to delete <strong id="modal-record-name">Order #8821</strong>?
+            This action cannot be undone.
+          </p>
+          <div class="modal-actions">
+            <button id="btn-modal-cancel" data-testid="btn-modal-cancel" class="secondary" aria-label="Cancel deletion">Cancel</button>
+            <button id="btn-modal-confirm" data-testid="btn-modal-confirm" class="danger" aria-label="Confirm deletion">Delete</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════
+           SECTION 4 — Multi-step Checkout (Video & Trace)
+           Configs: video: 'retain-on-failure', trace: 'retain-on-failure'
+      ═══════════════════════════════════════════════ -->
+      <div class="section" id="checkout-section" data-testid="checkout-section">
+        <h2>4. Multi-step Checkout — Video &amp; Trace Practice
+          <span class="badge badge-blue">video · trace · outputDir</span>
+        </h2>
+        <div class="hint">
+          Practice: <code>video: 'retain-on-failure'</code> · <code>trace: 'retain-on-failure'</code> ·
+          <code>npx playwright show-trace trace.zip</code>
+        </div>
+
+        <!-- Stepper -->
+        <div class="stepper" id="checkout-stepper" data-testid="checkout-stepper" role="navigation" aria-label="Checkout steps">
+          <div class="step-node active" id="step-node-1" data-testid="step-node-1" aria-label="Step 1: Cart">1</div>
+          <span class="step-label active" data-testid="step-label-1">Cart</span>
+          <div class="step-connector" id="step-conn-1" data-testid="step-conn-1"></div>
+          <div class="step-node" id="step-node-2" data-testid="step-node-2" aria-label="Step 2: Shipping">2</div>
+          <span class="step-label" data-testid="step-label-2">Shipping</span>
+          <div class="step-connector" id="step-conn-2" data-testid="step-conn-2"></div>
+          <div class="step-node" id="step-node-3" data-testid="step-node-3" aria-label="Step 3: Payment">3</div>
+          <span class="step-label" data-testid="step-label-3">Payment</span>
+        </div>
+
+        <!-- Step 1: Cart -->
+        <div id="step-panel-1" class="step-panel active" data-testid="step-panel-cart" aria-label="Cart panel">
+          <h3 style="font-size:14px; margin-bottom:12px;">Your Cart</h3>
+          <table style="width:100%; font-size:13px; border-collapse:collapse;">
+            <thead>
+              <tr style="background:#f5f7fa;">
+                <th style="text-align:left; padding:8px; border:1px solid #e5e7eb;">Product</th>
+                <th style="padding:8px; border:1px solid #e5e7eb;" data-testid="col-qty">Qty</th>
+                <th style="padding:8px; border:1px solid #e5e7eb;" data-testid="col-price">Price</th>
+              </tr>
+            </thead>
+            <tbody id="cart-body" data-testid="cart-body">
+              <tr data-testid="cart-row-0">
+                <td style="padding:8px; border:1px solid #e5e7eb;" data-testid="cart-product-0">Laptop Pro 15</td>
+                <td style="padding:8px; border:1px solid #e5e7eb; text-align:center;">
+                  <input type="number" id="cart-qty-0" data-testid="cart-qty-0" value="1" min="1" max="10"
+                    style="width:60px; padding:4px; border:1px solid #bcccdc; border-radius:4px; text-align:center;"
+                    aria-label="Quantity for Laptop Pro 15" />
+                </td>
+                <td style="padding:8px; border:1px solid #e5e7eb; text-align:right;" data-testid="cart-price-0">$1,299.00</td>
+              </tr>
+              <tr data-testid="cart-row-1">
+                <td style="padding:8px; border:1px solid #e5e7eb;" data-testid="cart-product-1">USB-C Hub</td>
+                <td style="padding:8px; border:1px solid #e5e7eb; text-align:center;">
+                  <input type="number" id="cart-qty-1" data-testid="cart-qty-1" value="2" min="1" max="10"
+                    style="width:60px; padding:4px; border:1px solid #bcccdc; border-radius:4px; text-align:center;"
+                    aria-label="Quantity for USB-C Hub" />
+                </td>
+                <td style="padding:8px; border:1px solid #e5e7eb; text-align:right;" data-testid="cart-price-1">$59.00</td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="text-align:right; margin-top:10px; font-weight:bold; font-size:14px;" data-testid="cart-total">Total: $1,417.00</div>
+          <div class="row" style="margin-top:16px; justify-content:flex-end;">
+            <button id="btn-to-shipping" data-testid="btn-to-shipping" aria-label="Proceed to shipping">
+              Continue to Shipping &rarr;
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Shipping -->
+        <div id="step-panel-2" class="step-panel" data-testid="step-panel-shipping" aria-label="Shipping panel">
+          <h3 style="font-size:14px; margin-bottom:12px;">Shipping Details</h3>
+          <div class="field">
+            <label for="ship-name">Full Name</label>
+            <input type="text" id="ship-name" data-testid="ship-name" placeholder="John Doe" aria-required="true" />
+            <span id="ship-name-error" data-testid="ship-name-error" class="field-error" role="alert">Full name is required</span>
+          </div>
+          <div class="field">
+            <label for="ship-address">Address</label>
+            <input type="text" id="ship-address" data-testid="ship-address" placeholder="123 Main St" aria-required="true" />
+            <span id="ship-address-error" data-testid="ship-address-error" class="field-error" role="alert">Address is required</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="field" style="margin-bottom:0;">
+              <label for="ship-city">City</label>
+              <input type="text" id="ship-city" data-testid="ship-city" placeholder="Mumbai" aria-required="true" />
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label for="ship-pin">PIN Code</label>
+              <input type="text" id="ship-pin" data-testid="ship-pin" placeholder="400001" maxlength="6" aria-required="true" />
+            </div>
+          </div>
+          <div class="field" style="margin-top:14px;">
+            <label for="ship-method">Shipping Method</label>
+            <select id="ship-method" data-testid="ship-method" aria-required="true">
+              <option value="">-- Select --</option>
+              <option value="standard" data-testid="ship-standard">Standard (5-7 days) — Free</option>
+              <option value="express" data-testid="ship-express">Express (2-3 days) — ₹299</option>
+              <option value="overnight" data-testid="ship-overnight">Overnight (1 day) — ₹599</option>
+            </select>
+            <span id="ship-method-error" data-testid="ship-method-error" class="field-error" role="alert">Select a shipping method</span>
+          </div>
+          <div class="row" style="margin-top:16px; justify-content:space-between;">
+            <button id="btn-to-cart" data-testid="btn-to-cart" class="secondary" aria-label="Back to cart">&larr; Back to Cart</button>
+            <button id="btn-to-payment" data-testid="btn-to-payment" aria-label="Proceed to payment">Continue to Payment &rarr;</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Payment -->
+        <div id="step-panel-3" class="step-panel" data-testid="step-panel-payment" aria-label="Payment panel">
+          <h3 style="font-size:14px; margin-bottom:12px;">Payment</h3>
+          <div class="field">
+            <label for="pay-card">Card Number</label>
+            <input type="text" id="pay-card" data-testid="pay-card" placeholder="4111 1111 1111 1111"
+              maxlength="19" aria-label="Credit card number" aria-required="true" />
+            <span id="pay-card-error" data-testid="pay-card-error" class="field-error" role="alert">Invalid card number</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div class="field" style="margin-bottom:0;">
+              <label for="pay-expiry">Expiry (MM/YY)</label>
+              <input type="text" id="pay-expiry" data-testid="pay-expiry" placeholder="12/27" maxlength="5" aria-required="true" />
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label for="pay-cvv">CVV</label>
+              <input type="password" id="pay-cvv" data-testid="pay-cvv" placeholder="***" maxlength="3" aria-required="true" />
+            </div>
+          </div>
+          <div class="order-summary" style="margin-top:16px;">
+            <table style="width:100%; border-collapse:collapse; font-size:13px;">
+              <tbody>
+                <tr><td>Subtotal</td><td style="text-align:right;" data-testid="summary-subtotal">$1,417.00</td></tr>
+                <tr><td>Shipping</td><td style="text-align:right;" data-testid="summary-shipping" id="summary-shipping">—</td></tr>
+                <tr class="total-row"><td>Total</td><td style="text-align:right;" data-testid="summary-total" id="summary-total">$1,417.00</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="row" style="margin-top:16px; justify-content:space-between;">
+            <button id="btn-to-shipping2" data-testid="btn-to-shipping2" class="secondary" aria-label="Back to shipping">&larr; Back</button>
+            <button id="btn-place-order" data-testid="btn-place-order" class="success" aria-label="Place order and pay">Place Order</button>
+          </div>
+        </div>
+
+        <!-- Order Confirmation (after step 3) -->
+        <div id="order-confirmation" data-testid="order-confirmation" role="alert" aria-live="polite" style="display:none;">
+          <div class="alert-banner success-banner show">
+            <span>&#10003;</span>
+            <span>Order placed! Confirmation: <strong id="order-id" data-testid="order-id"></strong></span>
+          </div>
+          <button id="btn-new-order" data-testid="btn-new-order" class="secondary" style="margin-top:12px;" aria-label="Start new order">
+            New Order
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════
+           SECTION 5 — Viewport / Responsive
+           Configs: viewport, use.viewport, page.setViewportSize()
+      ═══════════════════════════════════════════════ -->
+      <div class="section" id="viewport-section" data-testid="viewport-section">
+        <h2>5. Viewport &amp; Responsive Design
+          <span class="badge badge-blue">viewport · page.setViewportSize()</span>
+        </h2>
+        <div class="hint">
+          Practice: <code>use: { viewport: { width: 375, height: 812 } }</code> ·
+          <code>page.setViewportSize({ width: 768, height: 1024 })</code> ·
+          <code>projects</code> with different devices
+        </div>
+
+        <!-- Viewport display bar -->
+        <div class="viewport-bar" data-testid="viewport-bar" role="status" aria-live="polite">
+          <span>&#9741;</span>
+          <span>Current viewport: <strong id="viewport-display" data-testid="viewport-display"></strong></span>
+          <span id="breakpoint-label" data-testid="breakpoint-label" class="badge badge-blue"></span>
+        </div>
+
+        <!-- Responsive navigation -->
+        <div data-testid="responsive-nav" role="navigation" aria-label="Responsive navigation" style="margin-bottom:16px;">
+          <div class="nav-desktop" data-testid="nav-desktop" aria-label="Desktop navigation">
+            <a href="#" data-testid="nav-home">Home</a>
+            <a href="#" data-testid="nav-products">Products</a>
+            <a href="#" data-testid="nav-orders">Orders</a>
+            <a href="#" data-testid="nav-settings">Settings</a>
+          </div>
+          <div class="nav-mobile" data-testid="nav-mobile" aria-label="Mobile navigation">
+            <button class="hamburger-btn" id="btn-hamburger" data-testid="btn-hamburger" aria-label="Open mobile menu" aria-expanded="false">
+              &#9776; Menu
+            </button>
+            <div id="mobile-menu" data-testid="mobile-menu" class="mobile-menu" role="menu">
+              <a href="#" data-testid="mobile-nav-home" role="menuitem">Home</a>
+              <a href="#" data-testid="mobile-nav-products" role="menuitem">Products</a>
+              <a href="#" data-testid="mobile-nav-orders" role="menuitem">Orders</a>
+              <a href="#" data-testid="mobile-nav-settings" role="menuitem">Settings</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Responsive product grid -->
+        <div class="responsive-grid" data-testid="product-grid" role="list" aria-label="Product grid">
+          <div class="resp-card" data-testid="product-card-0" role="listitem" data-product="laptop">
+            <div class="resp-icon">&#128187;</div>
+            <strong data-testid="product-name-0">Laptop Pro</strong>
+            <div data-testid="product-price-0" style="color:#4a90d9; font-size:13px; margin-top:4px;">$1,299</div>
+          </div>
+          <div class="resp-card" data-testid="product-card-1" role="listitem" data-product="mouse">
+            <div class="resp-icon">&#128432;</div>
+            <strong data-testid="product-name-1">Wireless Mouse</strong>
+            <div data-testid="product-price-1" style="color:#4a90d9; font-size:13px; margin-top:4px;">$49</div>
+          </div>
+          <div class="resp-card" data-testid="product-card-2" role="listitem" data-product="keyboard">
+            <div class="resp-icon">&#9000;</div>
+            <strong data-testid="product-name-2">Mech Keyboard</strong>
+            <div data-testid="product-price-2" style="color:#4a90d9; font-size:13px; margin-top:4px;">$149</div>
+          </div>
+          <div class="resp-card" data-testid="product-card-3" role="listitem" data-product="hub">
+            <div class="resp-icon">&#128279;</div>
+            <strong data-testid="product-name-3">USB-C Hub</strong>
+            <div data-testid="product-price-3" style="color:#4a90d9; font-size:13px; margin-top:4px;">$59</div>
+          </div>
+        </div>
+
+        <!-- Simulate viewport buttons -->
+        <div class="row" style="margin-top:16px;">
+          <button data-testid="btn-viewport-desktop" onclick="simulateViewport(1280,720,'Desktop')" aria-label="Simulate desktop viewport">Desktop (1280×720)</button>
+          <button data-testid="btn-viewport-tablet"  onclick="simulateViewport(768,1024,'Tablet')" class="secondary" aria-label="Simulate tablet viewport">Tablet (768×1024)</button>
+          <button data-testid="btn-viewport-mobile"  onclick="simulateViewport(375,812,'Mobile')"  class="secondary" aria-label="Simulate mobile viewport">Mobile (375×812)</button>
+        </div>
+        <div id="viewport-result" data-testid="viewport-result" class="output-box" style="display:none; margin-top:10px;"></div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════
+           SECTION 6 — baseURL & Navigation
+           Configs: baseURL, navigationTimeout
+      ═══════════════════════════════════════════════ -->
+      <div class="section" id="baseurl-section" data-testid="baseurl-section">
+        <h2>6. baseURL &amp; Navigation
+          <span class="badge badge-green">baseURL · navigationTimeout</span>
+        </h2>
+        <div class="hint">
+          Practice: <code>baseURL: 'http://localhost:3000'</code> → use <code>page.goto('/playwright-config/index.html')</code>.
+          Monitor navigation timing.
+        </div>
+        <div class="hint">Hint: With <code>baseURL</code> set, avoid hardcoded URLs in tests. Use relative paths.</div>
+        <div id="nav-links" data-testid="nav-links" style="margin-bottom:16px;">
+          <strong style="font-size:13px; display:block; margin-bottom:8px;">Internal links (relative paths):</strong>
+          <div class="row" style="flex-wrap:wrap; gap:8px;">
+            <a href="/hooks/index.html"          data-testid="link-hooks"         style="font-size:13px; color:#1d4ed8;">/hooks/index.html</a>
+            <a href="/annotations/index.html"    data-testid="link-annotations"   style="font-size:13px; color:#1d4ed8;">/annotations/index.html</a>
+            <a href="/tabs-windows/index.html"   data-testid="link-tabs"          style="font-size:13px; color:#1d4ed8;">/tabs-windows/index.html</a>
+            <a href="/alerts/index.html"         data-testid="link-alerts"        style="font-size:13px; color:#1d4ed8;">/alerts/index.html</a>
+          </div>
+        </div>
+        <div style="font-size:13px;" data-testid="current-path-display">
+          Current path: <code id="current-path" data-testid="current-path"></code>
+        </div>
+        <div id="nav-timing" data-testid="nav-timing" class="output-box" style="margin-top:10px;">
+          <span data-testid="nav-timing-text">Navigation performance: ready to capture.</span>
+        </div>
+      </div>
+
+    </div><!-- /container -->
+
+    <script>
+      // ── Section 0: Config card copy ──
+      document.querySelectorAll('.config-card').forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', () => {
+          const key = card.querySelector('.config-key').textContent;
+          const val = card.querySelector('.config-val').textContent;
+          const fb = document.getElementById('config-copy-feedback');
+          fb.textContent = `Copied: ${key}: ${val}`;
+          fb.style.display = 'block';
+          setTimeout(() => { fb.style.display = 'none'; }, 2000);
+        });
+      });
+
+      // ── Section 1a: Dashboard quick load (~500ms) ──
+      document.getElementById('btn-load-dashboard').addEventListener('click', function () {
+        const btn = this;
+        const skeleton = document.getElementById('dashboard-skeleton');
+        const result   = document.getElementById('dashboard-result');
+        const status   = document.getElementById('dashboard-status');
+        btn.disabled = true;
+        skeleton.style.display = 'block';
+        skeleton.setAttribute('aria-busy', 'true');
+        status.textContent = 'Loading…';
+        result.style.display = 'none';
+        setTimeout(() => {
+          skeleton.style.display = 'none';
+          skeleton.setAttribute('aria-busy', 'false');
+          result.style.display = 'block';
+          status.textContent = 'Loaded';
+          btn.disabled = false;
+        }, 500);
+      });
+
+      // ── Section 1b: Inventory slow load (~5000ms) ──
+      document.getElementById('btn-load-inventory').addEventListener('click', function () {
+        const btn = this;
+        const loading = document.getElementById('inventory-loading');
+        const result  = document.getElementById('inventory-result');
+        const status  = document.getElementById('inventory-status');
+        btn.disabled = true;
+        loading.style.display = 'block';
+        loading.setAttribute('aria-busy', 'true');
+        status.setAttribute('aria-busy', 'true');
+        status.textContent = 'Fetching inventory…';
+        result.style.display = 'none';
+        setTimeout(() => {
+          loading.style.display = 'none';
+          loading.setAttribute('aria-busy', 'false');
+          result.style.display = 'block';
+          status.setAttribute('aria-busy', 'false');
+          status.textContent = 'Inventory loaded';
+          btn.disabled = false;
+        }, 5000);
+      });
+      document.getElementById('btn-reset-inventory').addEventListener('click', () => {
+        document.getElementById('inventory-loading').style.display = 'none';
+        document.getElementById('inventory-result').style.display = 'none';
+        document.getElementById('inventory-status').textContent = '';
+        document.getElementById('btn-load-inventory').disabled = false;
+      });
+
+      // ── Section 1c: Delayed notification (~3000ms) ──
+      document.getElementById('btn-trigger-notification').addEventListener('click', function () {
+        const banner = document.getElementById('notification-banner');
+        banner.style.display = 'none';
+        banner.classList.remove('show');
+        this.disabled = true;
+        setTimeout(() => {
+          document.getElementById('notif-time').textContent = new Date().toLocaleTimeString();
+          banner.style.display = 'flex';
+          banner.classList.add('show');
+          this.disabled = false;
+        }, 3000);
+      });
+
+      // ── Section 2a: Unstable API ──
+      let totalCalls = 0, totalSuccess = 0, totalFail = 0, attemptNumber = 0;
+      // Fail 70% of times on first N attempts
+      document.getElementById('btn-unstable-api').addEventListener('click', function () {
+        totalCalls++;
+        attemptNumber++;
+        const failRate = attemptNumber === 1 ? 0.7 : 0.4;
+        const isSuccess = Math.random() > failRate;
+        const log = document.getElementById('attempt-log');
+        const apiResult = document.getElementById('api-result');
+        apiResult.style.display = 'block';
+        const li = document.createElement('li');
+        li.textContent = `Attempt #${attemptNumber} — ${isSuccess ? '✓ SUCCESS' : '✗ FAILED'} (${new Date().toLocaleTimeString()})`;
+        if (isSuccess) {
+          totalSuccess++;
+          li.classList.add('pass');
+          apiResult.style.background = '#dcfce7';
+          apiResult.style.border = '1px solid #86efac';
+          apiResult.style.color = '#166534';
+          apiResult.textContent = '✓ API returned 200 OK — {"status":"active","balance":9420}';
+          apiResult.setAttribute('data-status', 'success');
+        } else {
+          totalFail++;
+          li.classList.add('fail');
+          apiResult.style.background = '#fee2e2';
+          apiResult.style.border = '1px solid #fca5a5';
+          apiResult.style.color = '#991b1b';
+          apiResult.textContent = '✗ API returned 503 Service Unavailable — retry triggered';
+          apiResult.setAttribute('data-status', 'failure');
+        }
+        log.prepend(li);
+        document.getElementById('total-calls').textContent   = totalCalls;
+        document.getElementById('total-success').textContent = totalSuccess;
+        document.getElementById('total-failures').textContent = totalFail;
+      });
+      document.getElementById('btn-reset-flaky').addEventListener('click', () => {
+        totalCalls = totalSuccess = totalFail = attemptNumber = 0;
+        document.getElementById('attempt-log').innerHTML = '';
+        const r = document.getElementById('api-result');
+        r.style.display = 'none'; r.textContent = '';
+        document.getElementById('total-calls').textContent = '0';
+        document.getElementById('total-success').textContent = '0';
+        document.getElementById('total-failures').textContent = '0';
+      });
+
+      // ── Section 2b: Conditional payment gateway ──
+      let gatewayState = Math.random() > 0.5;
+      function renderGateway(state) {
+        document.getElementById('payment-gateway').style.display    = state ? 'block' : 'none';
+        document.getElementById('gateway-unavailable').style.display = state ? 'none' : 'block';
+      }
+      renderGateway(gatewayState);
+      document.getElementById('btn-simulate-refresh').addEventListener('click', () => {
+        gatewayState = !gatewayState;
+        renderGateway(gatewayState);
+      });
+
+      // ── Section 3: Banner helpers ──
+      function showBanner(type) {
+        hideBanners();
+        const map = { success: 'banner-success', error: 'banner-error', warning: 'banner-warning' };
+        const el = document.getElementById(map[type]);
+        if (el) el.classList.add('show');
+      }
+      function hideBanners() {
+        ['banner-success','banner-error','banner-warning'].forEach(id => {
+          document.getElementById(id).classList.remove('show');
+        });
+      }
+
+      // ── Section 3a: Login form ──
+      document.getElementById('login-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const user = document.getElementById('login-username').value.trim();
+        const pass = document.getElementById('login-password').value.trim();
+        const result = document.getElementById('login-result');
+        document.getElementById('username-error').classList.toggle('visible', !user);
+        document.getElementById('password-error').classList.toggle('visible', !pass);
+        if (!user || !pass) return;
+        result.style.display = 'block';
+        if (user === 'admin' && pass === 'admin@123') {
+          result.className = 'alert-banner success-banner show';
+          result.innerHTML = '<span>&#10003;</span><span data-testid="login-success-msg">Welcome, Admin! Login successful.</span>';
+        } else {
+          result.className = 'alert-banner error-banner show';
+          result.innerHTML = '<span>&#10008;</span><span data-testid="login-error-msg">Invalid credentials. Try admin / admin@123.</span>';
+        }
+      });
+      document.getElementById('btn-clear-login').addEventListener('click', () => {
+        document.getElementById('login-username').value = '';
+        document.getElementById('login-password').value = '';
+        document.getElementById('login-result').style.display = 'none';
+        document.getElementById('username-error').classList.remove('visible');
+        document.getElementById('password-error').classList.remove('visible');
+      });
+
+      // ── Section 3c: Modal ──
+      document.getElementById('btn-open-modal').addEventListener('click', () => {
+        document.getElementById('modal-overlay').classList.add('open');
+      });
+      document.getElementById('btn-modal-cancel').addEventListener('click', () => {
+        document.getElementById('modal-overlay').classList.remove('open');
+      });
+      document.getElementById('btn-modal-confirm').addEventListener('click', () => {
+        document.getElementById('modal-overlay').classList.remove('open');
+        showBanner('success');
+        document.querySelector('[data-testid="banner-success-text"]').textContent = 'Order #8821 deleted successfully.';
+      });
+      document.getElementById('modal-overlay').addEventListener('click', function (e) {
+        if (e.target === this) this.classList.remove('open');
+      });
+
+      // ── Section 4: Checkout stepper ──
+      let currentStep = 1;
+      function goToStep(n) {
+        [1,2,3].forEach(i => {
+          const panel = document.getElementById(`step-panel-${i}`);
+          const node  = document.getElementById(`step-node-${i}`);
+          const label = document.querySelector(`[data-testid="step-label-${i}"]`);
+          const conn  = document.getElementById(`step-conn-${i}`);
+          panel.classList.toggle('active', i === n);
+          node.classList.remove('active','done');
+          label.classList.remove('active');
+          if (i < n)  { node.classList.add('done'); if (conn) conn.classList.add('done'); }
+          if (i === n){ node.classList.add('active'); label.classList.add('active'); if (conn) conn.classList.remove('done'); }
+          if (i > n)  { if (conn) conn.classList.remove('done'); }
+        });
+        currentStep = n;
+      }
+      document.getElementById('btn-to-shipping').addEventListener('click', () => goToStep(2));
+      document.getElementById('btn-to-cart').addEventListener('click',     () => goToStep(1));
+      document.getElementById('btn-to-payment').addEventListener('click', () => {
+        const name = document.getElementById('ship-name').value.trim();
+        const addr = document.getElementById('ship-address').value.trim();
+        const meth = document.getElementById('ship-method').value;
+        document.getElementById('ship-name-error').classList.toggle('visible', !name);
+        document.getElementById('ship-address-error').classList.toggle('visible', !addr);
+        document.getElementById('ship-method-error').classList.toggle('visible', !meth);
+        if (!name || !addr || !meth) return;
+        const shipping = { standard: 'Free', express: '$5.99', overnight: '$12.99' };
+        document.getElementById('summary-shipping').textContent = shipping[meth] || '—';
+        goToStep(3);
+      });
+      document.getElementById('btn-to-shipping2').addEventListener('click', () => goToStep(2));
+      document.getElementById('btn-place-order').addEventListener('click', () => {
+        const card = document.getElementById('pay-card').value.replace(/\s/g,'');
+        const err  = document.getElementById('pay-card-error');
+        if (card.length < 16) { err.classList.add('visible'); return; }
+        err.classList.remove('visible');
+        [1,2,3].forEach(i => {
+          document.getElementById(`step-node-${i}`).className = 'step-node done';
+          const c = document.getElementById(`step-conn-${i}`); if (c) c.classList.add('done');
+        });
+        ['step-panel-1','step-panel-2','step-panel-3'].forEach(id => document.getElementById(id).classList.remove('active'));
+        const conf = document.getElementById('order-confirmation');
+        conf.style.display = 'block';
+        document.getElementById('order-id').textContent = 'ORD-' + Math.floor(Math.random()*90000+10000);
+      });
+      document.getElementById('btn-new-order').addEventListener('click', () => {
+        document.getElementById('order-confirmation').style.display = 'none';
+        document.getElementById('pay-card').value = '';
+        document.getElementById('ship-name').value = '';
+        document.getElementById('ship-address').value = '';
+        goToStep(1);
+      });
+
+      // ── Section 5: Viewport ──
+      function updateViewportDisplay() {
+        const w = window.innerWidth, h = window.innerHeight;
+        document.getElementById('viewport-display').textContent = `${w} × ${h}`;
+        const bp = w <= 480 ? 'Mobile' : w <= 768 ? 'Tablet' : 'Desktop';
+        const bpEl = document.getElementById('breakpoint-label');
+        bpEl.textContent = bp;
+        bpEl.className = 'badge ' + (bp === 'Mobile' ? 'badge-red' : bp === 'Tablet' ? 'badge-orange' : 'badge-blue');
+      }
+      updateViewportDisplay();
+      window.addEventListener('resize', updateViewportDisplay);
+
+      function simulateViewport(w, h, label) {
+        const el = document.getElementById('viewport-result');
+        el.style.display = 'block';
+        el.textContent = `[Simulated] Test config: use: { viewport: { width: ${w}, height: ${h} } }\nIn test: await page.setViewportSize({ width: ${w}, height: ${h} });\n\nNote: resize the actual browser window to ${w}×${h} to see layout changes in this demo app.`;
+        el.setAttribute('data-viewport-label', label);
+        el.setAttribute('data-viewport-width', w);
+        el.setAttribute('data-viewport-height', h);
+      }
+
+      // ── Section 5: Hamburger menu ──
+      document.getElementById('btn-hamburger').addEventListener('click', function () {
+        const menu = document.getElementById('mobile-menu');
+        const isOpen = menu.classList.toggle('open');
+        this.setAttribute('aria-expanded', isOpen);
+      });
+
+      // ── Section 6: baseURL & nav timing ──
+      document.getElementById('current-path').textContent = window.location.pathname;
+      const navEntry = performance.getEntriesByType('navigation')[0];
+      if (navEntry) {
+        document.getElementById('nav-timing-text').textContent =
+          `Page load: ${Math.round(navEntry.loadEventEnd - navEntry.startTime)}ms | DOM interactive: ${Math.round(navEntry.domInteractive - navEntry.startTime)}ms`;
+      }
+    </script>
+  </body>
+</html>
