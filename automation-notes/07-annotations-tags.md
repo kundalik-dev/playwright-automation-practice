@@ -57,6 +57,7 @@ npx playwright test --grep "@sanity" --grep-invert "@reg|@bug"
 
 ## Annotations
 
+- describe
 - Skip
 - Only
 - Failme
@@ -227,3 +228,5 @@ test("less readable", async ({ page }) => {
   // ...
 });
 ```
+
+## Hooks
