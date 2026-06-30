@@ -65,6 +65,19 @@ video?: VideoMode | "retry-with-video" | {
 
 > **Note:** `?` after a key = the property is **optional**. `|` = a **union** (value can be any one of the listed options). The 6 position values are: `top-left`, `top`, `top-right`, `bottom-left`, `bottom`, `bottom-right`.
 
+## Capture videos and store it into another location
+
+```js
+await page.context().close(); // video only finalizes after context closes
+
+const videoPath = await page.video()?.path();
+if (videoPath) {
+  const destination = path.join("videos", `${testInfo.title}.webm`);
+  fs.mkdirSync("my-videos", { recursive: true });
+  fs.copyFileSync(videoPath, destination);
+}
+```
+
 ## Trace Mode
 
 Whether to record trace for each test. Defaults to 'off'. The initial run of a test is the "first run"; subsequent runs caused by retries are "retries".
@@ -100,15 +113,15 @@ export default defineConfig({
 
 ### Trace object terms
 
-| Term                 | Type            | What it means                                                       |
-| -------------------- | --------------- | ------------------------------------------------------------------- |
-| `trace?`             | optional        | The whole trace setting; can be omitted (`undefined`)               |
-| `TraceMode`          | string union    | The basic mode value (`"off"`, `"on"`, `"on-first-retry"`, etc.)    |
-| `"retry-with-trace"` | literal string  | Legacy shorthand: record only when a test is retried                |
-| `{ mode, ... }`      | object form     | Advanced config when you need more than a simple mode string        |
-| `mode`               | `TraceMode`     | Required inside the object — same modes as above                    |
-| `snapshots?`         | `boolean`       | Capture DOM snapshots for time-travel debugging                     |
-| `screenshots?`       | `boolean`       | Capture screenshots into the trace timeline                         |
-| `sources?`           | `boolean`       | Include your test source code in the trace                          |
-| `attachments?`       | `boolean`       | Include attachments (e.g. uploaded files) in the trace              |
-| `undefined`          | —               | Allowed value — feature turned off                                  |
+| Term                 | Type           | What it means                                                    |
+| -------------------- | -------------- | ---------------------------------------------------------------- |
+| `trace?`             | optional       | The whole trace setting; can be omitted (`undefined`)            |
+| `TraceMode`          | string union   | The basic mode value (`"off"`, `"on"`, `"on-first-retry"`, etc.) |
+| `"retry-with-trace"` | literal string | Legacy shorthand: record only when a test is retried             |
+| `{ mode, ... }`      | object form    | Advanced config when you need more than a simple mode string     |
+| `mode`               | `TraceMode`    | Required inside the object — same modes as above                 |
+| `snapshots?`         | `boolean`      | Capture DOM snapshots for time-travel debugging                  |
+| `screenshots?`       | `boolean`      | Capture screenshots into the trace timeline                      |
+| `sources?`           | `boolean`      | Include your test source code in the trace                       |
+| `attachments?`       | `boolean`      | Include attachments (e.g. uploaded files) in the trace           |
+| `undefined`          | —              | Allowed value — feature turned off                               |

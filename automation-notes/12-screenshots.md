@@ -101,3 +101,15 @@ File dest = new File("screenshot/homepage.png");
 
 FileHandler.copy(src, dest);
 ```
+
+## Interview Questions
+
+#### Q: When We capture screenshots?
+
+Ans:
+
+- test failure
+- before and after imp action
+- visual verification
+- reporting
+- debugging
