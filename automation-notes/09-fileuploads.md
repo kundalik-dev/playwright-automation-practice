@@ -82,7 +82,7 @@ js.executeScript(
 uploadElement.sendKeys("file_relative_path.pdf")
 ```
 
-> For multiple file upload in seleniu use sendkey with `\n` to seperate file path
+> For multiple file upload in selenium use sendkey with `\n` to seperate file path
 
 ## Real Example
 
