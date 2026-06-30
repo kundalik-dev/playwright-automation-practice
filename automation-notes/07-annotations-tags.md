@@ -2,6 +2,21 @@
 
 Annotations and tags are provided in test so that we can filter test cases while running.
 
+## Annotations
+
+- describe
+- Skip
+- Only
+- Failme
+- Fail
+- slow
+- info
+- step
+- beforeAll
+- afterAll
+- beforeEach
+- afterEach
+
 ## Tag Name
 
 - Tags are provided after test cases name using `@ attribute` (Legacy Way)
@@ -55,22 +70,7 @@ npx playwright test --grep "(?=.*@sanity)(?=.*@reg)"
 npx playwright test --grep "@sanity" --grep-invert "@reg|@bug"
 ```
 
-## Annotations
-
-- describe
-- Skip
-- Only
-- Failme
-- Fail
-- slow
-- info
-- step
-- beforeAll
-- afterAll
-- beforeEach
-- afterEach
-
-Annotations with description
+## Annotations with description
 
 ```js
 test(

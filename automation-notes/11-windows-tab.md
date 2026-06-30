@@ -171,3 +171,8 @@ const [newPage] = await Promise.all([
   link.click(),
 ]);
 ```
+
+## Rules
+
+- Always validate the current tab using title or URL
+-
