@@ -154,3 +154,32 @@ To practice
 - Consider industry standards and interview questions importance wise.
 - Dont create too much items just focus with my current requirement.
 - I am automation tester with 1 yrs experience in playwright and overall automation exp is 4+ yrs
+
+# Date Pickers in playwright
+
+## Assumptions
+
+- `@conceptName` = datepickers
+- Consider this as a varriable to use in below some places consider its value as concept or use for file, foder name generations.
+
+Create HTML file for practicing locators and automation concept for `playwright with JS`. I want to practice `date-pickers` concept. For that create html file under `practice-app/@conceptName`. I want different types of date-pickers to practice.
+
+## My Goal
+
+To practice
+
+- Different `date-pickers` present in playwright.
+- different real world scenarios which will help me to understand `date-pickers` concept and use cases in better way.
+- create .md file under `practice-app/scenarios/@conceptName.md` which will contain scenarios with steps and expected result so i can practice.
+- create begginer to advance elements for my practice.
+- I want to practice differnt date-pickers custome made, system made, date picker with future date, input, filter date pickers.
+
+## Do's
+
+- add beginner to advance locators finding strategy and elements so i can practice all type of scenarios
+- While creating different elements always consider multiple ways of locator from static, dynamic, no locator, axeses etc.
+- App will be run using server which is preconfigure in package.json file.
+- Different ways of creation of elements also consider.
+- Consider industry standards and interview questions importance wise.
+- Dont create too much items just focus with my current requirement.
+- I am automation tester with 1 yrs experience in playwright and overall automation exp is 4+ yrs

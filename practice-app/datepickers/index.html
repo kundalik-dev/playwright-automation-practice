@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Date Pickers Practice</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0; padding: 24px;
+      background: #f0f4f8; color: #1f2933;
+    }
+    .container { width: 90%; max-width: 860px; margin: 0 auto; }
+    h1 { margin-top: 0; font-size: 26px; }
+    .intro { font-size: 13px; color: #486581; margin-bottom: 24px; }
+    .section {
+      background: #fff; border: 1px solid #d9e2ec; border-radius: 8px;
+      padding: 20px 24px; margin-bottom: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .section h2 {
+      margin-top: 0; font-size: 17px; color: #334e68;
+      border-bottom: 1px solid #e8f0f7; padding-bottom: 8px;
+    }
+    .hint { font-size: 12px; color: #829ab1; margin-bottom: 12px; font-style: italic; }
+    .field { margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px; max-width: 340px; }
+    .field label { font-size: 14px; font-weight: bold; }
+    .row { display: flex; gap: 24px; flex-wrap: wrap; }
+    input[type="date"], input[type="datetime-local"],
+    input[type="month"], input[type="week"], input[type="time"], input[type="text"] {
+      padding: 8px 10px; border: 1px solid #bcccdc; border-radius: 5px; font-size: 14px; width: 100%;
+    }
+    input:focus { outline: 2px solid #4a90d9; }
+    input:disabled { background: #f5f7fa; color: #9aa8b5; cursor: not-allowed; }
+    .output-box {
+      margin-top: 12px; background: #f5f7fa; border: 1px solid #d9e2ec; border-radius: 5px;
+      padding: 10px 14px; font-size: 13px; min-height: 36px; color: #334e68;
+    }
+    button {
+      margin-top: 6px; padding: 8px 18px; background: #4a90d9; color: #fff;
+      border: none; border-radius: 5px; font-size: 14px; cursor: pointer;
+    }
+    button:hover { background: #357ac0; }
+    .badge {
+      display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px;
+      margin-left: 6px; vertical-align: middle;
+    }
+    .badge-green  { background: #dcfce7; color: #166534; }
+    .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+    .badge-orange { background: #fff3cd; color: #92400e; }
+    .badge-red    { background: #fde2e1; color: #b0101a; }
+
+    /* ── Custom calendar picker ── */
+    .cal-wrapper { position: relative; max-width: 300px; }
+    .cal-input {
+      padding: 8px 10px; border: 1px solid #bcccdc; border-radius: 5px;
+      font-size: 14px; width: 100%; cursor: pointer; background: #fff;
+    }
+    .calendar {
+      position: absolute; top: 44px; left: 0; z-index: 20;
+      background: #fff; border: 1px solid #bcccdc; border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.14); padding: 12px; width: 280px;
+    }
+    .calendar[hidden] { display: none; }
+    .cal-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+    }
+    .cal-header span { font-weight: bold; font-size: 15px; }
+    .cal-nav {
+      background: none; border: none; cursor: pointer; font-size: 20px;
+      color: #627d98; padding: 2px 8px; line-height: 1;
+    }
+    .cal-nav:hover { color: #334e68; }
+    .cal-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+    }
+    .cal-day-name { text-align: center; font-size: 11px; color: #829ab1; font-weight: bold; padding: 4px 0; }
+    .cal-day {
+      text-align: center; font-size: 13px; padding: 6px 2px;
+      border-radius: 4px; cursor: pointer; color: #334e68;
+    }
+    .cal-day:hover:not(.disabled):not(.empty):not(.booked) { background: #eaf2fb; }
+    .cal-day.today    { font-weight: bold; color: #4a90d9; }
+    .cal-day.selected { background: #4a90d9 !important; color: #fff; }
+    .cal-day.disabled { color: #c5ccd6; cursor: not-allowed; }
+    .cal-day.empty    { cursor: default; }
+    .cal-day.booked   { background: #fde2e1; color: #b0101a; cursor: not-allowed; text-decoration: line-through; }
+
+    /* ── Date filter table ── */
+    .filter-row {
+      display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 16px;
+    }
+    .filter-row .field { margin-bottom: 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead { background: #f0f4f8; }
+    th, td { border: 1px solid #d9e2ec; padding: 8px 12px; text-align: left; }
+    tr.hidden-row { display: none; }
+    .btn-secondary { background: #829ab1; }
+    .btn-secondary:hover { background: #627d98; }
+    .error-msg { color: #b0101a; font-size: 12px; margin-top: 4px; min-height: 18px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Date Pickers Practice</h1>
+    <p class="intro">
+      Native and custom date pickers to practice Playwright locators &amp; interactions.
+      Selections are echoed into output boxes for assertions.
+    </p>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         1. NATIVE DATE INPUT
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <section class="section" id="sec-native-date">
+      <h2>1. Native date input <span class="badge badge-green">Beginner</span></h2>
+      <p class="hint">
+        Standard <code>&lt;input type="date"&gt;</code>. Playwright: use <code>fill('YYYY-MM-DD')</code>.
+        Multiple locator strategies: <code>id</code>, <code>name</code>, <code>label</code>,
+        <code>aria-label</code>, <code>data-testid</code>. Second input has no id — practice label/testid locators.
+      </p>
+      <div class="row">
+        <div class="field">
+          <label for="dob">Date of Birth</label>
+          <input type="date" id="dob" name="dob"
+                 data-testid="dob-input" aria-label="Date of Birth" />
+        </div>
+        <div class="field">
+          <label>Appointment Date (no id — use label or testid)</label>
+          <input type="date" name="appointment"
+                 data-testid="appointment-input" aria-label="Appointment Date" />
+        </div>
+      </div>
+      <button type="button" data-testid="read-dates-btn" id="read-dates-btn">Read Dates</button>
+      <div class="output-box" data-testid="native-date-output" id="native-date-output">
+        No date selected
+      </div>
+    </section>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         2. DATE WITH CONSTRAINTS
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <section class="section" id="sec-constraints">
+      <h2>2. Date with constraints <span class="badge badge-green">Beginner → Intermediate</span></h2>
+      <p class="hint">
+        <code>min</code> / <code>max</code> restrict the calendar UI. Playwright's <code>fill()</code>
+        bypasses the UI but the browser reports validity. Practice:
+        assert <code>min</code>/<code>max</code> attribute values, attempt an out-of-range fill,
+        check <code>validity.rangeOverflow</code> via <code>evaluate()</code>.
+      </p>
+      <div class="row">
+        <div class="field">
+          <label for="future-date">Future dates only (min = today)</label>
+          <input type="date" id="future-date" name="futureDate"
+                 data-testid="future-date-input" aria-label="Future Date" />
+        </div>
+        <div class="field">
+          <label for="past-date">Past dates only (max = today)</label>
+          <input type="date" id="past-date" name="pastDate"
+                 data-testid="past-date-input" aria-label="Past Date" />
+        </div>
+        <div class="field">
+          <label for="range-date">Next 30 days only</label>
+          <input type="date" id="range-date" name="rangeDate"
+                 data-testid="range-date-input" aria-label="Range Date" />
+        </div>
+      </div>
+      <div class="output-box" data-testid="constraint-output" id="constraint-output">
+        No constrained date selected
+      </div>
+    </section>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         3. DATE & TIME VARIANTS
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <section class="section" id="sec-variants">
+      <h2>3. Date &amp; time variants <span class="badge badge-blue">Intermediate</span></h2>
+      <p class="hint">
+        Different input types — each needs its own value format in <code>fill()</code>:
+        <code>datetime-local</code> → <code>'YYYY-MM-DDTHH:MM'</code> |
+        <code>month</code> → <code>'YYYY-MM'</code> |
+        <code>week</code> → <code>'YYYY-WNN'</code> |
+        <code>time</code> → <code>'HH:MM'</code>.
+      </p>
+      <div class="row">
+        <div class="field">
+          <label for="meeting-dt">Meeting date &amp; time</label>
+          <input type="datetime-local" id="meeting-dt" name="meetingDatetime"
+                 data-testid="meeting-datetime" aria-label="Meeting Date and Time" />
+        </div>
+        <div class="field">
+          <label for="billing-month">Billing month</label>
+          <input type="month" id="billing-month" name="billingMonth"
+                 data-testid="billing-month" aria-label="Billing Month" />
+        </div>
+        <div class="field">
+          <label for="sprint-week">Sprint week</label>
+          <input type="week" id="sprint-week" name="sprintWeek"
+                 data-testid="sprint-week" aria-label="Sprint Week" />
+        </div>
+        <div class="field">
+          <label for="alarm-time">Alarm time</label>
+          <input type="time" id="alarm-time" name="alarmTime"
+                 data-testid="alarm-time" aria-label="Alarm Time" />
+        </div>
+      </div>
+      <div class="output-box" data-testid="variants-output" id="variants-output">
+        No variant date/time selected
+      </div>
+    </section>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         4. NATIVE DATE RANGE (CHECK-IN / CHECK-OUT)
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <section class="section" id="sec-date-range">
+      <h2>4. Date range picker (native pair) <span class="badge badge-blue">Intermediate</span></h2>
+      <p class="hint">
+        Two native date inputs acting as a start/end range. Check-out is <strong>disabled</strong> until
+        check-in is set, and its <code>min</code> auto-updates. Practice: fill start → assert end's
+        <code>min</code> attribute equals start → fill end → assert calculated nights → click Book.
+      </p>
+      <div class="row">
+        <div class="field">
+          <label for="range-start">Check-in date</label>
+          <input type="date" id="range-start" name="rangeStart"
+                 data-testid="range-start" aria-label="Check-in Date" />
+        </div>
+        <div class="field">
+          <label for="range-end">Check-out date</label>
+          <input type="date" id="range-end" name="rangeEnd"
+                 data-testid="range-end" aria-label="Check-out Date" disabled />
+        </div>
+      </div>
+      <div class="error-msg" id="range-error" data-testid="range-error"></div>
+      <button type="button" data-testid="book-btn" id="book-btn">Book Stay</button>
+      <div class="output-box" data-testid="range-output" id="range-output">No range selected</div>
+    </section>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         5. CUSTOM CALENDAR PICKER
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <section class="section" id="sec-custom-calendar">
+      <h2>5. Custom calendar picker <span class="badge badge-orange">Advanced</span></h2>
+      <p class="hint">
+        No native <code>&lt;input type="date"&gt;</code>. A div-based calendar (like Flatpickr / React Datepicker / MUI DatePicker).
+        <code>fill()</code> will NOT work — click the input to open the popup, navigate months with prev/next,
+        then click the day cell. Days 5, 13, 20 of the current month are booked (blocked). Past days are disabled.
+      </p>
+      <div class="cal-wrapper" data-testid="custom-cal-wrapper" id="custom-cal-wrapper">
+        <input type="text" class="cal-input" id="cal-display" data-testid="cal-display"
+               aria-label="Select a date" placeholder="Click to pick a date"
+               aria-haspopup="dialog" aria-expanded="false" readonly />
+        <div class="calendar" id="cal-popup" hidden
+             data-testid="cal-popup" role="dialog" aria-label="Date picker calendar">
+          <div class="cal-header">
+            <button class="cal-nav" id="cal-prev" data-testid="cal-prev" aria-label="Previous month">&#8249;</button>
+            <span id="cal-month-label" data-testid="cal-month-label" aria-live="polite"></span>
+            <button class="cal-nav" id="cal-next" data-testid="cal-next" aria-label="Next month">&#8250;</button>
+          </div>
+          <div class="cal-grid" id="cal-grid" data-testid="cal-grid" role="grid">
+            <div class="cal-day-name" aria-hidden="true">Su</div>
+            <div class="cal-day-name" aria-hidden="true">Mo</div>
+            <div class="cal-day-name" aria-hidden="true">Tu</div>
+            <div class="cal-day-name" aria-hidden="true">We</div>
+            <div class="cal-day-name" aria-hidden="true">Th</div>
+            <div class="cal-day-name" aria-hidden="true">Fr</div>
+            <div class="cal-day-name" aria-hidden="true">Sa</div>
+          </div>
+        </div>
+      </div>
+      <div class="output-box" data-testid="custom-cal-output" id="custom-cal-output">No date selected</div>
+    </section>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         6. DATE FILTER — TABLE SCENARIO
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <section class="section" id="sec-date-filter">
+      <h2>6. Date filter (table scenario) <span class="badge badge-red">Advanced</span></h2>
+      <p class="hint">
+        Real-world: filter a data table by a date range. Practice: fill from/to → click Apply → assert
+        visible row count. Leaving a field blank means "no bound on that side". Clear resets all rows.
+        Interview topic: asserting dynamic table row counts after filter changes.
+      </p>
+      <div class="filter-row">
+        <div class="field">
+          <label for="filter-from">From date</label>
+          <input type="date" id="filter-from" name="filterFrom"
+                 data-testid="filter-from" aria-label="Filter From Date" />
+        </div>
+        <div class="field">
+          <label for="filter-to">To date</label>
+          <input type="date" id="filter-to" name="filterTo"
+                 data-testid="filter-to" aria-label="Filter To Date" />
+        </div>
+        <button type="button" data-testid="apply-filter-btn" id="apply-filter-btn">Apply Filter</button>
+        <button type="button" class="btn-secondary" data-testid="clear-filter-btn" id="clear-filter-btn">Clear</button>
+      </div>
+      <div class="output-box" data-testid="filter-output" id="filter-output" style="margin-bottom:12px">
+        All 5 records shown
+      </div>
+      <table data-testid="orders-table" aria-label="Orders table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody id="orders-body" data-testid="orders-body">
+          <tr data-date="2026-06-01" data-testid="order-row-1001">
+            <td>#1001</td><td>2026-06-01</td><td>Delivered</td><td>$120</td>
+          </tr>
+          <tr data-date="2026-06-10" data-testid="order-row-1002">
+            <td>#1002</td><td>2026-06-10</td><td>Processing</td><td>$85</td>
+          </tr>
+          <tr data-date="2026-06-20" data-testid="order-row-1003">
+            <td>#1003</td><td>2026-06-20</td><td>Shipped</td><td>$200</td>
+          </tr>
+          <tr data-date="2026-07-01" data-testid="order-row-1004">
+            <td>#1004</td><td>2026-07-01</td><td>Pending</td><td>$45</td>
+          </tr>
+          <tr data-date="2026-07-10" data-testid="order-row-1005">
+            <td>#1005</td><td>2026-07-10</td><td>Delivered</td><td>$310</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+  </div>
+
+  <script>
+    // ─── shared today helpers ───
+    const todayStr   = new Date().toISOString().split('T')[0];
+    const in30Days   = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0];
+
+    // ─── 1. Native date ───
+    document.getElementById('read-dates-btn').addEventListener('click', () => {
+      const dob  = document.getElementById('dob').value;
+      const appt = document.querySelector('[data-testid="appointment-input"]').value;
+      document.getElementById('native-date-output').textContent =
+        `DOB: ${dob || 'not set'} | Appointment: ${appt || 'not set'}`;
+    });
+
+    // ─── 2. Constraints ───
+    document.getElementById('future-date').setAttribute('min', todayStr);
+    document.getElementById('past-date').setAttribute('max', todayStr);
+    document.getElementById('range-date').setAttribute('min', todayStr);
+    document.getElementById('range-date').setAttribute('max', in30Days);
+    ['future-date', 'past-date', 'range-date'].forEach(id => {
+      document.getElementById(id).addEventListener('change', e => {
+        document.getElementById('constraint-output').textContent =
+          `${e.target.getAttribute('aria-label')}: ${e.target.value}`;
+      });
+    });
+
+    // ─── 3. Variants ───
+    ['meeting-dt', 'billing-month', 'sprint-week', 'alarm-time'].forEach(id => {
+      document.getElementById(id).addEventListener('change', e => {
+        document.getElementById('variants-output').textContent =
+          `${e.target.getAttribute('aria-label')}: ${e.target.value}`;
+      });
+    });
+
+    // ─── 4. Date range ───
+    const rangeStart = document.getElementById('range-start');
+    const rangeEnd   = document.getElementById('range-end');
+    const rangeOut   = document.getElementById('range-output');
+    const rangeErr   = document.getElementById('range-error');
+
+    rangeStart.addEventListener('change', () => {
+      rangeEnd.disabled = false;
+      rangeEnd.setAttribute('min', rangeStart.value);
+      if (rangeEnd.value && rangeEnd.value < rangeStart.value) rangeEnd.value = '';
+      rangeOut.textContent = `Check-in: ${rangeStart.value} | Check-out: (pending)`;
+      rangeErr.textContent = '';
+    });
+    rangeEnd.addEventListener('change', () => {
+      if (rangeEnd.value && rangeStart.value) {
+        const nights = Math.round((new Date(rangeEnd.value) - new Date(rangeStart.value)) / 86400000);
+        rangeOut.textContent =
+          `Check-in: ${rangeStart.value} | Check-out: ${rangeEnd.value} | Nights: ${nights}`;
+      }
+    });
+    document.getElementById('book-btn').addEventListener('click', () => {
+      if (!rangeStart.value || !rangeEnd.value) {
+        rangeErr.textContent = 'Please select both check-in and check-out dates.';
+        rangeOut.textContent = 'Booking failed — incomplete dates.';
+        return;
+      }
+      rangeErr.textContent = '';
+      const nights = Math.round((new Date(rangeEnd.value) - new Date(rangeStart.value)) / 86400000);
+      rangeOut.textContent =
+        `Booked: ${rangeStart.value} → ${rangeEnd.value} (${nights} night${nights !== 1 ? 's' : ''})`;
+    });
+
+    // ─── 5. Custom calendar ───
+    (function () {
+      const BOOKED_DAYS = [5, 13, 20];
+      const MONTH_NAMES = [
+        'January','February','March','April','May','June',
+        'July','August','September','October','November','December'
+      ];
+
+      let viewYear  = new Date().getFullYear();
+      let viewMonth = new Date().getMonth();
+      let selectedDate = null;
+
+      const popup      = document.getElementById('cal-popup');
+      const display    = document.getElementById('cal-display');
+      const grid       = document.getElementById('cal-grid');
+      const monthLabel = document.getElementById('cal-month-label');
+      const calOut     = document.getElementById('custom-cal-output');
+
+      function pad(n) { return String(n).padStart(2, '0'); }
+
+      function renderCalendar() {
+        const dayHeaders = Array.from(grid.querySelectorAll('.cal-day-name'));
+        grid.innerHTML = '';
+        dayHeaders.forEach(h => grid.appendChild(h));
+
+        monthLabel.textContent = `${MONTH_NAMES[viewMonth]} ${viewYear}`;
+        monthLabel.setAttribute('data-month', viewMonth + 1);
+        monthLabel.setAttribute('data-year', viewYear);
+
+        const firstDay    = new Date(viewYear, viewMonth, 1).getDay();
+        const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+        const today       = new Date();
+        const todayISO    = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+
+        for (let i = 0; i < firstDay; i++) {
+          const blank = document.createElement('div');
+          blank.className = 'cal-day empty';
+          blank.setAttribute('aria-hidden', 'true');
+          grid.appendChild(blank);
+        }
+
+        for (let d = 1; d <= daysInMonth; d++) {
+          const iso     = `${viewYear}-${pad(viewMonth+1)}-${pad(d)}`;
+          const cellDate = new Date(viewYear, viewMonth, d);
+          const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+          const isToday    = iso === todayISO;
+          const isPast     = cellDate < todayDate;
+          const isBooked   = BOOKED_DAYS.includes(d) && viewMonth === today.getMonth() && viewYear === today.getFullYear();
+          const isSelected = iso === selectedDate;
+
+          const cell = document.createElement('div');
+          cell.textContent = d;
+          cell.setAttribute('role', 'gridcell');
+          cell.setAttribute('aria-label', `${d} ${MONTH_NAMES[viewMonth]} ${viewYear}`);
+          cell.setAttribute('data-date', iso);
+
+          let cls = 'cal-day';
+          if (isBooked) {
+            cls += ' booked';
+            cell.setAttribute('aria-disabled', 'true');
+            cell.setAttribute('data-testid', `cal-day-booked-${d}`);
+          } else if (isPast) {
+            cls += ' disabled';
+            cell.setAttribute('aria-disabled', 'true');
+            cell.setAttribute('data-testid', `cal-day-disabled-${d}`);
+          } else {
+            cell.setAttribute('tabindex', '0');
+            cell.setAttribute('data-testid', `cal-day-${d}`);
+            cell.addEventListener('click', () => pickDay(iso));
+            cell.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') pickDay(iso); });
+          }
+          if (isToday)    cls += ' today';
+          if (isSelected) cls += ' selected';
+          cell.className = cls;
+          grid.appendChild(cell);
+        }
+      }
+
+      function pickDay(iso) {
+        selectedDate = iso;
+        display.value = iso;
+        display.setAttribute('aria-expanded', 'false');
+        calOut.textContent = `Selected: ${iso}`;
+        popup.hidden = true;
+        renderCalendar();
+      }
+
+      document.getElementById('cal-prev').addEventListener('click', () => {
+        if (viewMonth === 0) { viewMonth = 11; viewYear--; } else { viewMonth--; }
+        renderCalendar();
+      });
+      document.getElementById('cal-next').addEventListener('click', () => {
+        if (viewMonth === 11) { viewMonth = 0; viewYear++; } else { viewMonth++; }
+        renderCalendar();
+      });
+
+      display.addEventListener('click', () => {
+        const opening = popup.hidden;
+        popup.hidden = !opening;
+        display.setAttribute('aria-expanded', String(opening));
+        if (opening) renderCalendar();
+      });
+
+      document.addEventListener('click', e => {
+        if (!document.getElementById('custom-cal-wrapper').contains(e.target)) {
+          popup.hidden = true;
+          display.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      renderCalendar();
+    })();
+
+    // ─── 6. Date filter ───
+    document.getElementById('apply-filter-btn').addEventListener('click', () => {
+      const from = document.getElementById('filter-from').value;
+      const to   = document.getElementById('filter-to').value;
+      const rows = document.querySelectorAll('#orders-body tr');
+      let visible = 0;
+      rows.forEach(row => {
+        const d   = row.getAttribute('data-date');
+        const show = (!from || d >= from) && (!to || d <= to);
+        row.classList.toggle('hidden-row', !show);
+        if (show) visible++;
+      });
+      document.getElementById('filter-output').textContent =
+        `Showing ${visible} of ${rows.length} records` +
+        (from || to ? ` (from: ${from || 'any'} → to: ${to || 'any'})` : '');
+    });
+
+    document.getElementById('clear-filter-btn').addEventListener('click', () => {
+      document.getElementById('filter-from').value = '';
+      document.getElementById('filter-to').value   = '';
+      document.querySelectorAll('#orders-body tr').forEach(r => r.classList.remove('hidden-row'));
+      document.getElementById('filter-output').textContent = 'All 5 records shown';
+    });
+  </script>
+</body>
+</html>
