@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tables Practice</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0; padding: 24px;
+      background: #f0f4f8; color: #1f2933;
+    }
+    .container { width: 90%; max-width: 920px; margin: 0 auto; }
+    h1 { margin-top: 0; font-size: 26px; }
+    .intro { font-size: 13px; color: #486581; margin-bottom: 24px; }
+    .section {
+      background: #fff; border: 1px solid #d9e2ec; border-radius: 8px;
+      padding: 20px 24px; margin-bottom: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .section h2 {
+      margin-top: 0; font-size: 17px; color: #334e68;
+      border-bottom: 1px solid #e8f0f7; padding-bottom: 8px;
+    }
+    .hint { font-size: 12px; color: #829ab1; margin-bottom: 12px; font-style: italic; }
+    .badge {
+      display: inline-block; font-size: 11px; padding: 2px 8px;
+      border-radius: 20px; vertical-align: middle;
+    }
+    .badge-green  { background: #dcfce7; color: #166534; }
+    .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+    .badge-orange { background: #fff3cd; color: #92400e; }
+    .badge-red    { background: #fde2e1; color: #b0101a; }
+
+    /* ── Table base ── */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+    thead { background: #f0f4f8; }
+    th, td { border: 1px solid #d9e2ec; padding: 8px 12px; text-align: left; vertical-align: middle; }
+    tbody tr:hover { background: #f7fafc; }
+    tbody tr.row-selected { background: #eaf2fb; }
+    .empty-msg td { text-align: center; color: #829ab1; font-style: italic; padding: 20px; }
+
+    /* ── Sortable headers ── */
+    th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+    th.sortable:hover { background: #e2ebf5; }
+    .sort-icon { font-size: 10px; margin-left: 4px; }
+    th[aria-sort="none"] .sort-icon::after    { content: '⇅'; color: #bcccdc; }
+    th[aria-sort="ascending"] .sort-icon::after  { content: '▲'; color: #4a90d9; }
+    th[aria-sort="descending"] .sort-icon::after { content: '▼'; color: #4a90d9; }
+
+    /* ── Status badges inside cells ── */
+    .status-active   { background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 20px; font-size: 11px; }
+    .status-inactive { background: #fde2e1; color: #b0101a; padding: 2px 8px; border-radius: 20px; font-size: 11px; }
+    .stock-out { background: #fde2e1; color: #b0101a; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+    .stock-in  { background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+
+    /* ── Controls / search row ── */
+    .controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 10px; }
+    .ctrl-field { display: flex; flex-direction: column; gap: 3px; }
+    .ctrl-field label { font-size: 13px; font-weight: bold; }
+    .ctrl-field input, .ctrl-field select {
+      padding: 7px 10px; border: 1px solid #bcccdc; border-radius: 5px; font-size: 13px; min-width: 180px;
+    }
+    .ctrl-field input:focus, .ctrl-field select:focus { outline: 2px solid #4a90d9; }
+    .result-info { font-size: 12px; color: #627d98; margin-bottom: 8px; min-height: 18px; }
+
+    /* ── Buttons ── */
+    .btn { padding: 6px 14px; border: none; border-radius: 4px; font-size: 13px; cursor: pointer; }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+    .btn-primary   { background: #4a90d9; color: #fff; }
+    .btn-primary:hover   { background: #357ac0; }
+    .btn-danger    { background: #e05252; color: #fff; }
+    .btn-danger:hover    { background: #c0392b; }
+    .btn-secondary { background: #829ab1; color: #fff; }
+    .btn-secondary:hover { background: #627d98; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .actions-cell { white-space: nowrap; }
+    .actions-cell .btn + .btn { margin-left: 4px; }
+
+    /* ── Inline edit inputs ── */
+    td input.inline-input {
+      padding: 4px 6px; font-size: 12px; border: 1px solid #4a90d9;
+      border-radius: 3px; width: 100%; min-width: 90px;
+    }
+
+    /* ── Pagination ── */
+    .pag-row {
+      display: flex; align-items: center; gap: 4px; margin-top: 12px; flex-wrap: wrap;
+    }
+    .pag-info { font-size: 12px; color: #627d98; margin-right: 6px; }
+    .pag-btn {
+      padding: 5px 10px; font-size: 12px; border: 1px solid #bcccdc; background: #fff;
+      border-radius: 4px; cursor: pointer; color: #334e68; min-width: 34px; text-align: center;
+    }
+    .pag-btn:hover:not(:disabled) { background: #eaf2fb; border-color: #4a90d9; }
+    .pag-btn.active { background: #4a90d9; color: #fff; border-color: #4a90d9; font-weight: bold; }
+    .pag-btn:disabled { color: #bcccdc; cursor: not-allowed; }
+    .page-btns { display: flex; gap: 4px; }
+
+    /* ── Bulk action bar ── */
+    .bulk-bar {
+      display: flex; align-items: center; gap: 12px; padding: 8px 12px;
+      background: #f0f4f8; border: 1px solid #d9e2ec; border-radius: 5px;
+      margin-bottom: 10px; font-size: 13px;
+    }
+    .bulk-count { font-weight: bold; color: #334e68; }
+    input[type="checkbox"] { cursor: pointer; width: 15px; height: 15px; accent-color: #4a90d9; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tables Practice</h1>
+    <p class="intro">
+      Static, sortable, searchable, paginated, row-action, and combined-grid tables —
+      for practicing Playwright table locators and real-world interaction patterns.
+    </p>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         1. STATIC TABLE — Beginner
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <section class="section" id="sec-static">
+      <h2>1. Basic static table <span class="badge badge-green">Beginner</span></h2>
+      <p class="hint">
+        Fixed hard-coded data. Practice all locator strategies:
+        <code>getByRole('table')</code> · <code>getByRole('columnheader')</code> · <code>getByRole('row')</code> ·
+        <code>getByRole('cell')</code> · <code>nth()</code> · <code>filter({ hasText })</code> · <code>data-testid</code>.
+        Also practice locating a cell by its column index and by row context.
+      </p>
+      <table data-testid="static-table" aria-label="Product inventory">
+        <thead>
+          <tr>
+            <th scope="col" data-testid="th-product">Product</th>
+            <th scope="col" data-testid="th-category">Category</th>
+            <th scope="col" data-testid="th-price">Price</th>
+            <th scope="col" data-testid="th-stock">Stock</th>
+            <th scope="col" data-testid="th-rating">Rating</th>
+          </tr>
+        </thead>
+        <tbody data-testid="static-tbody">
+          <tr data-testid="static-row-1">
+            <td data-testid="cell-1-product">MacBook Pro</td>
+            <td data-testid="cell-1-category">Laptops</td>
+            <td data-testid="cell-1-price">$1,299</td>
+            <td><span class="stock-in"  data-testid="cell-1-stock">45 in stock</span></td>
+            <td data-testid="cell-1-rating">4.8</td>
+          </tr>
+          <tr data-testid="static-row-2">
+            <td data-testid="cell-2-product">iPhone 15</td>
+            <td data-testid="cell-2-category">Phones</td>
+            <td data-testid="cell-2-price">$999</td>
+            <td><span class="stock-in"  data-testid="cell-2-stock">120 in stock</span></td>
+            <td data-testid="cell-2-rating">4.7</td>
+          </tr>
+          <tr data-testid="static-row-3">
+            <td data-testid="cell-3-product">AirPods Pro</td>
+            <td data-testid="cell-3-category">Accessories</td>
+            <td data-testid="cell-3-price">$249</td>
+            <td><span class="stock-in"  data-testid="cell-3-stock">85 in stock</span></td>
+            <td data-testid="cell-3-rating">4.6</td>
+          </tr>
+          <tr data-testid="static-row-4">
+            <td data-testid="cell-4-product">iPad Air</td>
+            <td data-testid="cell-4-category">Tablets</td>
+            <td data-testid="cell-4-price">$599</td>
+            <td><span class="stock-out" data-testid="cell-4-stock">Out of stock</span></td>
+            <td data-testid="cell-4-rating">4.5</td>
+          </tr>
+          <tr data-testid="static-row-5">
+            <td data-testid="cell-5-product">Apple Watch</td>
+            <td data-testid="cell-5-category">Wearables</td>
+            <td data-testid="cell-5-price">$399</td>
+            <td><span class="stock-in"  data-testid="cell-5-stock">32 in stock</span></td>
+            <td data-testid="cell-5-rating">4.4</td>
+          </tr>
+          <tr data-testid="static-row-6">
+            <td data-testid="cell-6-product">Magic Mouse</td>
+            <td data-testid="cell-6-category">Accessories</td>
+            <td data-testid="cell-6-price">$99</td>
+            <td><span class="stock-in"  data-testid="cell-6-stock">200 in stock</span></td>
+            <td data-testid="cell-6-rating">3.9</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         2. SORTABLE TABLE — Intermediate
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <section class="section" id="sec-sort">
+      <h2>2. Sortable table <span class="badge badge-blue">Intermediate</span></h2>
+      <p class="hint">
+        Click a column header → sort ascending; click again → descending; third click → unsorted.
+        Assert <code>aria-sort</code> attribute (<code>"ascending"</code> / <code>"descending"</code> / <code>"none"</code>)
+        and first-row cell text after each click. Sort by text, number, and date columns.
+      </p>
+      <table data-testid="sort-table" aria-label="Sortable employee table">
+        <thead>
+          <tr>
+            <th class="sortable" data-col="name"   aria-sort="none" data-testid="sort-th-name"   scope="col">Name <span class="sort-icon" aria-hidden="true"></span></th>
+            <th class="sortable" data-col="dept"   aria-sort="none" data-testid="sort-th-dept"   scope="col">Department <span class="sort-icon" aria-hidden="true"></span></th>
+            <th class="sortable" data-col="salary" aria-sort="none" data-testid="sort-th-salary" scope="col">Salary <span class="sort-icon" aria-hidden="true"></span></th>
+            <th class="sortable" data-col="joined" aria-sort="none" data-testid="sort-th-joined" scope="col">Date Joined <span class="sort-icon" aria-hidden="true"></span></th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody data-testid="sort-tbody" id="sort-tbody"></tbody>
+      </table>
+    </section>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         3. SEARCH + FILTER TABLE — Intermediate
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <section class="section" id="sec-search">
+      <h2>3. Search &amp; filter table <span class="badge badge-blue">Intermediate</span></h2>
+      <p class="hint">
+        Text search (by name) + department dropdown filter — both work together.
+        Assert <code>search-result-count</code> text and visible row count after each filter change.
+        Search for a non-existent name to trigger the empty state.
+      </p>
+      <div class="controls">
+        <div class="ctrl-field">
+          <label for="search-input">Search by name</label>
+          <input type="search" id="search-input" data-testid="search-input"
+                 aria-label="Search employees by name" placeholder="e.g. Priya" />
+        </div>
+        <div class="ctrl-field">
+          <label for="dept-filter">Department</label>
+          <select id="dept-filter" data-testid="dept-filter" aria-label="Filter by department">
+            <option value="">All departments</option>
+            <option value="Engineering">Engineering</option>
+            <option value="Marketing">Marketing</option>
+            <option value="HR">HR</option>
+            <option value="Sales">Sales</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="search-clear-btn"
+                data-testid="search-clear-btn" style="align-self:flex-end">Clear</button>
+      </div>
+      <div class="result-info" data-testid="search-result-count" id="search-result-count"></div>
+      <table data-testid="search-table" aria-label="Filtered employee table">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Department</th>
+            <th scope="col">Salary</th>
+            <th scope="col">Date Joined</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody data-testid="search-tbody" id="search-tbody"></tbody>
+      </table>
+    </section>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         4. PAGINATED TABLE — Intermediate → Advanced
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <section class="section" id="sec-pagination">
+      <h2>4. Paginated table <span class="badge badge-orange">Intermediate → Advanced</span></h2>
+      <p class="hint">
+        15 employees, 5 per page. Assert: row count per page, <code>aria-current="page"</code> on active button,
+        Prev disabled on page 1, Next disabled on last page, "Showing X–Y of 15" updates after navigation.
+      </p>
+      <table data-testid="pag-table" aria-label="Paginated employee table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Department</th>
+            <th scope="col">Salary</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody data-testid="pag-tbody" id="pag-tbody"></tbody>
+      </table>
+      <nav class="pag-row" data-testid="pag-controls" aria-label="Table pagination">
+        <span class="pag-info" data-testid="pag-info" id="pag-info"></span>
+        <button class="pag-btn" data-testid="pag-prev" id="pag-prev" aria-label="Previous page">&#8249; Prev</button>
+        <div class="page-btns" id="pag-pages" data-testid="pag-pages"></div>
+        <button class="pag-btn" data-testid="pag-next" id="pag-next" aria-label="Next page">Next &#8250;</button>
+      </nav>
+    </section>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         5. ROW ACTIONS: EDIT + DELETE — Advanced
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <section class="section" id="sec-actions">
+      <h2>5. Table with row actions (Edit / Delete) <span class="badge badge-orange">Intermediate → Advanced</span></h2>
+      <p class="hint">
+        Each row has Edit and Delete buttons. Edit replaces cells with inline inputs; Save commits the change;
+        Cancel reverts. Delete removes the row from the DOM. Practice: scoping buttons by row
+        (<code>getByTestId('actions-row-2').getByRole('button', { name: 'Edit' })</code>), asserting DOM removal,
+        inline input interactions.
+      </p>
+      <div class="result-info" data-testid="actions-row-count" id="actions-row-count"></div>
+      <table data-testid="actions-table" aria-label="Employee table with row actions">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Department</th>
+            <th scope="col">Salary</th>
+            <th scope="col">Status</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody data-testid="actions-tbody" id="actions-tbody"></tbody>
+      </table>
+    </section>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         6. COMBINED GRID — Advanced
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <section class="section" id="sec-grid">
+      <h2>6. Combined data grid: sort + search + pagination <span class="badge badge-red">Advanced</span></h2>
+      <p class="hint">
+        Real-world data grid: all three features work together.
+        Filtering or sorting resets to page 1 automatically.
+        Practice: chaining interactions across search → sort → page navigation, asserting combined state.
+      </p>
+      <div class="controls">
+        <div class="ctrl-field">
+          <label for="grid-search">Search by name</label>
+          <input type="search" id="grid-search" data-testid="grid-search"
+                 aria-label="Grid search by name" placeholder="Name..." />
+        </div>
+        <div class="ctrl-field">
+          <label for="grid-dept">Department</label>
+          <select id="grid-dept" data-testid="grid-dept" aria-label="Grid filter by department">
+            <option value="">All</option>
+            <option value="Engineering">Engineering</option>
+            <option value="Marketing">Marketing</option>
+            <option value="HR">HR</option>
+            <option value="Sales">Sales</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="grid-clear-btn"
+                data-testid="grid-clear-btn" style="align-self:flex-end">Clear All</button>
+      </div>
+      <div class="result-info" data-testid="grid-result-count" id="grid-result-count"></div>
+      <table data-testid="grid-table" aria-label="Combined data grid">
+        <thead>
+          <tr>
+            <th class="sortable" data-col="name"   aria-sort="none" data-testid="grid-th-name"   scope="col">Name <span class="sort-icon" aria-hidden="true"></span></th>
+            <th class="sortable" data-col="dept"   aria-sort="none" data-testid="grid-th-dept"   scope="col">Department <span class="sort-icon" aria-hidden="true"></span></th>
+            <th class="sortable" data-col="salary" aria-sort="none" data-testid="grid-th-salary" scope="col">Salary <span class="sort-icon" aria-hidden="true"></span></th>
+            <th class="sortable" data-col="joined" aria-sort="none" data-testid="grid-th-joined" scope="col">Date Joined <span class="sort-icon" aria-hidden="true"></span></th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody data-testid="grid-tbody" id="grid-tbody"></tbody>
+      </table>
+      <nav class="pag-row" data-testid="grid-pag-controls" aria-label="Grid pagination">
+        <span class="pag-info" data-testid="grid-pag-info" id="grid-pag-info"></span>
+        <button class="pag-btn" data-testid="grid-prev" id="grid-prev" aria-label="Previous page">&#8249; Prev</button>
+        <div class="page-btns" id="grid-pages" data-testid="grid-pages"></div>
+        <button class="pag-btn" data-testid="grid-next" id="grid-next" aria-label="Next page">Next &#8250;</button>
+      </nav>
+    </section>
+
+  </div>
+
+  <script>
+    const EMPLOYEES = [
+      { id: 1,  name: 'Aarav Sharma',  dept: 'Engineering', salary: 85000,  joined: '2022-03-15', status: 'Active'   },
+      { id: 2,  name: 'Priya Patel',   dept: 'Marketing',   salary: 62000,  joined: '2021-07-20', status: 'Active'   },
+      { id: 3,  name: 'Rohan Mehta',   dept: 'Engineering', salary: 92000,  joined: '2020-01-10', status: 'Active'   },
+      { id: 4,  name: 'Sneha Rao',     dept: 'HR',          salary: 55000,  joined: '2023-05-01', status: 'Inactive' },
+      { id: 5,  name: 'Vikram Singh',  dept: 'Sales',       salary: 70000,  joined: '2019-11-30', status: 'Active'   },
+      { id: 6,  name: 'Ananya Gupta',  dept: 'Marketing',   salary: 58000,  joined: '2022-09-12', status: 'Active'   },
+      { id: 7,  name: 'Karan Joshi',   dept: 'Engineering', salary: 105000, joined: '2018-06-25', status: 'Active'   },
+      { id: 8,  name: 'Meera Nair',    dept: 'HR',          salary: 48000,  joined: '2024-01-08', status: 'Inactive' },
+      { id: 9,  name: 'Arjun Kapoor',  dept: 'Sales',       salary: 77000,  joined: '2021-03-17', status: 'Active'   },
+      { id: 10, name: 'Divya Verma',   dept: 'Engineering', salary: 98000,  joined: '2020-08-22', status: 'Active'   },
+      { id: 11, name: 'Rahul Desai',   dept: 'Marketing',   salary: 65000,  joined: '2023-02-14', status: 'Active'   },
+      { id: 12, name: 'Pooja Iyer',    dept: 'HR',          salary: 52000,  joined: '2022-11-05', status: 'Active'   },
+      { id: 13, name: 'Suresh Kumar',  dept: 'Sales',       salary: 80000,  joined: '2017-09-18', status: 'Active'   },
+      { id: 14, name: 'Nisha Bose',    dept: 'Engineering', salary: 72000,  joined: '2023-08-30', status: 'Inactive' },
+      { id: 15, name: 'Amit Tiwari',   dept: 'Sales',       salary: 68000,  joined: '2021-12-01', status: 'Active'   },
+    ];
+
+    function statusBadge(s) {
+      const cls = s === 'Active' ? 'status-active' : 'status-inactive';
+      return `<span class="${cls}" data-testid="status-${s.toLowerCase()}">${s}</span>`;
+    }
+    function fmtSalary(n) { return '$' + Number(n).toLocaleString(); }
+
+    function sortData(data, col, dir) {
+      return [...data].sort((a, b) => {
+        let va = a[col], vb = b[col];
+        if (col === 'salary') { va = +va; vb = +vb; }
+        if (va < vb) return dir === 'asc' ? -1 : 1;
+        if (va > vb) return dir === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    function buildPageBtns(container, current, total, onPageClick) {
+      container.innerHTML = '';
+      for (let p = 1; p <= total; p++) {
+        const btn = document.createElement('button');
+        btn.className = 'pag-btn' + (p === current ? ' active' : '');
+        btn.textContent = p;
+        btn.setAttribute('data-testid', container.id.replace('pages', 'btn-') + p);
+        if (p === current) btn.setAttribute('aria-current', 'page');
+        btn.addEventListener('click', () => onPageClick(p));
+        container.appendChild(btn);
+      }
+    }
+
+    // ─── Section 2: Sortable ───
+    (function () {
+      const data = EMPLOYEES.slice(0, 10);
+      let sortCol = null, sortDir = null;
+
+      function render() {
+        const rows = sortCol ? sortData(data, sortCol, sortDir) : data;
+        document.getElementById('sort-tbody').innerHTML = rows.map(e =>
+          `<tr data-testid="sort-row-${e.id}">
+            <td data-testid="sort-name-${e.id}">${e.name}</td>
+            <td>${e.dept}</td>
+            <td data-testid="sort-salary-${e.id}">${fmtSalary(e.salary)}</td>
+            <td>${e.joined}</td>
+            <td>${statusBadge(e.status)}</td>
+          </tr>`
+        ).join('');
+      }
+
+      document.querySelectorAll('#sec-sort th.sortable').forEach(th => {
+        th.addEventListener('click', () => {
+          const col = th.dataset.col;
+          if (sortCol === col) {
+            if (sortDir === 'asc') { sortDir = 'desc'; }
+            else { sortCol = null; sortDir = null; }
+          } else { sortCol = col; sortDir = 'asc'; }
+
+          document.querySelectorAll('#sec-sort th.sortable').forEach(h =>
+            h.setAttribute('aria-sort', 'none'));
+          if (sortCol) th.setAttribute('aria-sort', sortDir === 'asc' ? 'ascending' : 'descending');
+          render();
+        });
+      });
+
+      render();
+    })();
+
+    // ─── Section 3: Search + Filter ───
+    (function () {
+      const data = EMPLOYEES.slice(0, 10);
+
+      function filtered() {
+        const q    = document.getElementById('search-input').value.toLowerCase().trim();
+        const dept = document.getElementById('dept-filter').value;
+        return data.filter(e =>
+          (!q || e.name.toLowerCase().includes(q)) && (!dept || e.dept === dept)
+        );
+      }
+
+      function render() {
+        const rows = filtered();
+        document.getElementById('search-result-count').textContent =
+          `Showing ${rows.length} of ${data.length} employees`;
+        document.getElementById('search-tbody').innerHTML = rows.length
+          ? rows.map(e =>
+              `<tr data-testid="search-row-${e.id}">
+                <td data-testid="search-name-${e.id}">${e.name}</td>
+                <td>${e.dept}</td>
+                <td>${fmtSalary(e.salary)}</td>
+                <td>${e.joined}</td>
+                <td>${statusBadge(e.status)}</td>
+              </tr>`).join('')
+          : '<tr class="empty-msg"><td colspan="5">No employees match your filters.</td></tr>';
+      }
+
+      document.getElementById('search-input').addEventListener('input', render);
+      document.getElementById('dept-filter').addEventListener('change', render);
+      document.getElementById('search-clear-btn').addEventListener('click', () => {
+        document.getElementById('search-input').value = '';
+        document.getElementById('dept-filter').value = '';
+        render();
+      });
+      render();
+    })();
+
+    // ─── Section 4: Pagination ───
+    (function () {
+      const data = EMPLOYEES;
+      const PER_PAGE = 5;
+      let page = 1;
+      const total = Math.ceil(data.length / PER_PAGE);
+
+      function render() {
+        const start = (page - 1) * PER_PAGE;
+        const slice = data.slice(start, start + PER_PAGE);
+        document.getElementById('pag-tbody').innerHTML = slice.map((e, i) =>
+          `<tr data-testid="pag-row-${e.id}">
+            <td>${start + i + 1}</td>
+            <td data-testid="pag-name-${e.id}">${e.name}</td>
+            <td>${e.dept}</td>
+            <td>${fmtSalary(e.salary)}</td>
+            <td>${statusBadge(e.status)}</td>
+          </tr>`
+        ).join('');
+
+        document.getElementById('pag-info').textContent =
+          `Showing ${start + 1}–${Math.min(start + PER_PAGE, data.length)} of ${data.length}`;
+        document.getElementById('pag-prev').disabled = page === 1;
+        document.getElementById('pag-next').disabled = page === total;
+
+        buildPageBtns(document.getElementById('pag-pages'), page, total, p => { page = p; render(); });
+      }
+
+      document.getElementById('pag-prev').addEventListener('click', () => { page--; render(); });
+      document.getElementById('pag-next').addEventListener('click', () => { page++; render(); });
+      render();
+    })();
+
+    // ─── Section 5: Row Actions ───
+    (function () {
+      let data = EMPLOYEES.slice(0, 8).map(e => ({ ...e }));
+
+      function updateCount() {
+        document.getElementById('actions-row-count').textContent =
+          `${data.length} employee${data.length !== 1 ? 's' : ''} in table`;
+      }
+
+      function render() {
+        updateCount();
+        const tbody = document.getElementById('actions-tbody');
+        if (!data.length) {
+          tbody.innerHTML = '<tr class="empty-msg"><td colspan="5">All employees deleted.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.map(e =>
+          `<tr data-testid="actions-row-${e.id}" data-id="${e.id}">
+            <td data-testid="actions-name-${e.id}">${e.name}</td>
+            <td data-testid="actions-dept-${e.id}">${e.dept}</td>
+            <td data-testid="actions-salary-${e.id}">${fmtSalary(e.salary)}</td>
+            <td>${statusBadge(e.status)}</td>
+            <td class="actions-cell">
+              <button class="btn btn-primary btn-sm"  data-action="edit"   data-id="${e.id}" data-testid="edit-btn-${e.id}">Edit</button>
+              <button class="btn btn-danger  btn-sm"  data-action="delete" data-id="${e.id}" data-testid="delete-btn-${e.id}">Delete</button>
+            </td>
+          </tr>`
+        ).join('');
+      }
+
+      function showInlineEdit(id) {
+        const e   = data.find(x => x.id === id);
+        const row = document.querySelector(`[data-testid="actions-row-${id}"]`);
+        row.innerHTML = `
+          <td><input class="inline-input" data-testid="edit-name-${id}"   value="${e.name}"   /></td>
+          <td><input class="inline-input" data-testid="edit-dept-${id}"   value="${e.dept}"   /></td>
+          <td><input class="inline-input" data-testid="edit-salary-${id}" value="${e.salary}" type="number" /></td>
+          <td>${statusBadge(e.status)}</td>
+          <td class="actions-cell">
+            <button class="btn btn-primary   btn-sm" data-action="save"   data-id="${id}" data-testid="save-btn-${id}">Save</button>
+            <button class="btn btn-secondary btn-sm" data-action="cancel" data-id="${id}" data-testid="cancel-btn-${id}">Cancel</button>
+          </td>`;
+      }
+
+      document.getElementById('actions-tbody').addEventListener('click', ev => {
+        const btn = ev.target.closest('[data-action]');
+        if (!btn) return;
+        const id     = +btn.dataset.id;
+        const action = btn.dataset.action;
+        if (action === 'edit') {
+          showInlineEdit(id);
+        } else if (action === 'delete') {
+          data = data.filter(x => x.id !== id);
+          render();
+        } else if (action === 'save') {
+          const emp = data.find(x => x.id === id);
+          emp.name   = document.querySelector(`[data-testid="edit-name-${id}"]`).value;
+          emp.dept   = document.querySelector(`[data-testid="edit-dept-${id}"]`).value;
+          emp.salary = +document.querySelector(`[data-testid="edit-salary-${id}"]`).value;
+          render();
+        } else if (action === 'cancel') {
+          render();
+        }
+      });
+
+      render();
+    })();
+
+    // ─── Section 6: Combined Grid ───
+    (function () {
+      const PER_PAGE = 5;
+      let state = { query: '', dept: '', sortCol: null, sortDir: null, page: 1 };
+
+      function getRows() {
+        let rows = EMPLOYEES.filter(e =>
+          (!state.query || e.name.toLowerCase().includes(state.query.toLowerCase())) &&
+          (!state.dept || e.dept === state.dept)
+        );
+        if (state.sortCol) rows = sortData(rows, state.sortCol, state.sortDir);
+        return rows;
+      }
+
+      function render() {
+        const filtered   = getRows();
+        const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+        if (state.page > totalPages) state.page = 1;
+        const start = (state.page - 1) * PER_PAGE;
+        const slice = filtered.slice(start, start + PER_PAGE);
+
+        document.getElementById('grid-result-count').textContent =
+          `${filtered.length} of ${EMPLOYEES.length} employees`;
+
+        document.getElementById('grid-tbody').innerHTML = slice.length
+          ? slice.map(e =>
+              `<tr data-testid="grid-row-${e.id}">
+                <td data-testid="grid-name-${e.id}">${e.name}</td>
+                <td>${e.dept}</td>
+                <td data-testid="grid-salary-${e.id}">${fmtSalary(e.salary)}</td>
+                <td>${e.joined}</td>
+                <td>${statusBadge(e.status)}</td>
+              </tr>`).join('')
+          : '<tr class="empty-msg"><td colspan="5">No results match your filters.</td></tr>';
+
+        document.getElementById('grid-pag-info').textContent = filtered.length
+          ? `Showing ${start + 1}–${Math.min(start + PER_PAGE, filtered.length)} of ${filtered.length}`
+          : 'No results';
+
+        document.getElementById('grid-prev').disabled = state.page === 1;
+        document.getElementById('grid-next').disabled = state.page === totalPages || !filtered.length;
+
+        buildPageBtns(document.getElementById('grid-pages'), state.page, totalPages,
+          p => { state.page = p; render(); });
+
+        document.querySelectorAll('#sec-grid th.sortable').forEach(th => {
+          th.setAttribute('aria-sort',
+            th.dataset.col === state.sortCol
+              ? (state.sortDir === 'asc' ? 'ascending' : 'descending')
+              : 'none');
+        });
+      }
+
+      document.querySelectorAll('#sec-grid th.sortable').forEach(th => {
+        th.addEventListener('click', () => {
+          const col = th.dataset.col;
+          if (state.sortCol === col) {
+            if (state.sortDir === 'asc') { state.sortDir = 'desc'; }
+            else { state.sortCol = null; state.sortDir = null; }
+          } else { state.sortCol = col; state.sortDir = 'asc'; }
+          state.page = 1;
+          render();
+        });
+      });
+
+      document.getElementById('grid-search').addEventListener('input', e => {
+        state.query = e.target.value;
+        state.page  = 1;
+        render();
+      });
+      document.getElementById('grid-dept').addEventListener('change', e => {
+        state.dept = e.target.value;
+        state.page = 1;
+        render();
+      });
+      document.getElementById('grid-clear-btn').addEventListener('click', () => {
+        state = { query: '', dept: '', sortCol: null, sortDir: null, page: 1 };
+        document.getElementById('grid-search').value = '';
+        document.getElementById('grid-dept').value   = '';
+        render();
+      });
+      document.getElementById('grid-prev').addEventListener('click', () => { state.page--; render(); });
+      document.getElementById('grid-next').addEventListener('click', () => { state.page++; render(); });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
