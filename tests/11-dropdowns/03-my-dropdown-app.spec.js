@@ -80,4 +80,54 @@ test.describe("handling dropdowns", () => {
     // Assert
     await page.waitForTimeout(2000);
   });
+
+  test("Test03 Handling dropdown with search", async ({ page }) => {
+    // Arrange
+    await page.goto("/dropdowns");
+
+    // Act
+    await page.locator("#car").selectOption({ value: "corolla" });
+    await page.waitForTimeout(800);
+
+    await page.locator("#car").selectOption({ value: "modely" });
+
+    // Old way to capture all options
+    const allOptions = await page.$$(
+      'xpath=//optgroup[@label="Tesla"]//option',
+    );
+    console.log("all options are", await allOptions.length);
+
+    for (const opt of allOptions) {
+      console.log(await opt.textContent());
+    }
+    console.log("===========================================================");
+    // New way to capture all options => use this
+    const toyataOpts = page.locator("//optgroup[@label='Toyota']//option");
+    console.log("Toyata opts are-: ", await toyataOpts.count());
+    console.log(await toyataOpts.allTextContents());
+    await page.waitForTimeout(1500);
+  });
+
+  test("Test04 Handling custome dropdown", async ({ page }) => {
+    // Arrange
+    await page.goto("/dropdowns");
+  });
+
+  test("Test05 Handling custome dropdowns", async ({ page }) => {
+    // Arrange
+    await page.goto("/dropdowns");
+
+    // Act
+    const selectOpt = "On Leave";
+    const selectVal = "onleave";
+
+    await page.getByTestId("status-trigger").click();
+    await page.locator(`[data-value=${selectVal}]`).click();
+    await expect(page.locator("#status-value")).toHaveText(selectOpt);
+
+    await expect(page.getByTestId("custom-output")).toHaveText(
+      `Status: ${selectVal} (${selectOpt})`,
+    );
+    // Assert
+  });
 });
