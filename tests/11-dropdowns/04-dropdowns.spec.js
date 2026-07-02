@@ -18,4 +18,22 @@ test.describe("Handling auto-suggest dropdown", () => {
     );
     await expect(cityInput).toHaveValue("London");
   });
+
+  test("Test 02 Handling two dropdowns", async ({ page }) => {
+    // Arrange
+    await page.goto("/dropdowns");
+
+    // Act
+    await page.getByTestId("dep-country").selectOption({ value: "usa" });
+
+    await page.getByTestId("dep-state").selectOption({ value: "texas" });
+
+    await page.mouse.wheel(0, 1500);
+
+    await expect(page.locator("#dependent-output")).toHaveText(
+      "Country: usa | State: texas",
+    );
+    // Assert
+    await page.waitForTimeout(1500);
+  });
 });
