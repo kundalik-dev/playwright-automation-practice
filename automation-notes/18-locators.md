@@ -120,13 +120,149 @@ The input points to another element's text via aria-labelledby; Playwright follo
 
 ### 3. getByPlaceholder
 
+**What:** Locates `<input>`/`<textarea>` by their `placeholder` attribute.
+
+```javascript
+<input placeholder="Enter your email" />;
+
+page.getByPlaceholder("Enter your email");
+```
+
+**Matching:**
+
+- String → substring, case-insensitive by default
+- `{ exact: true }` → exact match
+- Regex → `page.getByPlaceholder(/email/i)`
+
+Ways to find or write
+
+```js
+page.getByPlaceholder("email"); // substring, case-insensitive
+page.getByPlaceholder("Enter your email", { exact: true }); // must match exactly
+page.getByPlaceholder(/email/i); // regex
+```
+
+**Use when:** no `<label>` exists, only a placeholder (e.g., search bars, minimal login forms).
+
+**Avoid when:** a proper `<label>` exists — use `getByLabel` instead (more accessible, more stable).
+
+**Key behaviors:**
+
+- Lazy — resolves only on action (`.click()`, `.fill()`), not on locator creation
+- Auto-waits for attached/visible/stable
+- Strict mode — throws if multiple matches; scope with parent locator or use `.first()`
+
+**Watch out:** brittle across i18n/localized placeholder text.
+
 ### 4. getByText
+
+`getByText` locates elements by their **rendered text content** — the visible text a user would actually read on the page. It searches the DOM for elements whose text node (including nested children's combined text) matches the given string or pattern.
+
+**What:** Locates elements by their visible/rendered text content.
+
+```javascript
+page.getByText("welcome"); // substring, case-insensitive
+page.getByText("Welcome back, User", { exact: true }); // must match exactly
+page.getByText(/welcome/i); // regex
+```
+
+**Matching:**
+
+- String → substring, case-insensitive by default
+- `{ exact: true }` → exact match
+- Regex → `page.getByText(/welcome/i)`
+
+**Priority order:**
+`getByRole` > `getByLabel` > `getByPlaceholder` > **`getByText`** > `getByTestId`
+
+**Use when:** no role/label/placeholder available — e.g. buttons, links, headings, error/success messages, toasts.
+
+**Avoid when:** text is likely to change (copy edits, i18n) or a semantic locator (`getByRole`) is available instead.
+
+**Key behaviors:**
+
+- Lazy + auto-waits (attached/visible/stable)
+- Matches full text of an element **including nested children** — can over-match if not scoped
+- Strict mode — throws on multiple matches; scope with parent locator or `.first()`
+
+**Watch out:** fragile to copy/i18n changes; can match unintended parent/wrapper elements.
 
 ### 5. getByAltText
 
+**What:** Locates elements by their `alt` attribute (mainly `<img>`, also `<area>`, `<input type="image">`).
+
+```javascript
+// getByAltText
+page.getByAltText("logo"); // substring, case-insensitive
+page.getByAltText("Company logo", { exact: true }); // must match exactly
+page.getByAltText(/logo/i); // regex
+```
+
+**Matching:**
+
+- String → substring, case-insensitive by default
+- `{ exact: true }` → exact match
+- Regex → `page.getByAltText(/logo/i)`
+
+**Use when:** testing images, icons, avatars, image buttons — no visible text/role/label available.
+
+**Key behaviors:**
+
+- Lazy + auto-waits
+- Reliable/stable since `alt` is written for accessibility, not casual UI copy
+- Strict mode applies — narrow if multiple matches
+
+**Watch out:** only works on elements that actually have an `alt` attribute set.
+
 ### 6. getByTitle
 
+**What:** Locates elements by their `title` attribute (shows as a tooltip on hover).
+
+```javascript
+// getByTitle
+page.getByTitle("close"); // substring, case-insensitive
+page.getByTitle("Close dialog", { exact: true }); // must match exactly
+page.getByTitle(/close/i); // regex
+```
+
+**Matching:**
+
+- String → substring, case-insensitive by default
+- `{ exact: true }` → exact match
+- Regex → `page.getByTitle(/close/i)`
+
+**Use when:** element has a `title` attribute but no accessible role/label/text (e.g. icon buttons with tooltips).
+
+**Key behaviors:**
+
+- Lazy + auto-waits
+- Strict mode applies — narrow if multiple matches
+
+**Watch out:** `title` is rarely used in modern apps; not reliably announced by all screen readers — lower priority than `getByRole`/`getByLabel`.
+
 ### 7. getByTestId
+
+**What:** Locates elements by a dedicated test attribute (default `data-testid`), independent of DOM structure, text, or styling.
+
+```javascript
+page.getByTestId("submit-btn"); // exact match (default, no substring)
+page.getByTestId(/submit-.*/); // regex
+```
+
+**Matching:**
+
+- String → **exact match only** (no substring/case-insensitive behavior like other locators)
+- Regex → pattern matching
+
+**Use when:** no stable role/label/text/placeholder exists, or UI text/structure changes frequently — most resilient locator since it's purpose-built for testing.
+
+**Key behaviors:**
+
+- Lazy + auto-waits
+- Strict mode applies
+- Custom attribute name configurable via `testIdAttribute` in `playwright.config.ts` (default is `data-testid`)
+
+**Watch out:** last resort in priority order — requires devs to add the attribute; doesn't reflect real user-facing behavior/accessibility.
 
 ## Xpath Locators
 
@@ -216,11 +352,3 @@ unique attributes or in complex table/grid structures.
 | **AND (and)**        | `//input[@type='submit' and @name='btnLogin']` | Both conditions must be true      |
 | **Dot (.)**          | `.//input[contains(@id, 'user')]`              | Search from current node downward |
 | **Position / Index** | `//ul/li[3]/a`                                 | Select the 3rd list item's link   |
-
-```
-
-```
-
-```
-
-```

@@ -6,7 +6,7 @@ test.describe("playwright locators", () => {
     await page.goto("/");
 
     // Act
-    await page.getByRole("c");
+    await page.getByLabel();
 
     // Assert
   });
