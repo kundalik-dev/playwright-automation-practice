@@ -1,4 +1,4 @@
-# Locators in Playwright
+a# Locators in Playwright
 
 ## Ways to locate element
 
@@ -339,7 +339,39 @@ unique attributes or in complex table/grid structures.
 ## Advance locators
 
 - contains
--
+
+### Advance
+
+#### 1. child unique parent is not
+
+Advance locators where child is unique parent is not. To find we first find child locator using id then we pass that inside parent tagname `//tagName [.// childLocator[@id='link']]`
+
+```html
+<a href="https://google.com>
+  <span id='link'>google.com</span>
+</a>
+
+<!-- locators -->
+//a [.// span[@id='link']]
+```
+
+#### 2. Index Based
+
+To find label 1 we use () bracket based index as normal index are brittle. `(//label [name='lanel'])[1]`
+
+- using normal way of indexing then all become [1] matched.
+
+```html
+<div>
+  <label name="label">lable 1</label>
+</div>
+<div>
+  <label name="label">lable 2</label>
+</div>
+<div>
+  <label name="label">lable 3</label>
+</div>
+```
 
 ## XPath Functions & Operators
 
