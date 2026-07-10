@@ -1,0 +1,53 @@
+body {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+button {
+  padding: 0.35rem 1rem;
+  border: 1px solid #999;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  color: #222;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+button:hover {
+  background-color: #e0e0e0;
+  border-color: #777;
+}
+
+.success_msg {
+  color: green;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.button {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  border: 2px solid #4a90e2;
+  border-radius: 6px;
+  background-color: #4a90e2;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  user-select: none;
+}
+
+.button:hover {
+  background-color: #357abd;
+  border-color: #357abd;
+}

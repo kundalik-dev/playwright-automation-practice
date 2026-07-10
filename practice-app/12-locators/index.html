@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Basics of locators</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>Basics of locators</h1>
+    <!-- Role Locators -->
+    <section id="role-locators" class="card">
+      <h2>1. <span class="highlight">getByRole()</span> Locators</h2>
+      <p>Locate elements by their explicit or implicit ARIA roles.</p>
+
+      <div class="grid">
+        <div>
+          <h3>Buttons</h3>
+          <button role="button" id="primary-btn">Primary Action</button>
+          <button aria-pressed="false" id="toggle-btn">Toggle Button</button>
+          <div role="button" tabindex="0" class="button">
+            Div with button role
+          </div>
+          <p class="success_msg" id="success-msg"></p>
+        </div>
+
+        <div>
+          <h3>Form Elements</h3>
+          <label for="username">Username:</label>
+          <input type="text" id="username" role="textbox" />
+          <br />
+          <label>
+            <input type="checkbox" role="checkbox" /> Accept terms
+          </label>
+        </div>
+
+        <div>
+          <h3>Navigation</h3>
+          <nav role="navigation">
+            <ul>
+              <li role="menuitem"><a href="#">Home</a></li>
+              <li role="menuitem"><a href="#">Products</a></li>
+              <li role="menuitem"><a href="#">Contact</a></li>
+            </ul>
+          </nav>
+
+          <div role="alert" class="card">
+            This is an important alert message!
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lable Locators -->
+    <section id="text-locators" class="card">
+      <h2>2. <span class="highlight">getByText()</span> Locators</h2>
+      <p>Locate elements by their text content.</p>
+
+      <div class="card">
+        <p>
+          This paragraph contains some <strong>important</strong> text that you
+          might want to locate.
+        </p>
+        <p>
+          Another paragraph with
+          <span style="color: red">colored text</span> for demonstration.
+        </p>
+      </div>
+
+      <ul>
+        <li>List item 1</li>
+        <li>List item 2 with <a href="#">link</a></li>
+        <li>Special: Unique text identifier</li>
+      </ul>
+
+      <div class="card">
+        <button>Submit Form</button>
+        <p>Click the button above to submit your information.</p>
+      </div>
+    </section>
+  </body>
+  <script src="app.js"></script>
+</html>
