@@ -1,53 +1,148 @@
 body {
-  max-width: 900px;
+  font-family: Arial, sans-serif;
+  max-width: 960px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1.5rem;
+  background: #fafafa;
+}
+
+h1 {
+  color: #1a1a2e;
+  border-bottom: 3px solid #4a90e2;
+  padding-bottom: 0.5rem;
+}
+
+h2 {
+  color: #16213e;
+  margin-top: 0;
+  font-size: 1.1rem;
+  background: #e8f0fe;
+  padding: 0.4rem 0.75rem;
+  border-left: 4px solid #4a90e2;
+}
+
+section {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+label {
+  display: inline-block;
+  margin-right: 0.5rem;
+  font-weight: 600;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+textarea,
+select {
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  padding: 0.3rem 0.6rem;
+  margin: 0.2rem 0.4rem 0.2rem 0;
+  font-size: 0.9rem;
 }
 
 button {
-  padding: 0.35rem 1rem;
-  border: 1px solid #999;
+  padding: 0.3rem 0.9rem;
+  border: 1px solid #888;
   border-radius: 4px;
-  background-color: #f0f0f0;
-  color: #222;
-  font-size: 0.9rem;
+  background: #f0f0f0;
   cursor: pointer;
-  margin-right: 0.5rem;
+  margin: 0.2rem;
+  font-size: 0.9rem;
 }
 
 button:hover {
-  background-color: #e0e0e0;
-  border-color: #777;
+  background: #ddd;
 }
 
-.success_msg {
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+th,
+td {
+  border: 1px solid #ccc;
+  padding: 0.4rem 0.75rem;
+  text-align: left;
+}
+
+th {
+  background: #e8f0fe;
+}
+
+.output {
+  margin-top: 0.5rem;
   color: green;
   font-weight: 600;
-  margin-top: 0.5rem;
+  min-height: 1.2rem;
+  font-size: 0.9rem;
+  border-left: 3px solid green;
+  padding-left: 0.5rem;
 }
 
-.card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 1.25rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-}
-
-.button {
+.tag {
   display: inline-block;
-  padding: 0.5rem 1.25rem;
-  border: 2px solid #4a90e2;
-  border-radius: 6px;
-  background-color: #4a90e2;
+  font-size: 0.72rem;
+  background: #4a90e2;
   color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 0.5rem;
-  user-select: none;
+  border-radius: 3px;
+  padding: 0.1rem 0.4rem;
+  margin-left: 0.4rem;
+  vertical-align: middle;
 }
 
-.button:hover {
-  background-color: #357abd;
-  border-color: #357abd;
+.note {
+  font-size: 0.82rem;
+  color: #555;
+  margin: 0.25rem 0 0.5rem;
+}
+
+a {
+  color: #1a73e8;
+}
+
+fieldset {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  margin: 0.5rem 0;
+}
+
+legend {
+  font-weight: 600;
+  padding: 0 0.4rem;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.col {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Broken link styling — visually distinct for practice */
+a.broken-link {
+  color: #e53e3e;
+  text-decoration: underline wavy #e53e3e;
 }

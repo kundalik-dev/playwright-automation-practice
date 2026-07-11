@@ -3,81 +3,659 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Basics of locators</title>
+    <title>Playwright Locators Practice</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>Basics of locators</h1>
-    <!-- Role Locators -->
-    <section id="role-locators" class="card">
-      <h2>1. <span class="highlight">getByRole()</span> Locators</h2>
-      <p>Locate elements by their explicit or implicit ARIA roles.</p>
+    <h1>Playwright Locators Practice</h1>
+    <p>A single page covering every <code>getBy*</code> locator, chaining, filtering, and narrowing strategy in Playwright. Click any button — the green bar below it confirms the action.</p>
 
-      <div class="grid">
-        <div>
+    <!-- ===================== 1. getByRole ===================== -->
+    <section id="section-role">
+      <h2>1. getByRole() <span class="tag">role</span></h2>
+      <p class="note">Locate by ARIA role + name/label. Works on buttons, links, headings, checkboxes, textboxes, comboboxes, alerts, navigation, table, dialog, etc.</p>
+
+      <div class="row">
+        <div class="col">
           <h3>Buttons</h3>
-          <button role="button" id="primary-btn">Primary Action</button>
-          <button aria-pressed="false" id="toggle-btn">Toggle Button</button>
-          <div role="button" tabindex="0" class="button">
-            Div with button role
+          <button id="btn-primary">Primary Action</button>
+          <button id="btn-secondary" disabled>Disabled Button</button>
+          <button id="btn-icon" aria-label="Close dialog">✕</button>
+          <button id="btn-submit" type="submit" name="submit-order">Submit Order</button>
+          <div role="button" tabindex="0" id="div-btn" style="display:inline-block;padding:0.3rem 0.9rem;border:1px solid #888;border-radius:4px;background:#f0f0f0;cursor:pointer;margin:0.2rem;">
+            Div Button
           </div>
-          <p class="success_msg" id="success-msg"></p>
         </div>
 
-        <div>
-          <h3>Form Elements</h3>
-          <label for="username">Username:</label>
-          <input type="text" id="username" role="textbox" />
-          <br />
-          <label>
-            <input type="checkbox" role="checkbox" /> Accept terms
-          </label>
+        <div class="col">
+          <h3>Links — pointing to page sections</h3>
+          <a href="#section-role" id="link-home">Home</a> &nbsp;
+          <a href="#section-label" id="link-about">About Us</a> &nbsp;
+          <a href="#section-form" id="link-contact">Contact</a> &nbsp;
+          <a href="#section-table" id="link-reports">Reports</a>
+
+          <h3 style="margin-top:0.75rem;">Broken Links (link-check practice)</h3>
+          <p class="note">These links are intentionally broken — use them to practice broken-link detection.</p>
+          <a href="/page-not-found" class="broken-link" id="link-broken-404">404 Page</a> &nbsp;
+          <a href="#anchor-does-not-exist" class="broken-link" id="link-broken-anchor">Missing Anchor</a> &nbsp;
+          <a href="https://this-domain-does-not-exist-xyz123.com" class="broken-link" id="link-broken-domain">Dead Domain</a>
+
+          <h3 style="margin-top:0.75rem;">Headings</h3>
+          <h1 id="h1-hero">Playwright Testing</h1>
+          <h2 id="h2-sub">Locator Strategies</h2>
+          <h3 id="h3-detail">getByRole Examples</h3>
         </div>
 
-        <div>
-          <h3>Navigation</h3>
-          <nav role="navigation">
-            <ul>
-              <li role="menuitem"><a href="#">Home</a></li>
-              <li role="menuitem"><a href="#">Products</a></li>
-              <li role="menuitem"><a href="#">Contact</a></li>
+        <div class="col">
+          <h3>Checkbox &amp; Radio</h3>
+          <label><input type="checkbox" id="chk-terms" role="checkbox" /> Accept Terms</label><br/>
+          <label><input type="checkbox" id="chk-newsletter" checked /> Subscribe Newsletter</label><br/>
+          <fieldset style="margin-top:0.5rem;">
+            <legend>Preferred Plan</legend>
+            <label><input type="radio" name="plan" value="free" id="radio-free" /> Free</label><br/>
+            <label><input type="radio" name="plan" value="pro" id="radio-pro" checked /> Pro</label><br/>
+            <label><input type="radio" name="plan" value="enterprise" id="radio-enterprise" /> Enterprise</label>
+          </fieldset>
+          <h3>Switch (role=switch)</h3>
+          <button role="switch" aria-checked="false" id="dark-mode-toggle">Dark Mode</button>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:0.75rem;">
+        <div class="col">
+          <h3>Alert</h3>
+          <div role="alert" id="alert-box" style="background:#fff3cd;border:1px solid #ffc107;padding:0.4rem 0.75rem;border-radius:4px;">
+            Warning: Your session expires in 5 minutes!
+          </div>
+        </div>
+        <div class="col">
+          <h3>Navigation (role=navigation)</h3>
+          <nav aria-label="Main Navigation" id="main-nav">
+            <ul style="list-style:none;padding:0;margin:0;display:flex;gap:1rem;">
+              <li><a href="#section-role">Dashboard</a></li>
+              <li><a href="#section-table">Reports</a></li>
+              <li><a href="#section-misc">Settings</a></li>
             </ul>
           </nav>
+        </div>
+        <div class="col">
+          <h3>Combobox (role=combobox / select)</h3>
+          <label for="role-country">Country:</label>
+          <select id="role-country" role="combobox" aria-label="Select country">
+            <option value="">-- Select --</option>
+            <option value="in">India</option>
+            <option value="us">USA</option>
+            <option value="uk">UK</option>
+          </select>
+        </div>
+      </div>
 
-          <div role="alert" class="card">
-            This is an important alert message!
+      <div style="margin-top:0.75rem;">
+        <h3>Textbox (role=textbox)</h3>
+        <label for="role-username">Username:</label>
+        <input type="text" id="role-username" role="textbox" placeholder="Enter username" />
+        <label for="role-email">Email:</label>
+        <input type="email" id="role-email" aria-label="Email address" placeholder="user@example.com" />
+        <p class="output" id="role-output"></p>
+      </div>
+    </section>
+
+    <!-- ===================== 2. getByLabel ===================== -->
+    <section id="section-label">
+      <h2>2. getByLabel() <span class="tag">label</span></h2>
+      <p class="note">Finds form controls by their associated <code>&lt;label&gt;</code> text or <code>aria-label</code> / <code>aria-labelledby</code>.</p>
+
+      <div class="row">
+        <div class="col">
+          <h3>Standard label-for</h3>
+          <label for="full-name">Full Name</label>
+          <input type="text" id="full-name" /><br/><br/>
+          <label for="email-addr">Email Address</label>
+          <input type="email" id="email-addr" /><br/><br/>
+          <label for="password">Password</label>
+          <input type="password" id="password" /><br/><br/>
+          <label for="age">Age</label>
+          <input type="number" id="age" min="1" max="120" /><br/><br/>
+          <label for="bio">Bio</label><br/>
+          <textarea id="bio" rows="3" cols="28"></textarea>
+        </div>
+        <div class="col">
+          <h3>Wrapping label</h3>
+          <label>
+            Phone Number
+            <input type="text" id="phone" placeholder="+91 9999999999" />
+          </label><br/><br/>
+          <label>
+            Date of Birth
+            <input type="date" id="dob" />
+          </label><br/><br/>
+          <label>
+            <input type="checkbox" id="chk-agree" />
+            I agree to the Privacy Policy
+          </label>
+        </div>
+        <div class="col">
+          <h3>aria-label &amp; aria-labelledby</h3>
+          <input type="search" aria-label="Search products" id="search-products" placeholder="Search..." /><br/><br/>
+          <p id="city-label">City</p>
+          <input type="text" aria-labelledby="city-label" id="city-input" /><br/><br/>
+          <label for="dept">Department</label>
+          <select id="dept">
+            <option>Engineering</option>
+            <option>Marketing</option>
+            <option>HR</option>
+          </select>
+        </div>
+      </div>
+      <p class="output" id="label-output"></p>
+    </section>
+
+    <!-- ===================== 3. getByPlaceholder ===================== -->
+    <section id="section-placeholder">
+      <h2>3. getByPlaceholder() <span class="tag">placeholder</span></h2>
+      <p class="note">Finds inputs/textareas by their <code>placeholder</code> attribute value.</p>
+
+      <input type="text" placeholder="Enter your first name" id="ph-first-name" />
+      <input type="text" placeholder="Enter your last name" id="ph-last-name" />
+      <input type="email" placeholder="your.email@domain.com" id="ph-email" />
+      <input type="password" placeholder="Min 8 characters" id="ph-pass" />
+      <input type="text" placeholder="Search by keyword..." id="ph-search" />
+      <input type="text" placeholder="Enter coupon code" id="ph-coupon" /><br/>
+      <textarea placeholder="Write your message here..." id="ph-message" rows="3" style="width:60%;margin-top:0.4rem;"></textarea>
+      <p class="output" id="placeholder-output"></p>
+    </section>
+
+    <!-- ===================== 4. getByText ===================== -->
+    <section id="section-text">
+      <h2>4. getByText() <span class="tag">text</span></h2>
+      <p class="note">Finds elements by their visible text content. Supports exact strings, regex, and partial matching.</p>
+
+      <div class="row">
+        <div class="col">
+          <h3>Paragraphs &amp; Spans</h3>
+          <p id="exact-text">Exact match text here</p>
+          <p>Partial match: <strong>bold keyword</strong> inside paragraph</p>
+          <p><span id="colored" style="color:tomato;">Unique colored span text</span></p>
+          <p id="regex-text">Product price is $49.99 per month</p>
+          <p>Status: <span id="status-active" style="color:green;font-weight:700;">Active</span></p>
+          <p>Status: <span id="status-inactive" style="color:red;font-weight:700;">Inactive</span></p>
+        </div>
+        <div class="col">
+          <h3>Buttons by text</h3>
+          <button id="btn-save">Save Changes</button>
+          <button id="btn-cancel">Cancel</button>
+          <button id="btn-delete" style="background:#fee2e2;border-color:#f87171;">Delete Account</button>
+          <button id="btn-export">Export CSV</button>
+          <h3 style="margin-top:0.75rem;">List items</h3>
+          <ul id="feature-list">
+            <li>Automated Testing</li>
+            <li>Cross-browser Support</li>
+            <li>Network Interception</li>
+            <li>Visual Comparisons</li>
+            <li>Parallel Execution</li>
+          </ul>
+        </div>
+        <div class="col">
+          <h3>Mixed content cards</h3>
+          <div id="card-free" style="border:1px solid #ccc;padding:0.5rem;border-radius:4px;margin-bottom:0.5rem;">
+            <strong>Free Plan</strong>
+            <p style="margin:0.25rem 0;">$0/month</p>
+            <button id="btn-get-started-free">Get Started Free</button>
+          </div>
+          <div id="card-pro" style="border:1px solid #ccc;padding:0.5rem;border-radius:4px;">
+            <strong>Pro Plan</strong>
+            <p style="margin:0.25rem 0;">$49/month</p>
+            <button id="btn-pro-trial">Start Pro Trial</button>
           </div>
         </div>
       </div>
+      <p class="output" id="text-output"></p>
     </section>
 
-    <!-- Lable Locators -->
-    <section id="text-locators" class="card">
-      <h2>2. <span class="highlight">getByText()</span> Locators</h2>
-      <p>Locate elements by their text content.</p>
+    <!-- ===================== 5. getByAltText ===================== -->
+    <section id="section-alt">
+      <h2>5. getByAltText() <span class="tag">alt</span></h2>
+      <p class="note">Finds <code>&lt;img&gt;</code> elements (and input[type=image]) by their <code>alt</code> attribute.</p>
 
-      <div class="card">
-        <p>
-          This paragraph contains some <strong>important</strong> text that you
-          might want to locate.
-        </p>
-        <p>
-          Another paragraph with
-          <span style="color: red">colored text</span> for demonstration.
-        </p>
-      </div>
-
-      <ul>
-        <li>List item 1</li>
-        <li>List item 2 with <a href="#">link</a></li>
-        <li>Special: Unique text identifier</li>
-      </ul>
-
-      <div class="card">
-        <button>Submit Form</button>
-        <p>Click the button above to submit your information.</p>
-      </div>
+      <img src="https://via.placeholder.com/80x80?text=Logo" alt="Company Logo" id="img-logo" width="80" height="80" />
+      <img src="https://via.placeholder.com/80x80?text=User" alt="User Avatar" id="img-avatar" width="80" height="80" style="margin-left:1rem;" />
+      <img src="https://via.placeholder.com/80x80?text=Banner" alt="Promotional Banner" id="img-banner" width="80" height="80" style="margin-left:1rem;" />
+      <img src="https://via.placeholder.com/80x80?text=Product" alt="Product Thumbnail" id="img-product" width="80" height="80" style="margin-left:1rem;" />
+      <br/><br/>
+      <input type="image" src="https://via.placeholder.com/100x35?text=Image+Submit" alt="Submit via image" id="img-input-submit" />
+      <p class="output" id="alt-output"></p>
     </section>
+
+    <!-- ===================== 6. getByTitle ===================== -->
+    <section id="section-title">
+      <h2>6. getByTitle() <span class="tag">title</span></h2>
+      <p class="note">Finds elements by their <code>title</code> attribute (shown as tooltip on hover).</p>
+
+      <button title="Save your work" id="btn-save-title">💾 Save</button>
+      <button title="Print this page" id="btn-print-title">🖨️ Print</button>
+      <a href="#section-misc" title="Go to Help Center" id="link-help">Help</a>
+      <span title="Information about this field" style="cursor:help;margin-left:1rem;">ℹ️ Info</span>
+      <input type="text" title="Enter your tracking number" placeholder="Tracking number" id="input-tracking" style="margin-left:1rem;" />
+      <img src="https://via.placeholder.com/60x60?text=Flag" alt="Flag" title="Indian Flag" width="60" height="60" style="margin-left:1rem;" />
+      <p class="output" id="title-output"></p>
+    </section>
+
+    <!-- ===================== 7. getByTestId ===================== -->
+    <section id="section-testid">
+      <h2>7. getByTestId() <span class="tag">data-testid</span></h2>
+      <p class="note">Finds elements by <code>data-testid</code> attribute (default). Can be configured to use other attributes like <code>data-cy</code>.</p>
+
+      <div class="row">
+        <div class="col">
+          <h3>Buttons</h3>
+          <button data-testid="login-btn" id="testid-login">Login</button>
+          <button data-testid="logout-btn" id="testid-logout">Logout</button>
+          <button data-testid="signup-btn" id="testid-signup">Sign Up</button>
+        </div>
+        <div class="col">
+          <h3>Inputs</h3>
+          <input type="text" data-testid="username-input" placeholder="Username" id="testid-username" /><br/><br/>
+          <input type="password" data-testid="password-input" placeholder="Password" id="testid-password" />
+        </div>
+        <div class="col">
+          <h3>Containers</h3>
+          <div data-testid="user-profile-card" style="border:1px solid #ccc;padding:0.5rem;border-radius:4px;">
+            <p data-testid="user-name">John Doe</p>
+            <p data-testid="user-email">john@example.com</p>
+            <button data-testid="edit-profile-btn">Edit Profile</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:0.75rem;">
+        <h3>Table with testid</h3>
+        <table data-testid="orders-table">
+          <thead>
+            <tr>
+              <th data-testid="col-id">Order ID</th>
+              <th data-testid="col-product">Product</th>
+              <th data-testid="col-qty">Qty</th>
+              <th data-testid="col-status">Status</th>
+              <th data-testid="col-action">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-testid="order-row-1">
+              <td data-testid="order-id">#1001</td>
+              <td data-testid="order-product">Playwright Book</td>
+              <td data-testid="order-qty">2</td>
+              <td data-testid="order-status">Shipped</td>
+              <td><button data-testid="view-order-1">View</button></td>
+            </tr>
+            <tr data-testid="order-row-2">
+              <td data-testid="order-id">#1002</td>
+              <td data-testid="order-product">TypeScript Guide</td>
+              <td data-testid="order-qty">1</td>
+              <td data-testid="order-status">Pending</td>
+              <td><button data-testid="view-order-2">View</button></td>
+            </tr>
+            <tr data-testid="order-row-3">
+              <td data-testid="order-id">#1003</td>
+              <td data-testid="order-product">Node.js Cookbook</td>
+              <td data-testid="order-qty">3</td>
+              <td data-testid="order-status">Delivered</td>
+              <td><button data-testid="view-order-3">View</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="output" id="testid-output"></p>
+    </section>
+
+    <!-- ===================== 8. Filtering & Chaining ===================== -->
+    <section id="section-filter">
+      <h2>8. Locator Filtering &amp; Chaining <span class="tag">filter</span></h2>
+      <p class="note">
+        Practice <code>.filter()</code>, <code>.nth()</code>, <code>.first()</code>, <code>.last()</code>,
+        <code>.locator()</code> chaining, <code>.and()</code>, <code>has</code> / <code>hasText</code> options.
+      </p>
+
+      <div class="row">
+        <div class="col">
+          <h3>Multiple same-role buttons (nth / first / last)</h3>
+          <button class="item-btn" data-item="apple">Apple</button>
+          <button class="item-btn" data-item="banana">Banana</button>
+          <button class="item-btn" data-item="cherry">Cherry</button>
+          <button class="item-btn" data-item="date">Date</button>
+          <button class="item-btn" data-item="elderberry">Elderberry</button>
+        </div>
+        <div class="col">
+          <h3>List items — filter by hasText</h3>
+          <ul id="product-list">
+            <li class="product-item active"><span class="name">Laptop</span> <span class="price">$999</span> <button class="add-cart">Add</button></li>
+            <li class="product-item"><span class="name">Phone</span> <span class="price">$499</span> <button class="add-cart">Add</button></li>
+            <li class="product-item active"><span class="name">Tablet</span> <span class="price">$299</span> <button class="add-cart">Add</button></li>
+            <li class="product-item"><span class="name">Monitor</span> <span class="price">$199</span> <button class="add-cart">Add</button></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:0.75rem;">
+        <div class="col">
+          <h3>Cards — locator chaining (parent → child)</h3>
+          <div class="user-card" id="card-alice" style="border:1px solid #ccc;border-radius:4px;padding:0.5rem;margin-bottom:0.5rem;">
+            <h4 style="margin:0 0 0.25rem;">Alice Smith</h4>
+            <p style="margin:0 0 0.25rem;font-size:0.85rem;">Role: QA Engineer</p>
+            <button class="card-btn" aria-label="Edit Alice">Edit</button>
+            <button class="card-btn delete-btn" aria-label="Delete Alice" style="background:#fee2e2;">Delete</button>
+          </div>
+          <div class="user-card" id="card-bob" style="border:1px solid #ccc;border-radius:4px;padding:0.5rem;margin-bottom:0.5rem;">
+            <h4 style="margin:0 0 0.25rem;">Bob Jones</h4>
+            <p style="margin:0 0 0.25rem;font-size:0.85rem;">Role: Developer</p>
+            <button class="card-btn" aria-label="Edit Bob">Edit</button>
+            <button class="card-btn delete-btn" aria-label="Delete Bob" style="background:#fee2e2;">Delete</button>
+          </div>
+          <div class="user-card" id="card-carol" style="border:1px solid #ccc;border-radius:4px;padding:0.5rem;">
+            <h4 style="margin:0 0 0.25rem;">Carol White</h4>
+            <p style="margin:0 0 0.25rem;font-size:0.85rem;">Role: Manager</p>
+            <button class="card-btn" aria-label="Edit Carol">Edit</button>
+            <button class="card-btn delete-btn" aria-label="Delete Carol" style="background:#fee2e2;">Delete</button>
+          </div>
+        </div>
+        <div class="col">
+          <h3>Nested locators (has / hasText)</h3>
+          <div class="status-row" style="padding:0.3rem;border-bottom:1px solid #eee;">
+            <span class="task-name">Write tests</span>
+            <span class="badge" style="background:#d1fae5;padding:0.1rem 0.4rem;border-radius:3px;font-size:0.8rem;margin-left:0.5rem;">Done</span>
+          </div>
+          <div class="status-row" style="padding:0.3rem;border-bottom:1px solid #eee;">
+            <span class="task-name">Code review</span>
+            <span class="badge" style="background:#fef3c7;padding:0.1rem 0.4rem;border-radius:3px;font-size:0.8rem;margin-left:0.5rem;">In Progress</span>
+          </div>
+          <div class="status-row" style="padding:0.3rem;border-bottom:1px solid #eee;">
+            <span class="task-name">Deploy to staging</span>
+            <span class="badge" style="background:#fee2e2;padding:0.1rem 0.4rem;border-radius:3px;font-size:0.8rem;margin-left:0.5rem;">Blocked</span>
+          </div>
+          <div class="status-row" style="padding:0.3rem;">
+            <span class="task-name">Update docs</span>
+            <span class="badge" style="background:#d1fae5;padding:0.1rem 0.4rem;border-radius:3px;font-size:0.8rem;margin-left:0.5rem;">Done</span>
+          </div>
+        </div>
+      </div>
+      <p class="output" id="filter-output"></p>
+    </section>
+
+    <!-- ===================== 9. Tables ===================== -->
+    <section id="section-table">
+      <h2>9. Tables <span class="tag">table</span></h2>
+      <p class="note">Practice locating cells, rows, headers. Combine <code>getByRole('row')</code>, <code>getByRole('cell')</code>, <code>getByRole('columnheader')</code>.</p>
+
+      <table id="employees-table" aria-label="Employee Directory">
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">Department</th>
+            <th scope="col">Salary</th>
+            <th scope="col">Status</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>E001</td><td>Aarav Mehta</td><td>Engineering</td><td>$85,000</td>
+            <td><span style="color:green;">Active</span></td>
+            <td><button aria-label="Edit Aarav Mehta">Edit</button> <button aria-label="Delete Aarav Mehta" style="background:#fee2e2;">Del</button></td>
+          </tr>
+          <tr>
+            <td>E002</td><td>Priya Sharma</td><td>Marketing</td><td>$72,000</td>
+            <td><span style="color:green;">Active</span></td>
+            <td><button aria-label="Edit Priya Sharma">Edit</button> <button aria-label="Delete Priya Sharma" style="background:#fee2e2;">Del</button></td>
+          </tr>
+          <tr>
+            <td>E003</td><td>Rohan Verma</td><td>HR</td><td>$65,000</td>
+            <td><span style="color:red;">Inactive</span></td>
+            <td><button aria-label="Edit Rohan Verma">Edit</button> <button aria-label="Delete Rohan Verma" style="background:#fee2e2;">Del</button></td>
+          </tr>
+          <tr>
+            <td>E004</td><td>Sneha Patil</td><td>Engineering</td><td>$90,000</td>
+            <td><span style="color:green;">Active</span></td>
+            <td><button aria-label="Edit Sneha Patil">Edit</button> <button aria-label="Delete Sneha Patil" style="background:#fee2e2;">Del</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="output" id="table-output"></p>
+    </section>
+
+    <!-- ===================== 10. Dropdowns & Select ===================== -->
+    <section id="section-select">
+      <h2>10. Dropdowns / Select <span class="tag">select</span></h2>
+      <p class="note">Use <code>page.selectOption()</code> after locating via <code>getByLabel</code>, <code>getByRole('combobox')</code>, or <code>getByTestId</code>.</p>
+
+      <div class="row">
+        <div class="col">
+          <label for="sel-country">Country</label>
+          <select id="sel-country" data-testid="country-select">
+            <option value="">Select country</option>
+            <option value="IN">India</option>
+            <option value="US">United States</option>
+            <option value="UK">United Kingdom</option>
+            <option value="AU">Australia</option>
+          </select>
+        </div>
+        <div class="col">
+          <label for="sel-language">Programming Language</label>
+          <select id="sel-language" aria-label="Select programming language">
+            <option value="ts">TypeScript</option>
+            <option value="js">JavaScript</option>
+            <option value="py">Python</option>
+            <option value="java">Java</option>
+          </select>
+        </div>
+        <div class="col">
+          <label for="sel-multi">Skills (multi-select)</label><br/>
+          <select id="sel-multi" multiple size="4" aria-label="Select your skills">
+            <option value="pw">Playwright</option>
+            <option value="cy">Cypress</option>
+            <option value="sel">Selenium</option>
+            <option value="jest">Jest</option>
+          </select>
+        </div>
+      </div>
+      <p class="output" id="select-output"></p>
+    </section>
+
+    <!-- ===================== 11. Checkboxes & Radios ===================== -->
+    <section id="section-checkbox">
+      <h2>11. Checkboxes &amp; Radio Buttons <span class="tag">checkbox</span></h2>
+      <p class="note">Use <code>getByRole('checkbox')</code>, <code>getByLabel()</code> and <code>check()</code> / <code>uncheck()</code> / <code>isChecked()</code>.</p>
+
+      <div class="row">
+        <div class="col">
+          <h3>Checkboxes</h3>
+          <label><input type="checkbox" id="chk-email-notif" name="notifications" value="email" /> Email Notifications</label><br/>
+          <label><input type="checkbox" id="chk-sms-notif" name="notifications" value="sms" checked /> SMS Notifications</label><br/>
+          <label><input type="checkbox" id="chk-push-notif" name="notifications" value="push" /> Push Notifications</label><br/>
+          <label><input type="checkbox" id="chk-weekly" name="notifications" value="weekly" disabled /> Weekly Digest (disabled)</label>
+        </div>
+        <div class="col">
+          <h3>Radio Buttons</h3>
+          <fieldset>
+            <legend>Payment Method</legend>
+            <label><input type="radio" name="payment" value="card" id="pay-card" checked /> Credit Card</label><br/>
+            <label><input type="radio" name="payment" value="upi" id="pay-upi" /> UPI</label><br/>
+            <label><input type="radio" name="payment" value="netbanking" id="pay-netbanking" /> Net Banking</label><br/>
+            <label><input type="radio" name="payment" value="cod" id="pay-cod" /> Cash on Delivery</label>
+          </fieldset>
+        </div>
+        <div class="col">
+          <h3>Toggle Switch</h3>
+          <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+            <input type="checkbox" id="toggle-darkmode" role="switch" aria-checked="false" />
+            Enable Dark Mode
+          </label><br/>
+          <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+            <input type="checkbox" id="toggle-2fa" role="switch" aria-checked="false" />
+            Two-Factor Authentication
+          </label>
+        </div>
+      </div>
+      <p class="output" id="checkbox-output"></p>
+    </section>
+
+    <!-- ===================== 12. File Upload ===================== -->
+    <section id="section-file">
+      <h2>12. File Upload <span class="tag">file</span></h2>
+      <p class="note">Use <code>locator.setInputFiles()</code> to upload files. Locate with <code>getByLabel()</code> or <code>getByTestId()</code>.</p>
+
+      <div class="row">
+        <div class="col">
+          <label for="upload-avatar">Profile Picture</label><br/>
+          <input type="file" id="upload-avatar" accept="image/*" data-testid="avatar-upload" />
+        </div>
+        <div class="col">
+          <label for="upload-resume">Resume (PDF only)</label><br/>
+          <input type="file" id="upload-resume" accept=".pdf" data-testid="resume-upload" />
+        </div>
+        <div class="col">
+          <label for="upload-docs">Multiple Documents</label><br/>
+          <input type="file" id="upload-docs" multiple data-testid="docs-upload" accept=".pdf,.doc,.docx" />
+        </div>
+      </div>
+      <p class="output" id="file-preview"></p>
+    </section>
+
+    <!-- ===================== 13. Forms ===================== -->
+    <section id="section-form">
+      <h2>13. Full Registration Form <span class="tag">form</span></h2>
+      <p class="note">Combines all getBy strategies on a real-world form scenario.</p>
+
+      <form id="registration-form" novalidate>
+        <div class="row">
+          <div class="col">
+            <label for="reg-fname">First Name *</label><br/>
+            <input type="text" id="reg-fname" data-testid="reg-first-name" placeholder="John" required /><br/><br/>
+            <label for="reg-lname">Last Name *</label><br/>
+            <input type="text" id="reg-lname" data-testid="reg-last-name" placeholder="Doe" required /><br/><br/>
+            <label for="reg-email">Email *</label><br/>
+            <input type="email" id="reg-email" data-testid="reg-email" placeholder="john@example.com" required /><br/><br/>
+            <label for="reg-phone">Phone</label><br/>
+            <input type="tel" id="reg-phone" data-testid="reg-phone" placeholder="+1 555 000 0000" />
+          </div>
+          <div class="col">
+            <label for="reg-role">Role</label><br/>
+            <select id="reg-role" data-testid="reg-role" aria-label="Select your role">
+              <option value="">-- Select Role --</option>
+              <option value="qa">QA Engineer</option>
+              <option value="dev">Developer</option>
+              <option value="pm">Product Manager</option>
+              <option value="devops">DevOps</option>
+            </select><br/><br/>
+            <label for="reg-country">Country</label><br/>
+            <select id="reg-country" data-testid="reg-country" aria-label="Select country">
+              <option value="">-- Select Country --</option>
+              <option value="IN">India</option>
+              <option value="US">USA</option>
+            </select><br/><br/>
+            <label>
+              <input type="checkbox" id="reg-terms" data-testid="reg-terms-checkbox" />
+              I accept the Terms &amp; Conditions
+            </label><br/>
+            <label>
+              <input type="checkbox" id="reg-newsletter" data-testid="reg-newsletter-checkbox" checked />
+              Subscribe to newsletter
+            </label>
+          </div>
+          <div class="col">
+            <label for="reg-bio">About You</label><br/>
+            <textarea id="reg-bio" data-testid="reg-bio" placeholder="Tell us about yourself..." rows="5" style="width:90%;"></textarea><br/><br/>
+            <label for="reg-photo">Profile Photo</label><br/>
+            <input type="file" id="reg-photo" data-testid="reg-photo" accept="image/*" />
+          </div>
+        </div>
+        <div style="margin-top:1rem;">
+          <button type="submit" id="reg-submit" data-testid="reg-submit-btn">Create Account</button>
+          <button type="reset" id="reg-reset" data-testid="reg-reset-btn">Reset Form</button>
+        </div>
+        <p class="output" id="form-output"></p>
+      </form>
+    </section>
+
+    <!-- ===================== 14. Dynamic / Async Elements ===================== -->
+    <section id="section-dynamic">
+      <h2>14. Dynamic Elements <span class="tag">waitFor</span></h2>
+      <p class="note">Practice <code>waitFor</code>, <code>toBeVisible</code>, <code>toBeHidden</code>. Elements appear/disappear after a delay.</p>
+
+      <div class="row">
+        <div class="col">
+          <h3>Lazy-load content</h3>
+          <button id="load-data-btn">Load Data</button>
+          <div id="lazy-content" data-testid="lazy-content" style="display:none;margin-top:0.5rem;padding:0.5rem;background:#e8f0fe;border-radius:4px;">
+            Data loaded successfully! 42 records found.
+          </div>
+        </div>
+        <div class="col">
+          <h3>Toast notification</h3>
+          <button id="show-toast-btn">Show Toast</button>
+          <div id="toast-msg" role="status" data-testid="toast-message" style="display:none;margin-top:0.5rem;padding:0.4rem 0.75rem;background:#d1fae5;border:1px solid #6ee7b7;border-radius:4px;">
+            ✓ Operation successful!
+          </div>
+        </div>
+        <div class="col">
+          <h3>Spinner → Confirmation</h3>
+          <button id="submit-order-btn">Place Order</button>
+          <div id="spinner" data-testid="loading-spinner" style="display:none;margin-top:0.5rem;color:#555;">⏳ Processing order...</div>
+          <div id="order-confirmed" data-testid="order-confirmed" style="display:none;margin-top:0.5rem;color:green;font-weight:700;">✓ Order #9876 Confirmed!</div>
+        </div>
+      </div>
+      <p class="output" id="dynamic-output"></p>
+    </section>
+
+    <!-- ===================== 15. CSS & XPath targets ===================== -->
+    <section id="section-misc">
+      <h2>15. CSS Selector &amp; XPath Targets <span class="tag">css</span> <span class="tag">xpath</span></h2>
+      <p class="note">For <code>page.locator('css=...')</code> and <code>page.locator('xpath=...')</code> practice.</p>
+
+      <div class="row">
+        <div class="col">
+          <h3>Class &amp; ID targets</h3>
+          <p class="highlight-blue" style="color:#1a73e8;font-weight:700;">Blue highlighted text</p>
+          <p class="highlight-red" style="color:#e53e3e;font-weight:700;">Red highlighted text</p>
+          <div id="unique-box" style="background:#fef3c7;padding:0.5rem;border-radius:4px;display:inline-block;">#unique-box div</div>
+        </div>
+        <div class="col">
+          <h3>Attribute selectors</h3>
+          <input type="text" data-type="username" placeholder="[data-type=username]" /><br/><br/>
+          <input type="text" data-type="search" placeholder="[data-type=search]" /><br/><br/>
+          <button data-action="confirm" style="background:#d1fae5;">data-action=confirm</button>
+          <button data-action="cancel" style="background:#fee2e2;">data-action=cancel</button>
+        </div>
+        <div class="col">
+          <h3>Sibling &amp; nth-child</h3>
+          <ol id="step-list">
+            <li>Install Playwright</li>
+            <li>Configure playwright.config.ts</li>
+            <li>Write your first test</li>
+            <li>Run with npx playwright test</li>
+            <li>View HTML report</li>
+          </ol>
+        </div>
+      </div>
+      <p class="output" id="misc-output"></p>
+    </section>
+
+    <!-- ===================== 16. iFrame ===================== -->
+    <section id="section-iframe">
+      <h2>16. iFrame Content <span class="tag">frameLocator</span></h2>
+      <p class="note">Use <code>page.frameLocator('iframe#practice-frame')</code> then chain <code>getBy*</code> inside.</p>
+      <iframe
+        id="practice-frame"
+        title="Practice iFrame"
+        srcdoc="<html><body style='font-family:Arial;padding:1rem;'>
+          <h3>Inside iFrame</h3>
+          <input type='text' placeholder='iFrame input field' id='frame-input' style='padding:0.3rem;border:1px solid #aaa;border-radius:4px;' />
+          <button id='frame-btn' style='margin-left:0.5rem;padding:0.3rem 0.75rem;cursor:pointer;'>iFrame Button</button>
+          <p id='frame-text'>iFrame paragraph text</p>
+        </body></html>"
+        style="width:100%;height:140px;border:1px solid #ccc;border-radius:4px;"
+      ></iframe>
+    </section>
+
+    <script src="app.js"></script>
   </body>
-  <script src="app.js"></script>
 </html>
