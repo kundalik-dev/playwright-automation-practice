@@ -1,4 +1,4 @@
-# Video and trace in playwright
+# 🎭 Video and trace in playwright
 
 - Video and trace can be recorded in playwrigh using `playwright.config.js` file
 

@@ -1,17 +1,17 @@
-# Annotations & Tags in Playwright
+# 🎭 Annotations & Tags in Playwright
 
 Annotations and tags are provided in test so that we can filter test cases while running.
 
 ## Annotations
 
 - describe
-- Skip
-- Only
-- Failme
-- Fail
-- slow
-- info
-- step
+- Skip ✅
+- Only ✅
+- Failme ✅
+- Fail ✅
+- slow ✅
+- info ✅
+- step ✅
 - beforeAll
 - afterAll
 - beforeEach

@@ -1,4 +1,4 @@
-# Screenshots In Playwright
+# 🎭 Screenshots In Playwright
 
 ## Playwright.config.js
 
@@ -87,7 +87,7 @@ export function screenshotName(imgName) {
 }
 ```
 
-## Screenshot in Selenium
+## 🤖 Screenshot in Selenium
 
 - Screenshot captured in selenium using `TakesScreenshot` interface but it has limitation.
 - Only capture current view-port only

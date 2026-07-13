@@ -1,4 +1,4 @@
-# Windows & Tab in Playwright
+# 🎭 Windows & Tab in Playwright
 
 - In playwright tabs and windows handled by using `browserContext`
 - No need to switch context between tabs to perform ops in playwright like in selenium.
@@ -49,7 +49,7 @@ const [newPage] = await Promise.all([page.waitForEvent("popup"), link.click()]);
 browser.close();
 ```
 
-## Tabs & Windows In Selenium
+## 🤖 Tabs & Windows In Selenium
 
 - In selenium tabs and windows are identified by unique identifier
 - Tab switching done by `switchTo()` method

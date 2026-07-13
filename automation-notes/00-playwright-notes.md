@@ -306,6 +306,8 @@ context.on("dialog", async (dialog) => {
 
 ### Interview Questions
 
+### Q - How handle alert in playwright?
+
 #### Q - Why do we add the dialog handler before clicking the alert button?
 
 Ans:-
@@ -439,9 +441,13 @@ Steps to create allure report
 - Run test and then run this command `allure generate my-allure-results -o allure-report --clean`
 - To open allure report run this `allure open allure-report`
 
+## 🤖 Selenium Reporting
+
+Allure report used in selenium
+
 ---
 
-## Mouse, Keyboard Actions in Playwright
+## 🎭 Mouse, Keyboard Actions in Playwright
 
 In Playwright, mouse and keyboard actions are available directly on the `locator` (high level) or on `page.mouse` / `page.keyboard` (low level). The common actions are:
 
@@ -524,7 +530,7 @@ await page.locator("#search").pressSequentially("kundalik", { delay: 100 });
 
 > `press()` is one key/shortcut at a time. `pressSequentially()` types a full string character by character and fires real key events (the `delay` option, in ms, adds a pause between each key — useful for inputs that react on every keystroke). It replaces the deprecated `type()`. To fill a field quickly without per-key events, prefer `locator.fill("text")`.
 
-## Actions in Selenium Java
+## 🤖 Actions in Selenium Java
 
 In Selenium all these actions are performed using the `Actions` class.
 

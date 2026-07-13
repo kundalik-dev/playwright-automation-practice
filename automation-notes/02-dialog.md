@@ -1,4 +1,4 @@
-# Dialog
+# 🎭 Dialog
 
 There are three types of dialog in playwright,
 
@@ -114,6 +114,8 @@ context.on("dialog", async (dialog) => {
 ```
 
 ## Interview Questions
+
+### Q - How handle alert in playwright?
 
 ### Q - Why do we add the dialog handler before clicking the alert button?
 

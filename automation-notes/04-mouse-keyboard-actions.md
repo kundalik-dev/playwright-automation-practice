@@ -1,4 +1,4 @@
-# Mouse, Keyboard Actions in Playwright
+# 🎭 Mouse, Keyboard Actions in Playwright
 
 In Playwright, mouse and keyboard actions are available directly on the `locator` (high level) or on `page.mouse` / `page.keyboard` (low level). The common actions are:
 
@@ -81,7 +81,7 @@ await page.locator("#search").pressSequentially("kundalik", { delay: 100 });
 
 > `press()` is one key/shortcut at a time. `pressSequentially()` types a full string character by character and fires real key events (the `delay` option, in ms, adds a pause between each key — useful for inputs that react on every keystroke). It replaces the deprecated `type()`. To fill a field quickly without per-key events, prefer `locator.fill("text")`.
 
-# Actions in Selenium Java
+# 🤖 Actions in Selenium Java
 
 In Selenium all these actions are performed using the `Actions` class.
 
@@ -223,19 +223,19 @@ Ans:-
 
 ## Action Methods Comparison
 
-| Action               | Playwright                               | Selenium (Java)                                                         |
-| -------------------- | ---------------------------------------- | ----------------------------------------------------------------------- |
-| Hover                | `locator.hover()`                        | `act.moveToElement(el).perform()`                                       |
-| Hover + click        | `locator.hover()` then `locator.click()` | `act.moveToElement(el).click().perform()`                               |
-| Right click          | `locator.click({ button: "right" })`     | `act.contextClick(el).perform()`                                        |
-| Double click         | `locator.dblclick()`                     | `act.doubleClick(el).perform()`                                         |
-| Click and hold       | `page.mouse.down()`                      | `act.clickAndHold(el).perform()`                                        |
-| Release              | `page.mouse.up()`                        | `act.release().perform()`                                               |
-| Drag and drop        | `source.dragTo(target)`                  | `act.dragAndDrop(src, trg).perform()`                                   |
-| Move by offset       | `page.mouse.move(x, y)`                  | `act.dragAndDropBy(src, x, y).perform()`                                |
-| Press key / shortcut | `page.keyboard.press("Control+A")`       | `act.keyDown(Keys.CONTROL).sendKeys("a").keyUp(Keys.CONTROL).perform()` |
-| Type string          | `locator.pressSequentially("text", { delay: 100 })` | `act.sendKeys("text").perform()`                             |
-| Needs perform()      | No (auto executes)                       | Yes (builder pattern)                                                   |
+| Action               | Playwright                                          | Selenium (Java)                                                         |
+| -------------------- | --------------------------------------------------- | ----------------------------------------------------------------------- |
+| Hover                | `locator.hover()`                                   | `act.moveToElement(el).perform()`                                       |
+| Hover + click        | `locator.hover()` then `locator.click()`            | `act.moveToElement(el).click().perform()`                               |
+| Right click          | `locator.click({ button: "right" })`                | `act.contextClick(el).perform()`                                        |
+| Double click         | `locator.dblclick()`                                | `act.doubleClick(el).perform()`                                         |
+| Click and hold       | `page.mouse.down()`                                 | `act.clickAndHold(el).perform()`                                        |
+| Release              | `page.mouse.up()`                                   | `act.release().perform()`                                               |
+| Drag and drop        | `source.dragTo(target)`                             | `act.dragAndDrop(src, trg).perform()`                                   |
+| Move by offset       | `page.mouse.move(x, y)`                             | `act.dragAndDropBy(src, x, y).perform()`                                |
+| Press key / shortcut | `page.keyboard.press("Control+A")`                  | `act.keyDown(Keys.CONTROL).sendKeys("a").keyUp(Keys.CONTROL).perform()` |
+| Type string          | `locator.pressSequentially("text", { delay: 100 })` | `act.sendKeys("text").perform()`                                        |
+| Needs perform()      | No (auto executes)                                  | Yes (builder pattern)                                                   |
 
 ## Keys Comparison
 

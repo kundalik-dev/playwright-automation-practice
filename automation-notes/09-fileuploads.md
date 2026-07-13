@@ -1,4 +1,4 @@
-# File Upload in Playwright
+# 🎭 File Upload in Playwright
 
 - File Upload in automation testing is possible only on Web Application.
 - Playwright can't handle desktop based windows for that we need to use third party tools in seleniu like `autoit` and `robot class`
@@ -154,3 +154,5 @@ import path from "path";
 const filePath = path.resolve(__dirname, "../test-data/sample.pdf");
 await page.locator('input[type="file"]').setInputFiles(filePath);
 ```
+
+## 🤖 FileUpload in Selenium

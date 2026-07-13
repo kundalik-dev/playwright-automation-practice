@@ -65,3 +65,7 @@ Steps to create allure report
 - Install `CLI` command to run allure report as `pnpm install -g allure-commandline --save-dev`
 - Run test and then run this command `allure generate my-allure-results -o allure-report --clean`
 - To open allure report run this `allure open allure-report`
+
+## 🤖 Selenium Reporting
+
+Allure report used in selenium
