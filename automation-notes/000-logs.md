@@ -7,11 +7,10 @@
 - reporting
 - mouse & keyboard actions
 - drag and drop
--
+- 05 Checkbox & radio
 
 ## Not completed Notes
 
-- 05 Checkbox & radio
 - 06 playwright concepts
 - 07 Annotations
 - 08 playwright config
