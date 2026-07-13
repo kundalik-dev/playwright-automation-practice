@@ -26,7 +26,33 @@ reporter: "list";
 
 // for multiple report to generate
 reporter: [["list"], ["dot"], ["html"]];
+
+// reporter configuration settings
+reporter: [
+  // 1. Your customized HTML reporter
+  [
+    "html",
+    {
+      open: "never",
+      outputFolder: "my-html-report",
+      port: 3000,
+    },
+  ],
+  // 2. Terminal-based live logging
+  ["list"],
+  // 3. JSON Reporter (Requires 'outputFile')
+  ["json", { outputFile: "results/test-run.json" }],
+  // 4. JUnit XML Reporter for CI/CD gates (Requires 'outputFile')
+  ["junit", { outputFile: "results/junit.xml" }],
+];
 ```
+
+### configuration options are
+
+- Open: "always" | "never" | "on-failure"
+- host: 8080
+- outputFolder: "folder_name"
+- outputFile:"results/test-run.json"
 
 ## Allure Report
 

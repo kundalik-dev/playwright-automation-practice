@@ -1,8 +1,8 @@
-# Playwright Notes
+# 🎭 Playwright Notes
 
 ---
 
-## iFrame
+## 🎭 iFrame
 
 Iframe is two seperate html code file integrated into one using `iframe` element.
 
@@ -96,7 +96,7 @@ where `frame.pratentFrame()` it traverse immediate frame one level up and `frame
 
 > frameLocator is most preffered way to interact with iframe in playwright. But they dont provide meta inforamtion like name, url, isDetached for that we use frame object.
 
-## iFrame in selenium
+## 🤖 iFrame in selenium
 
 ```java
 // 1. By index (order in the DOM, 0-based)
@@ -189,7 +189,7 @@ Selenium has no first-class frame object, so metadata is read via `getAttribute(
 
 ---
 
-## Dialog
+## 🎭 Dialog
 
 There are three types of dialog in playwright,
 
@@ -205,7 +205,8 @@ page.on("dialog", async (d) => {
   await d.dismiss();
   d.type();
   d.message();
-  d.defaultValues();
+  d.defaultValue();
+  d.page();
 });
 ```
 
@@ -224,6 +225,7 @@ page.on("dialog", async (d) => {
 - `d.type()` => gives type of dialog (`alert` / `confirm` / `prompt`)
 - `d.message()` => gives text present on the dialog
 - `d.defaultValue()` => gives the default value of a `prompt` dialog
+- `d.page()` => gives 🚫
 - `d.accept()` => clicks OK on the dialog
 - `d.dismiss()` => dismisses (clicks Cancel) on the dialog
 - `d.accept("john")` => sends text into a `prompt` input then accepts
@@ -285,6 +287,23 @@ await page.locator("#alert-btn").click();
 
 Using the dialog handler we can interact with alerts. We can inspect the dialog `type` and `message`, then either `accept` or `dismiss` them, and for a `prompt` alert we can provide an input value.
 
+## page in dialog handler
+
+```js
+// Listen globally across all tabs in this context
+context.on("dialog", async (dialog) => {
+  const sourcePage = dialog.page(); // Get the page that triggered it
+  const currentUrl = sourcePage.url();
+
+  if (currentUrl.includes("/checkout")) {
+    console.log(`Critical alert on checkout page: ${dialog.message()}`);
+    await dialog.accept();
+  } else {
+    await dialog.dismiss();
+  }
+});
+```
+
 ### Interview Questions
 
 #### Q - Why do we add the dialog handler before clicking the alert button?
@@ -310,7 +329,7 @@ Ans:-
 - Playwright auto dismisses it by default.
 - But if a handler is registered and we never call `accept()`/`dismiss()`, the test will hang/timeout.
 
-## Alerts in Selenium
+## 🤖 Alerts in Selenium
 
 In Selenium Java an alert is handled using the `Alert` interface. We first switch to the alert, then act on it.
 
@@ -348,7 +367,7 @@ alert.sendKeys("kundalik");  // type into a prompt alert
 | `d.dismiss()`                | `alert.dismiss()`                              |
 | `d.accept("text")`           | `alert.sendKeys("text")` then `alert.accept()` |
 | `d.type()`                   | no direct equivalent                           |
-| `d.defaultValue()`           | no direct equivalent                           |
+| `d.defaultValue()`           | no direct equivalent use javaScript executor   |
 
 ---
 
@@ -380,7 +399,33 @@ reporter: "list";
 
 // for multiple report to generate
 reporter: [["list"], ["dot"], ["html"]];
+
+// reporter configuration settings
+reporter: [
+  // 1. Your customized HTML reporter
+  [
+    "html",
+    {
+      open: "never",
+      outputFolder: "my-html-report",
+      port: 3000,
+    },
+  ],
+  // 2. Terminal-based live logging
+  ["list"],
+  // 3. JSON Reporter (Requires 'outputFile')
+  ["json", { outputFile: "results/test-run.json" }],
+  // 4. JUnit XML Reporter for CI/CD gates (Requires 'outputFile')
+  ["junit", { outputFile: "results/junit.xml" }],
+];
 ```
+
+### configuration options are
+
+- Open: "always" | "never" | "on-failure"
+- host: 8080
+- outputFolder: "folder_name"
+- outputFile:"results/test-run.json"
 
 ### Allure Report
 

@@ -14,7 +14,8 @@ page.on("dialog", async (d) => {
   await d.dismiss();
   d.type();
   d.message();
-  d.defaultValues();
+  d.defaultValue();
+  d.page();
 });
 ```
 
@@ -33,6 +34,7 @@ page.on("dialog", async (d) => {
 - `d.type()` => gives type of dialog (`alert` / `confirm` / `prompt`)
 - `d.message()` => gives text present on the dialog
 - `d.defaultValue()` => gives the default value of a `prompt` dialog
+- `d.page()` => 🚫
 - `d.accept()` => clicks OK on the dialog
 - `d.dismiss()` => dismisses (clicks Cancel) on the dialog
 - `d.accept("john")` => sends text into a `prompt` input then accepts
@@ -94,6 +96,23 @@ await page.locator("#alert-btn").click();
 
 Using the dialog handler we can interact with alerts. We can inspect the dialog `type` and `message`, then either `accept` or `dismiss` them, and for a `prompt` alert we can provide an input value.
 
+## page in dialog handler
+
+```js
+// Listen globally across all tabs in this context
+context.on("dialog", async (dialog) => {
+  const sourcePage = dialog.page(); // Get the page that triggered it
+  const currentUrl = sourcePage.url();
+
+  if (currentUrl.includes("/checkout")) {
+    console.log(`Critical alert on checkout page: ${dialog.message()}`);
+    await dialog.accept();
+  } else {
+    await dialog.dismiss();
+  }
+});
+```
+
 ## Interview Questions
 
 ### Q - Why do we add the dialog handler before clicking the alert button?
@@ -119,7 +138,7 @@ Ans:-
 - Playwright auto dismisses it by default.
 - But if a handler is registered and we never call `accept()`/`dismiss()`, the test will hang/timeout.
 
-# Alerts in Selenium
+# 🤖 Alerts in Selenium
 
 In Selenium Java an alert is handled using the `Alert` interface. We first switch to the alert, then act on it.
 
