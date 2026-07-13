@@ -29,3 +29,104 @@
 
 - broken urls
 -
+
+## List of topics to prepare for playwright automation
+
+- dropdowns
+  - select
+  - without select
+- dialog
+  - alert
+  - confirm
+  - prompt
+- file upload & download
+- screenshot, videos, trace
+- tables
+- pagination & sorting
+- date picker
+- inputs, labels, forms, buttons, heading, paragraph,
+- links
+- windows & tabs
+- iframes
+- mouse actions, key press
+- configuration settings
+- annotations
+- fixtures
+- locators
+  - built-in locators (getByRole, getByText, getByLabel, getByTestId, etc.)
+  - css & xpath locators
+  - chaining & filtering locators (filter, has, has-text, nth, first, last)
+  - locator vs elementHandle vs page.$
+- waits & auto-waiting
+  - actionability checks
+  - explicit waits (waitForSelector, waitForResponse, waitForURL, waitForLoadState)
+  - avoiding hard-coded waits / flaky waits
+- assertions
+  - web-first assertions (expect(locator))
+  - auto-retrying assertions
+  - soft assertions
+  - custom matchers
+- Page Object Model
+  - POM structure & base page
+  - screenplay pattern / other design patterns
+  - component object model
+- API testing
+  - request context (APIRequestContext)
+  - GET/POST/PUT/DELETE, headers, auth tokens
+  - combining API + UI tests (setup via API)
+  - schema/response validation
+- network interception & mocking
+  - route/page.route
+  - mocking API responses
+  - blocking resources (images, css, ads)
+  - modifying requests/responses
+- authentication & session handling
+  - storageState (save/reuse login session)
+  - global setup / global teardown
+  - multiple user roles/sessions
+- test hooks & fixtures
+  - test.beforeEach/afterEach, beforeAll/afterAll
+  - custom fixtures
+  - fixture scoping (test vs worker)
+- parallelization & execution
+  - workers & parallel execution
+  - sharding
+  - test.describe.serial / parallel
+  - retries & flaky test handling
+- cross-browser & device testing
+  - chromium, firefox, webkit
+  - mobile emulation & viewport
+  - device descriptors
+- debugging tools
+  - playwright inspector
+  - codegen
+  - trace viewer
+  - UI mode
+  - debug mode / headed mode / slowMo
+- test configuration & environment
+  - playwright.config.ts (projects, timeouts, baseURL)
+  - environment variables / multiple environments
+  - .env & secrets management
+- reporting & CI/CD
+  - HTML reporter, Allure, custom reporters
+  - GitHub Actions / Jenkins / Azure DevOps integration
+  - Docker & containerized test runs
+  - cloud execution (BrowserStack/LambdaTest)
+- visual & accessibility testing
+  - visual regression / screenshot comparison
+  - accessibility (a11y) testing basics
+- shadow DOM & web components
+- local storage, session storage & cookies
+- JS execution (page.evaluate, evaluateHandle)
+- keyboard & advanced mouse actions
+  - hover, drag & drop, right-click, double-click
+  - keyboard shortcuts & key combinations
+- geolocation, permissions & browser context options
+- multiple tabs, windows & popups
+- BDD integration (Cucumber + Playwright)
+- test tagging, grouping & test data management
+- performance & network throttling basics
+- Playwright vs Selenium vs Cypress (comparison for interview)
+- TypeScript essentials for Playwright (types, interfaces, generics)
+- common interview questions & framework design discussion
+-
