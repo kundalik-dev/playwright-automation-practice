@@ -12,8 +12,8 @@ There are two ways to handle iframe.
 
 ```html
 <html>
-  <iframe class="outerFrame" name="outerFrameName">
-    <iframe class="innnerFrame" name="innerFrameName">
+  <iframe class="outerFrame" id="outerFrame" name="outerFrameName">
+    <iframe class="innnerFrame" id="innerFrame" name="innerFrameName">
       <button id="btn">Click me</button>
     </iframe>
   </iframe>
