@@ -7,10 +7,12 @@ In Playwright for file download scenario we
 
 ## Methods present on `dowanload` event
 
-- saveAs(path)
-- suggestedFilename()
-- cancel()
-- failure()
+- `saveAs(path)` => to save downloaded file into required location. Else it will be deleted once test execution ends.
+- `suggestedFilename()` => to check filename just downloaded.
+- `cancel()` => to cancel downloading file after validations done to reduce bandwidth of server
+- `failure()` => to validate the download failure reason `canceled` for canceled download
+
+### Approach 01
 
 ```js
 import { test, expect } from "@playwright/test";
@@ -40,18 +42,44 @@ test("Validate file download lifecycle", async ({ page }) => {
 });
 ```
 
+### Approach 02 - Promise all (recommended)
+
+```js
+import { test, expect } from "@playwright/test";
+
+test("Safely intercept and cancel download using Promise.all", async ({
+  page,
+}) => {
+  // 1. Await both the event listener registration and the click action simultaneously
+  const [download] = await Promise.all([
+    page.waitForEvent("download"), // Set up the network listener
+    page.locator("#download-heavy-file").click(), // Trigger the actual download event
+  ]);
+
+  // 2. Actively abort the download stream mid-air
+  await download.cancel();
+
+  // 3. Verify that the network stream was successfully terminated
+  const failureReason = await download.failure();
+  expect(failureReason).toBe("canceled");
+});
+```
+
 ## Critical Interview Points to Highlight
 
-- Why page.waitForEvent('download') must come first => else we could miss the download event
+- Why `page.waitForEvent('download')` must come first => else we could miss the download event
 - Temporary vs. Permanent Storage => `download.saveAs(path)` to save downloaded file else browser will delete once it close
 - Bypassing Large Downloads => we use`download.cancel()` method once file name is validated to reduce newtork bandwidth
 
 ## Interview Questions
 
-Q1: What happens if a download fails due to a network drop? How do you catch that?
+#### Q1: What happens if a download fails due to a network drop? How do you catch that?
 
 Answer:
-You check for errors using the download.failure() method. If the download completes successfully, it returns null. If it fails, it returns a string describing the network or server error.
+
+- You check for errors using the `download.failure()` method.
+- If the download completes successfully, it returns `null`.
+- If it fails, it `returns a string` describing the network or `server error`.
 
 ```js
 const failureReason = await download.failure();
@@ -60,7 +88,10 @@ if (failureReason) {
 }
 ```
 
-Q2: How do you verify the internal text content of a downloaded PDF or CSV file?
+#### Q2: How do you verify the internal text content of a downloaded PDF or CSV file?
 
 Answer:
-Playwright handles the browser mechanics, but checking the inside of files requires regular Node.js packages. Once saved via download.saveAs(), you use standard npm packages like csv-parse for CSV files or pdf-parse for PDFs to read the file contents directly from the hard drive and pass them to standard assertions.
+
+- Playwright handles the browser mechanics, but checking the inside of files `requires` regular `Node.js` packages.
+- Once downloaded file saved via `download.saveAs()`
+- Wwe use standard npm packages like `csv-parse for CSV` files or `pdf-parse for PDFs` to read the file contents directly from the hard drive and pass them to standard assertions.

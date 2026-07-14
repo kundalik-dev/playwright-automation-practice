@@ -175,3 +175,35 @@ To find label 1 we use () bracket based index as normal index are brittle. `(//l
 | **AND (and)**        | `//input[@type='submit' and @name='btnLogin']` | Both conditions must be true      |
 | **Dot (.)**          | `.//input[contains(@id, 'user')]`              | Search from current node downward |
 | **Position / Index** | `//ul/li[3]/a`                                 | Select the 3rd list item's link   |
+
+## Real Example
+
+```html
+<ul id="fileList">
+  <li>Test Item 1</li>
+  <li>Test Item 2</li>
+</ul>
+```
+
+Extract text and validate
+
+```js
+const listItems = page.loactor("#fileList li");
+await expect(listItems).toHaveText('["Test Item 1","Test Item 2"]');
+```
+
+### Get li items as individual locator - use `all()` method
+
+```js
+const listItems = await page.locator("#fileList li").all();
+for (const item of listItems) {
+  console.log("locators are", item);
+}
+```
+
+### extract text into array using `allTextContents()`
+
+```js
+const listItems3 = await page.locator("#fileList li").allTextContents();
+console.log(listItems3); // Output => ["testing.md","testing2.md"]
+```

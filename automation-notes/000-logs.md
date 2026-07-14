@@ -10,13 +10,13 @@
 - 05 Checkbox & radio
 - 06 playwright concepts => needs to add more concepts
 - 18 input labels
+- 09 file Uploads
+- 10 file downloads
 
 ## Not completed Notes
 
-- 07 Annotations
+- 07 Annotations => few topics are remaining
 - 08 playwright config
-- 09 file Uploads
-- 10 file downloads
 - 11 windows & tabs
 - 12 screenshots
 - 13 videos

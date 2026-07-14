@@ -1,6 +1,6 @@
 # 🎭 Annotations & Tags in Playwright
 
-Annotations and tags are provided in test so that we can filter test cases while running.
+Annotations and tags are provided in tests so that we can filter test cases while running.
 
 ## Annotations
 
@@ -67,19 +67,19 @@ test.describe.parallel('Dashboard Load Tests', () => { ... });
 test.describe('Billing System', { tag: '@smoke' }, () => { ... });
 
 // 4. Basic syntax
-test.describe.paralle("group description txt @sanity", ()=>{
-  test("",async({page})=>{
+test.describe.parallel("group description txt @sanity", () => {
+  test("sample test", async ({ page }) => {
 
   })
 })
 ```
 
-## 2️⃣ Taging test cases
+## 2️⃣ Tagging test cases
 
-- Tags are provided after test cases name using `@ attribute` (Legacy Way)
-- Multiple tags can be provided for single test cases like `@reg` `@sanity` with sapce between
-- Using CLI we can run taged test cases using `--grep="@sanity`
-- In latest playwright tags provided as arrays after test case name
+- Tags are provided after the test case's name using `@ attribute` (Legacy Way)
+- Multiple tags can be provided for a single test case, like `@reg` `@sanity`, with a space between
+- Using the CLI we can run tagged test cases using `--grep "@sanity"`
+- In the latest Playwright, tags are provided as an array after the test case name
 
 ### New Way
 
@@ -97,11 +97,11 @@ test("Test1 @sanity @reg", async ({ page }) => {
 });
 ```
 
-> Both way works
+> Both ways work
 
 ### To Run only `sanity` tests
 
-```js
+```bash
 npx playwright test --grep "@sanity"
 ```
 
@@ -109,7 +109,7 @@ npx playwright test --grep "@sanity"
 
 Sanity OR Regression
 
-```js
+```bash
 npx playwright test --grep "@sanity|@reg"
 ```
 
@@ -117,17 +117,17 @@ npx playwright test --grep "@sanity|@reg"
 
 Sanity AND Regression
 
-```js
+```bash
 npx playwright test --grep "(?=.*@sanity)(?=.*@reg)"
 ```
 
 ### Run Sanity, but SKIP both Regression and Bugs
 
-```js
+```bash
 npx playwright test --grep "@sanity" --grep-invert "@reg|@bug"
 ```
 
-## Annotations with description
+### Annotations with description
 
 These are attached to report so we can know the extra details about issue. Details such as type and description is attached
 
@@ -164,16 +164,16 @@ test("Test1", async ({ page, browserName }) => {
 - **Maintain CI Greenness:** Prevents known, unfixed bugs from failing your deployment pipelines.
 - **Reporting:** Marked as "skipped" status in the final test report without running any of its code.
 
-## Purpose & Common Use Cases
+### Purpose & Common Use Cases
 
 1. **Handling Known Bugs:** If a feature is broken due to a known application bug, you can skip the test temporarily so it does not pollute your Continuous Integration (CI) pipeline with expected failures.
 2. **Environment Filtering:** Certain tests might only work in specific environments (e.g., a test that requires a staging database should be skipped when running against production).
 3. **Browser Limitations:** If a web feature is not supported by a specific browser engine (like a Chrome-only extension API), you can skip that test when running on WebKit or Firefox.
 4. **WIP (Work In Progress):** Safely committing incomplete tests to the repository without breaking the main build.
 
-## Execution Methods
+### Execution Methods
 
-### 1. Unconditional Skip (Always Skip)
+#### 1. Unconditional Skip (Always Skip)
 
 Bypasses the test immediately in all environments.
 
@@ -188,7 +188,7 @@ test.skip("inline skip", async ({ page }) => {
 });
 ```
 
-### 2. Conditional Skip (Best Practice)
+#### 2. Conditional Skip (Best Practice)
 
 Only skips the test if a specific condition evaluates to true. This allows you to provide a string description documenting why.
 
@@ -204,7 +204,7 @@ test("Biometric login", async ({ page, browserName }) => {
 });
 ```
 
-### 3. Scope-wide Skip
+#### 3. Scope-wide Skip
 
 Placing it at the top of a file or inside a test.describe() block skips every single test within that boundary.
 
@@ -223,7 +223,7 @@ test.describe("Beta Features", () => {
 - **Time Saver:** Prevents running hundreds of unrelated tests when you only need to debug one.
 - **Local Use Only:** Strictly meant for local debugging. Never push `test.only()` to Git.
 - **CI/CD Risk:** Committing it will break pipeline verification by skipping your actual regressions.
-- **ES Lint:** Either use ES Lint to prevent with custome rules as `no-only-test` or `no-skipped-tests`
+- **ESLint:** Use ESLint with `eslint-plugin-playwright` to prevent this via rules such as `no-focused-test` or `no-skipped-test`
 
 ### Execution Scopes
 
@@ -281,7 +281,7 @@ test.only("Fixing Bug #2", async ({ page }) => {}); // Both execute; all other t
   - `test.slow()` can be conditional inside test body
   - `test.slow()` for whole file group
 - Used if some test cases need more time to process large data or calculations.
-- In that cases instead increasing timeout for whole test cases we do it test cases basis or specific condition basis
+- In that case, instead of increasing the timeout for all test cases, we do it on a per-test or per-condition basis
 
 ```js
 import { test, expect } from "@playwright/test";
@@ -313,9 +313,9 @@ test.slow(callback, description);
 
 ## 6️⃣ Info
 
-- `test.info()` annotaion is used to `dynamically read metadata` or `push custom annotations` and `attachments` to the test runner at runtime.
+- `test.info()` annotation is used to `dynamically read metadata` or `push custom annotations` and `attachments` to the test runner at runtime.
 - **Report Enrichment:** Dynamically injects notes, links, and debugging attachments straight into Playwright HTML Reports.
-- other annoatations are hard coded static but info is dynamic
+- Other annotations are hardcoded and static, but info is dynamic
 
 ### Detailed Breakdown
 
@@ -326,7 +326,7 @@ test.info() gives your code a programmatic handle to the current running test. I
 Instead of just using Playwright's built-in tags, we can push custom data directly into your HTML test report. This is highly useful for mapping tests to project management systems.
 
 ```js
-test("Checkout payment process", async ({ page }) => {
+test("Checkout payment process", async ({ page, browser }) => {
   test.info().annotations.push({
     type: "issue",
     description: "https://company.com",
@@ -412,7 +412,7 @@ These functional helpers provide utilities to generate paths, bind trace files, 
 
 ## 7️⃣ Fail
 
-- Sometime test expected to failed due to know bug so we can fix them later.
+- Sometimes a test is expected to fail due to a known bug, so we can fix it later.
 - The Catch: If the test fails as expected, Playwright treats it as a success and keeps your build green.
 - However, if the test passes, Playwright throws an error and fails your suite.
 - `test.fail()` and `test.fixme()` are used to handle tests that are actively broken by known bugs.
@@ -448,6 +448,7 @@ test("Broken username validation bug", async ({ page }) => {
 - We can make conditional based `test.fixme()`
 
 ```js
+// 1. Declaration signatures
 test.fixme(title, body);
 test.fixme(title, details, body);
 test.fixme(condition, description);
@@ -473,31 +474,30 @@ test("to be fixed in Safari", async ({ page, browserName }) => {
 });
 ```
 
-### 2. Describe block level failme
+### 2. Describe block level fixme
 
-You can mark all tests in a file or test.describe([title, details, callback]) group as "fixme" based on some condition with a single test.fixme(callback, description) call.
+You can mark all tests in a file or `test.describe([title, details, callback])` group as "fixme" based on some condition with a single `test.fixme(callback, description)` call.
 
 ```js
 import { test, expect } from "@playwright/test";
 
-(testdescribe.fixme(
+test.fixme(
   ({ browserName }) => browserName === "webkit",
   "Should figure out the issue",
-),
-  () => {
-    test("to be fixed in Safari 1", async ({ page }) => {
-      // ...
-    });
-    test("to be fixed in Safari 2", async ({ page }) => {
-      // ...
-    });
-  });
+);
+
+test("to be fixed in Safari 1", async ({ page }) => {
+  // ...
+});
+test("to be fixed in Safari 2", async ({ page }) => {
+  // ...
+});
 ```
 
 ### 3. Inside test body for single test case
 
-- We can marke any single test cases as `test.fixme()`
-- always provide body message for identification `test.fixme(title, body)` .
+- We can mark any single test case as `test.fixme()`
+- Always provide a body message for identification: `test.fixme(title, body)`.
 
 ```js
 import { test, expect } from "@playwright/test";
@@ -510,8 +510,8 @@ test("less readable", async ({ page }) => {
 
 ## 9️⃣ Step
 
-- User can create multiple steps inside single test case
-- Helps in dubugging, reports understanding
+- User can create multiple steps inside a single test case
+- Helps in debugging, reports understanding
 - Automatic Screenshot Grouping can be done
 - Step nesting also supported.
 
@@ -530,7 +530,7 @@ test("End-to-End E-Commerce Purchase Flow", async ({ page }) => {
   await test.step("2. Add product to shopping cart", async () => {
     await page.goto("https://example-shop.com");
     await page.click("#add-to-cart-btn");
-    await expect(page.locator(".cart-count")).hasText("1");
+    await expect(page.locator(".cart-count")).toHaveText("1");
   });
 
   await test.step("3. Complete checkout and payment", async () => {
