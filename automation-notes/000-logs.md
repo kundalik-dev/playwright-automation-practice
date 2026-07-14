@@ -9,6 +9,7 @@
 - 04 drag and drop
 - 05 Checkbox & radio
 - 06 playwright concepts => needs to add more concepts
+- 18 input labels
 
 ## Not completed Notes
 

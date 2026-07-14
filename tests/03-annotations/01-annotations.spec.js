@@ -9,6 +9,12 @@ test.describe("Annotations in playwright", () => {
    * slow
    */
 
+  test.describe.parallel("Annotations in playwright", () => {
+    test("test1 @sanity", async ({ page }) => {
+      console.log("Running test 1");
+    });
+  });
+
   test.fixme(
     ({ browserName }) => browserName === "webkit",
     "Should figure out the issue",
@@ -50,4 +56,10 @@ test.describe("Annotations in playwright", () => {
       console.log("Running test 5");
     },
   );
+
+  // Slow down test execution for demonstration purposes
+  test("test6 @slow", async ({ page }) => {
+    test.slow();
+    console.log("Running test 6");
+  });
 });
