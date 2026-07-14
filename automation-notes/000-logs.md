@@ -2,16 +2,16 @@
 
 ## Completed Notes
 
-- iframe
-- dialog
-- reporting
-- mouse & keyboard actions
-- drag and drop
+- 01 iframe
+- 02 dialog
+- 03 reporting
+- 04 mouse & keyboard actions
+- 04 drag and drop
 - 05 Checkbox & radio
+- 06 playwright concepts => needs to add more concepts
 
 ## Not completed Notes
 
-- 06 playwright concepts
 - 07 Annotations
 - 08 playwright config
 - 09 file Uploads

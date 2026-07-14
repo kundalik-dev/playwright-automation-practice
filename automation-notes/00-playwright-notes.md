@@ -698,3 +698,186 @@ Ans:-
 | `Keys.ARROW_DOWN` | `"ArrowDown"` |
 
 ---
+
+# 🎭 Checkbox and Radio
+
+## Radio Button
+
+- Allows single selection.
+- You can select only one option within a group.
+- Clicking another option automatically deselects the previous one.
+- Clicking an active radio button does nothing.
+- ⛔ Radio button cannot be manually unchecked once checked. Playwright throws an error.
+
+```html
+<input type="radio" />
+```
+
+## Checkbox Button
+
+- Allows multi-selection.
+- You can select none, one, or multiple options within a group.
+- Clicking an active checkbox unchecks it.
+
+```html
+<input type="checkbox" />
+```
+
+## Methods
+
+- `check()` => `to check` any radio or checkbox
+- `uncheck()` => `to uncheck` any radio or checkbox
+- `setChecked(checked)` => to check or uncheck based on a boolean value
+- `isChecked()` used to know whether it is `checked or not`
+- `toBeChecked()` => to check whether it is checked or not
+- `toBeEnabled()` => To ensure an element is interactive (not disabled)
+- `toBeVisible()` => To verify an element is rendered on the page before trying to click it
+- `toBeTruthy()` => check expected condition is true
+- `toBeFalsy()` => check expected condition is false
+
+```js
+// radio and checkbox check, uncheck, isChecked method
+await page.locator("#loc").check();
+await page.locator("#loc").uncheck();
+await page.locator("#loc").isChecked();
+
+// assertions on checkbox & radios
+await expect(await page.locator("#loc").isChecked()).toBeTruthy();
+await expect(await page.locator("#loc").isChecked()).toBeFalsy();
+
+// preferred web-first assertion (auto-retries, no manual await needed)
+await expect(page.locator("#loc")).toBeChecked();
+await expect(page.locator("#loc")).not.toBeChecked();
+```
+
+### setChecked()
+
+`setChecked(checked)` is used when the desired state (checked/unchecked) is decided at runtime, e.g. coming from test data, a config flag, or a condition — instead of hard-coding a `check()` or `uncheck()` call. It sets the checkbox/radio to match the boolean passed in, and does nothing if it's already in that state.
+
+```js
+// set state dynamically based on a boolean
+const shouldBeChecked = true;
+await page.locator("#loc").setChecked(shouldBeChecked);
+
+// useful when driving state from test data
+for (const item of [
+  { loc: "#loc1", checked: true },
+  { loc: "#loc2", checked: false },
+]) {
+  await page.locator(item.loc).setChecked(item.checked);
+}
+```
+
+## Multi checkBox
+
+To check multiple records we first store them in an array and then perform check operation using a for...of loop.
+
+```js
+// Check ops on multiple elements
+const allCheckLoc = ["loc1"];
+
+for (const checkLoc of allCheckLoc) {
+  await page.locator(checkLoc).check();
+}
+
+// Uncheck on checked locators only
+for (const checkLoc of allCheckLoc) {
+  if (await page.locator(checkLoc).isChecked()) {
+    await page.locator(checkLoc).uncheck();
+  }
+}
+```
+
+# 🤖 CheckBox & Radio in Selenium
+
+In Selenium `click()` method is used to `check` and `uncheck` any radio or checkbox.
+
+## Checkbox and Radio Button Method Comparison
+
+| Action / Goal                    | Playwright (JS/TS)                        | Selenium (Java)                                  |
+| -------------------------------- | ----------------------------------------- | ------------------------------------------------ |
+| Check a Checkbox                 | `locator.check()`                         | `if(!el.isSelected()) el.click();`               |
+| Uncheck a Checkbox               | `locator.uncheck()`                       | `if(el.isSelected()) el.click();`                |
+| Select a Radio Button            | `locator.check()`                         | `if(!el.isSelected()) el.click();`               |
+| Get Selection State              | `await locator.isChecked()`               | `element.isSelected()`                           |
+| Assert State is Checked          | `await expect(locator).toBeChecked()`     | `assertTrue(element.isSelected());`              |
+| Assert State is Unchecked        | `await expect(locator).not.toBeChecked()` | `assertFalse(element.isSelected());`             |
+| Verify if Clickable / Enabled    | `await locator.isEnabled()`               | `element.isEnabled()`                            |
+| Force Check (Bypass UI overlays) | `locator.check({ force: true })`          | `js.executeScript("arguments[0].click();", el);` |
+
+## Key Behavioral Differences
+
+| Behaviour           | Playwright                                                                | Selenium                                                             |
+| ------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `Check / Uncheck`   | Idempotent — won't click if already in the target state.                  | `click()` always toggles state; needs a manual `isSelected()` guard. |
+| `Radio vs Checkbox` | Same `.check()` API works for both radios and checkboxes.                 | `.click()` used for everything, no distinction.                      |
+| `Selection State`   | `isChecked()` returns a `Promise<boolean>` (must `await`).                | `isSelected()` returns a plain `boolean` synchronously.              |
+| `Assertions`        | `toBeChecked()` is web-first and auto-retries until true or timeout.      | `assertTrue`/`assertFalse` check the state once, immediately.        |
+| `Enabled Check`     | Auto-checks actionability (enabled, visible, stable) before every action. | Requires an explicit `isEnabled()` call; no auto-waiting.            |
+| `Force Actions`     | `{ force: true }` option bypasses actionability checks.                   | No equivalent option; falls back to `JavascriptExecutor`.            |
+
+---
+
+# 🎭 Playwright Concepts
+
+## Synchronous and Asynchronous in Playwright Locators
+
+Creating a Playwright locator is just like creating an object or variable in JavaScript. It stays inside the Node.js memory and does nothing with the browser, so creating it is **synchronous** — no `await` needed.
+
+A locator is just a variable that holds a **description of how to find a web element**, stored in memory.
+
+```js
+const username = page.locator("#username");
+```
+
+But when we perform an action on the locator it becomes **asynchronous** because:
+
+- Playwright starts interacting with the browser using its APIs.
+- Those APIs take time, so the call becomes async, and to wait for the promise to resolve we use `await`.
+
+```js
+await username.click();
+```
+
+### Storing the locator in memory
+
+```js
+const username = page.locator("#username");
+```
+
+- When this line runs, Playwright does nothing with the browser.
+- It just stores the locator by creating a varriable in node js memory.
+- No network call to the browser.
+- No DOM query happens.
+- No searching of the page.
+- It only creates a JavaScript object in memory.
+
+### Performing action locator
+
+```js
+await username.click();`
+```
+
+- When the user performs an action on the locator, the real work starts.
+- Playwright starts interacting with the browser using its APIs over a WebSocket connection.
+- Playwright sends a message over the WebSocket, then
+- The browser starts searching the DOM for the locator.
+- For searching the locator in DOM we required to wait for the network call to complete.
+- So we use `await` to wait until the element is:
+  - attached
+  - visible
+  - stable
+  - enabled
+  - editable
+- All this communication happens via IPC (Inter-Process Communication) over CDP (Chrome DevTools Protocol), which takes time and happens over the network — asynchronous in nature.
+
+> Key point: Playwright resolves the locator **at the time of the action**, not when it is created. This is why Playwright does not throw `StaleElementReferenceException` like Selenium — the element is freshly queried every time you act on it.
+
+| Parameter           | Selenium                  | Playwright                      |
+| ------------------- | ------------------------- | ------------------------------- |
+| findElement/locator | immediately queries DOM   | stores as a reference in memory |
+| returns             | actual element reference  | a lazy locator object           |
+| sync or async       | sync                      | sync (stays in Node process)    |
+| stale element click | Yes => uses old reference | No => queries at time of action |
+
+---

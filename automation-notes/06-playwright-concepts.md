@@ -1,4 +1,4 @@
-# Playwright Concepts
+# 🎭 Playwright Concepts
 
 ## Synchronous and Asynchronous in Playwright Locators
 
@@ -19,22 +19,30 @@ But when we perform an action on the locator it becomes **asynchronous** because
 await username.click();
 ```
 
-### const username = page.locator("#username");
+### Storing the locator in memory
+
+```js
+const username = page.locator("#username");
+```
 
 - When this line runs, Playwright does nothing with the browser.
-- It just stores the selector / how-to-find description.
+- It just stores the locator by creating a varriable in node js memory.
 - No network call to the browser.
 - No DOM query happens.
 - No searching of the page.
 - It only creates a JavaScript object in memory.
 
-### await username.click();
+### Performing action locator
+
+```js
+await username.click();`
+```
 
 - When the user performs an action on the locator, the real work starts.
 - Playwright starts interacting with the browser using its APIs over a WebSocket connection.
 - Playwright sends a message over the WebSocket, then
-- the browser starts searching the DOM for the locator.
-- For this we need to wait for the network call to complete.
+- The browser starts searching the DOM for the locator.
+- For searching the locator in DOM we required to wait for the network call to complete.
 - So we use `await` to wait until the element is:
   - attached
   - visible
@@ -45,9 +53,9 @@ await username.click();
 
 > Key point: Playwright resolves the locator **at the time of the action**, not when it is created. This is why Playwright does not throw `StaleElementReferenceException` like Selenium — the element is freshly queried every time you act on it.
 
-| Parameter           | Selenium                  | Playwright                        |
-| ------------------- | ------------------------- | --------------------------------- |
-| findElement/locator | immediately queries DOM   | stores as a reference in memory   |
-| returns             | actual element reference  | a lazy locator object             |
-| sync or async       | sync                      | sync (stays in Node process)      |
-| stale element click | Yes => uses old reference | No => queries at time of action   |
+| Parameter           | Selenium                  | Playwright                      |
+| ------------------- | ------------------------- | ------------------------------- |
+| findElement/locator | immediately queries DOM   | stores as a reference in memory |
+| returns             | actual element reference  | a lazy locator object           |
+| sync or async       | sync                      | sync (stays in Node process)    |
+| stale element click | Yes => uses old reference | No => queries at time of action |
