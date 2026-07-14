@@ -9,10 +9,10 @@ Annotations and tags are provided in test so that we can filter test cases while
 - Skip ✅
 - Only ✅
 - Slow ✅
-- Info
-- Fail
-- Failme
-- Step
+- Info ✅
+- Fail ✅
+- Fixme ✅
+- Step ✅
 - beforeAll
 - afterAll
 - beforeEach
@@ -245,9 +245,11 @@ test.only("Test B - Active Debugging", async ({ page }) => {
 test("Test C - Will be skipped", async ({ page }) => {});
 ```
 
-#### 2. Group Isolation (test.describe.only)
+#### 2. Group Isolation `test.describe.only`
 
-Focuses on an entire block of related tests. Every test inside this specific describe container will run, while tests outside of it are ignored.
+- Focuses on an entire block of related tests.
+- Every test inside this specific describe container will run,
+- while tests outside of it are ignored.
 
 ```js
 import { test, expect } from "@playwright/test";
@@ -273,7 +275,7 @@ test.only("Fixing Bug #2", async ({ page }) => {}); // Both execute; all other t
 
 ## 5️⃣ Slow
 
-- slow annotation slow down timeout the test executions timeout by `three times`
+- `test.slow()` annotation slow down the test executions timeout by `three times`
 - provided in three different ways
   - `test.slow()` inside any test body to triple the timeout for that particular test case
   - `test.slow()` can be conditional inside test body
@@ -311,10 +313,17 @@ test.slow(callback, description);
 
 ## 6️⃣ Info
 
-- Info annotaion used to add custom metadata to your tests dynamically
-- while they are running.
-- test information can be attach into report or used for other purposes in testing.
-- Lost of information can be attached to report using `test.info(). `
+- `test.info()` annotaion is used to `dynamically read metadata` or `push custom annotations` and `attachments` to the test runner at runtime.
+- **Report Enrichment:** Dynamically injects notes, links, and debugging attachments straight into Playwright HTML Reports.
+- other annoatations are hard coded static but info is dynamic
+
+### Detailed Breakdown
+
+test.info() gives your code a programmatic handle to the current running test. Its two most powerful capabilities are creating Custom Annotations and logging Runtime Attachments.
+
+#### 1. Runtime Custom Annotations
+
+Instead of just using Playwright's built-in tags, we can push custom data directly into your HTML test report. This is highly useful for mapping tests to project management systems.
 
 ```js
 test("Checkout payment process", async ({ page }) => {
@@ -332,7 +341,174 @@ test("Checkout payment process", async ({ page }) => {
 });
 ```
 
-### Step
+#### 2. Reading Test Metadata Contextually
+
+We can read information about the `environment`, `test title`, `project configuration`, or `failure states` directly from inside the test loops or page object models.
+
+```js
+test("Dynamic Screenshot Naming", async ({ page }, testInfo) => {
+  await page.goto("/dashboard");
+
+  // Use testInfo properties to programmatically name an asset
+  console.log(`Running: ${testInfo.title}`); // Prints the test name
+  console.log(`Current Retry: ${testInfo.retry}`); // Useful for identifying flaky tests
+
+  await page.screenshot({
+    path: `screenshots/${testInfo.title}-retry-${testInfo.retry}.png`,
+  });
+});
+```
+
+#### 3. Custom Runtime Attachments
+
+- We can attach `files`, `JSON dumps`, `text logs`, or `custom images` right into the test runner's report on the fly.
+
+```js
+test("Log API responses on failure", async ({ page }, testInfo) => {
+  const apiData = { status: "Maintenance", code: 503 };
+
+  // Directly append the raw backend data into the test report artifact pool
+  await testInfo.attach("api-error-log.json", {
+    contentType: "application/json",
+    body: JSON.stringify(apiData),
+  });
+});
+```
+
+### Methods present in `test.info()`
+
+#### 📋 1. Read-Only Properties (Test Context)
+
+These properties allow test code to understand its environment dynamically at runtime:
+
+- `testInfo.title`: The full string name of the currently running test.
+- `testInfo.fn`: The actual JavaScript function body of the current test.
+- `testInfo.file`: The absolute local system file path to the current test file.
+- `testInfo.line` / `testInfo.column`: The exact code line and column position where this test is declared.
+- `testInfo.retry`: The current retry attempt counter for this test (starts at 0 on the first run).
+- `testInfo.workerIndex`: The unique numeric ID of the active worker process running this isolated test block.
+- `testInfo.parallelIndex`: The unique numeric ID indicating the specific parallel execution slot (ranges from 0 to workers - 1).
+- `testInfo.project`: An object containing full configuration details of the active Playwright project (e.g., testInfo.project.name, or testInfo.project.use settings).
+- `testInfo.config`: The root-level global configuration object parsed straight out of your playwright.config.ts.
+- `testInfo.status`: The current runtime status of the test (resolves to 'passed', 'failed', 'timedOut', or 'skipped').
+- `testInfo.expectedStatus`: The predefined expectation set for this test (defaults to 'passed' unless marked as test.fail()).
+
+#### 🛠️ 2. Read-Write Properties & Mutable Arrays
+
+These allow you to append data to the test reporting pipeline dynamically as actions happen inside the browser:
+
+- `testInfo.annotations`: An array where you can use .push({ type: 'x', description: 'y' }) to append customized tags to your HTML test report.
+- `testInfo.attachments`: An array tracking files or assets bound to this test. (Though directly modifying this is rare; using the testInfo.attach() helper method is preferred).
+- `testInfo.timeout`: Reads or overrides the active timeout countdown configuration in milliseconds for this specific test block.
+
+#### ⚙️ 3. Execution Methods & Options (Utility Functions)
+
+These functional helpers provide utilities to generate paths, bind trace files, or force-exit runtime execution:
+
+- `testInfo.attach(name, options)`: Directly attaches text logs, images, or JSON file dumps right into the runner's report dashboard.
+- `testInfo.outputPath(...pathSegments)`: Generates an absolute path targeting a folder within your designated outputDir. Perfect for isolating where screenshots or log files should save.
+- `testInfo.snapshotPath(...pathSegments)`: Generates an absolute path targeting where visual snapshot/image comparison baselines are saved.
+- `testInfo.setTimeout(timeout)`: Changes the timeout duration dynamically mid-execution if a specific workflow step is taking longer than initially budgeted.
+
+## 7️⃣ Fail
+
+- Sometime test expected to failed due to know bug so we can fix them later.
+- The Catch: If the test fails as expected, Playwright treats it as a success and keeps your build green.
+- However, if the test passes, Playwright throws an error and fails your suite.
+- `test.fail()` and `test.fixme()` are used to handle tests that are actively broken by known bugs.
+- While both serve to keep your CI/CD pipeline "green" despite existing software defects, they handle test execution in fundamentally different ways.
+
+```js
+// 1. Expected failure validation
+test.fail(process.env.ENV === "staging", "Known staging DB latency issue");
+
+// Example: Tracking an active bug where form validation is broken
+test("Broken username validation bug", async ({ page }) => {
+  test.fail(true, "Issue #452: Submit button does not disable on empty input");
+
+  await page.goto("/register");
+  await expect(page.locator("#submit-btn")).toBeDisabled(); // This is currently failing
+});
+```
+
+### Key Structural Differences
+
+| Feature / Capability       | test.fail()                                      | test.fixme()                                   |
+| -------------------------- | ------------------------------------------------ | ---------------------------------------------- |
+| Does it run the code?      | Yes, runs completely                             | No, skips immediately                          |
+| What happens if it passes? | Fails the build (Alerts you)                     | Nothing (Code never runs)                      |
+| Best Used For:             | Standard functional bugs                         | Crashes, timeouts, or infinite loops           |
+| Conditional Control        | `test.fail(condition, reason)`                   | `test.fixme(condition, reason)`                |
+| `test.describe` Usage      | `test.describe.fail()` fails every test under it | `test.describe.fixme()` Skips the entire group |
+
+## 8️⃣ Fixme
+
+- The `test.fixme()` annotation flags the test as broken
+- Playwright will not execute the test code block and mark it as `fixme` in report.
+- We can make conditional based `test.fixme()`
+
+```js
+test.fixme(title, body);
+test.fixme(title, details, body);
+test.fixme(condition, description);
+test.fixme(callback, description);
+
+// 2. Immediate execution block bypass
+test.fixme(true, "Crash hazard: Fix required before running");
+```
+
+### 1. Condition Based execution
+
+If your test should be fixed in some configurations, but not all, you can mark the test as "fixme" inside the test body based on some condition.
+
+```js
+import { test, expect } from "@playwright/test";
+
+test("to be fixed in Safari", async ({ page, browserName }) => {
+  test.fixme(
+    browserName === "webkit",
+    "This feature breaks in Safari for some reason",
+  );
+  // ...
+});
+```
+
+### 2. Describe block level failme
+
+You can mark all tests in a file or test.describe([title, details, callback]) group as "fixme" based on some condition with a single test.fixme(callback, description) call.
+
+```js
+import { test, expect } from "@playwright/test";
+
+(testdescribe.fixme(
+  ({ browserName }) => browserName === "webkit",
+  "Should figure out the issue",
+),
+  () => {
+    test("to be fixed in Safari 1", async ({ page }) => {
+      // ...
+    });
+    test("to be fixed in Safari 2", async ({ page }) => {
+      // ...
+    });
+  });
+```
+
+### 3. Inside test body for single test case
+
+- We can marke any single test cases as `test.fixme()`
+- always provide body message for identification `test.fixme(title, body)` .
+
+```js
+import { test, expect } from "@playwright/test";
+
+test("less readable", async ({ page }) => {
+  test.fixme();
+  // ...
+});
+```
+
+## 9️⃣ Step
 
 - User can create multiple steps inside single test case
 - Helps in dubugging, reports understanding
@@ -366,73 +542,3 @@ test("End-to-End E-Commerce Purchase Flow", async ({ page }) => {
   });
 });
 ```
-
-## 7️⃣ Fail
-
-Sometime test intentionally failed so we can fix them later.
-
-## 8️⃣ Fixme
-
-- Mark a test as "fixme", with the intention to fix it.
-- Playwright will not run the test past the` test.fixme()` call.
-- If your test should be fixed in some configurations, but not all, you can mark the test as "fixme" inside the test body based on some condition.
-
-To declare a "fixme" test:
-
-```js
-test.fixme(title, body);
-test.fixme(title, details, body);
-```
-
-To annotate test as "fixme" at runtime:
-
-```js
-test.fixme(condition, description);
-test.fixme(callback, description);
-test.fixme();
-```
-
-If your test should be fixed in some configurations, but not all, you can mark the test as "fixme" inside the test body based on some condition.
-
-```js
-import { test, expect } from "@playwright/test";
-
-test("to be fixed in Safari", async ({ page, browserName }) => {
-  test.fixme(
-    browserName === "webkit",
-    "This feature breaks in Safari for some reason",
-  );
-  // ...
-});
-```
-
-You can mark all tests in a file or test.describe([title, details, callback]) group as "fixme" based on some condition with a single test.fixme(callback, description) call.
-
-```js
-import { test, expect } from "@playwright/test";
-
-test.fixme(
-  ({ browserName }) => browserName === "webkit",
-  "Should figure out the issue",
-);
-
-test("to be fixed in Safari 1", async ({ page }) => {
-  // ...
-});
-test("to be fixed in Safari 2", async ({ page }) => {
-  // ...
-});
-```
-
-You can also call test.fixme() without arguments inside the test body to always mark the test as failed. We recommend using test.fixme(title, body) instead.
-
-```js
-import { test, expect } from "@playwright/test";
-
-test("less readable", async ({ page }) => {
-  test.fixme();
-  // ...
-});
-```
-
-## 9️⃣ Step
