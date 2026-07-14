@@ -9,7 +9,7 @@
 - 04 drag and drop
 - 05 Checkbox & radio
 - 06 playwright concepts => needs to add more concepts
-- 18 input labels
+- 19 input labels
 - 09 file Uploads
 - 10 file downloads
 
@@ -24,6 +24,7 @@
 - 15 date picker
 - 16 tables
 - 17 paginations & sorting
+- 20
 
 ## Not Read or notes topics
 
