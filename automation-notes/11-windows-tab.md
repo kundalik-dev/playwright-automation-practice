@@ -12,19 +12,18 @@
 ## Handling Single Page
 
 ```js
-test("single tab",asunc({page})=>{
+test("single tab", async ({ page }) => {
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
 
-const browser = await chromium.launch();
-const context = await browser.newContext();
+  // To create new page from context
+  const page1 = await context.newPage();
+  const page2 = await context.newPage();
 
-// To create new page from context
-const page1 = await context.newPage();
-const page2 = await context.newPage();
-
-// To know how many pages are present
-const allPages = await context.pages();
-console.log(`Number of pages are - ${allPages.length()}`)
-})
+  // To know how many pages are present
+  const allPages = await context.pages();
+  console.log(`Number of pages are - ${allPages.length()}`);
+});
 ```
 
 ## Handling Multiple Pages
@@ -32,7 +31,8 @@ console.log(`Number of pages are - ${allPages.length()}`)
 ```js
 // Handling multiple pages using page event handler
 const pagePromise = context.waitForEvent("page");
-const newPage = await pagePromise();
+await page.locator("#open-popup-btn").click();
+const newPage = await pagePromise;
 await newPage.waitForLoadState();
 
 // Approach 02
@@ -45,6 +45,7 @@ await newPage.waitForLoadState();
 
 // approach 03
 const [newPage] = await Promise.all([page.waitForEvent("popup"), link.click()]);
+
 // Close page
 browser.close();
 ```
