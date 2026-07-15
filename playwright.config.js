@@ -33,7 +33,7 @@ export default defineConfig({
     trace: "off",
     video: "off",
     screenshot: "off",
-    headless: true,
+    headless: false,
   },
 
   /* Configure projects for major browsers */
