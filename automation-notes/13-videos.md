@@ -1,6 +1,6 @@
 # 🎭 Video and trace in playwright
 
-- Video and trace can be recorded in playwrigh using `playwright.config.js` file
+- Video and trace can be recorded in playwright by doing settings in `playwright.config.js` file
 
 ```js
 import { defineConfig, devices } from "@playwright/test";

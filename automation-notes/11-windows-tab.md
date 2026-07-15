@@ -9,6 +9,25 @@
 - Single Tab
 - Multiple Tabs
 
+## Imp Notes to remember
+
+- Context emits page event
+- page emits popup event
+- context => page => popup
+- both of these are valid ways to create new page
+- order of placing event handler first then click ops is must
+
+```js
+// page-level
+const [newPage] = await Promise.all([page.waitForEvent("popup"), link.click()]);
+
+// context-level (also fine)
+const [newPage] = await Promise.all([
+  context.waitForEvent("page"),
+  link.click(),
+]);
+```
+
 ## Handling Single Page
 
 ```js
@@ -22,14 +41,14 @@ test("single tab", async ({ page }) => {
 
   // To know how many pages are present
   const allPages = await context.pages();
-  console.log(`Number of pages are - ${allPages.length()}`);
+  console.log(`Number of pages are - ${allPages.length}`);
 });
 ```
 
 ## Handling Multiple Pages
 
 ```js
-// Handling multiple pages using page event handler
+// Approach 01 - Handling multiple pages using page event handler
 const pagePromise = context.waitForEvent("page");
 await page.locator("#open-popup-btn").click();
 const newPage = await pagePromise;
@@ -42,6 +61,7 @@ const [newPage] = await Promise.all([
 ]);
 
 await newPage.waitForLoadState();
+await newPage.title();
 
 // approach 03
 const [newPage] = await Promise.all([page.waitForEvent("popup"), link.click()]);
@@ -54,11 +74,10 @@ browser.close();
 
 - In selenium tabs and windows are identified by unique identifier
 - Tab switching done by `switchTo()` method
-- To get current current tab `get
-
-- `getWindowHandle()` → current window's handle (single string)
-- `getWindowHandles()` → all open handles (a Set)
-- `switchTo().window(handle)` → switch the driver's focus to a handle
+- To get current current tab
+  - `getWindowHandle()` → current window's handle (single string)
+  - `getWindowHandles()` → all open handles (a Set)
+  - `switchTo().window(handle)` → switch the driver's focus to a handle
 
 ```java
 // WindowHandling.java
@@ -154,26 +173,28 @@ String newWindow = after.iterator().next();
 driver.switchTo().window(newWindow);
 ```
 
-## Imp Notes
-
-- Context emits page event
-- page emits popup event
-- context => page => popup
-- both of these are valid ways to create new page
-- order of placing event handler first then click ops is must
-
-```js
-// page-level
-const [newPage] = await Promise.all([page.waitForEvent("popup"), link.click()]);
-
-// context-level (also fine)
-const [newPage] = await Promise.all([
-  context.waitForEvent("page"),
-  link.click(),
-]);
-```
-
 ## Rules
 
 - Always validate the current tab using title or URL
--
+- In selenium always switch back to parent window before doing any opereations using its handle identifier
+- In Playwrigh no need to switch back as those are different page
+
+## Interview Questions
+
+### Q1. How to indentify child window handles from parent?
+
+Ans:-
+
+- First we store parent window handle in varriable
+- Then compare them with other window handles
+- if parent not match with other then other are child windows
+
+#### Q2. Best Practices
+
+Ans:-
+
+- Always save parent window handle
+- Use explicit wait until the expected number of window opens
+- Itterate using loops based on URL or title
+- Switch by URL or title when multiple child window presents
+- Always switch back to parent window after work done.

@@ -1256,3 +1256,434 @@ Answer:
 - Wwe use standard npm packages like `csv-parse for CSV` files or `pdf-parse for PDFs` to read the file contents directly from the hard drive and pass them to standard assertions.
 
 ---
+
+# 🎭 Windows & Tab in Playwright
+
+- In playwright tabs and windows handled by using `browserContext`
+- No need to switch context between tabs to perform ops in playwright like in selenium.
+- Playwright won't differentiate between tab and windows they consider all are pages.
+
+## Tabs/Windows
+
+- Single Tab
+- Multiple Tabs
+
+## Imp Notes to remember
+
+- Context emits page event
+- page emits popup event
+- context => page => popup
+- both of these are valid ways to create new page
+- order of placing event handler first then click ops is must
+
+```js
+// page-level
+const [newPage] = await Promise.all([page.waitForEvent("popup"), link.click()]);
+
+// context-level (also fine)
+const [newPage] = await Promise.all([
+  context.waitForEvent("page"),
+  link.click(),
+]);
+```
+
+## Handling Single Page
+
+```js
+test("single tab", async ({ page }) => {
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+
+  // To create new page from context
+  const page1 = await context.newPage();
+  const page2 = await context.newPage();
+
+  // To know how many pages are present
+  const allPages = await context.pages();
+  console.log(`Number of pages are - ${allPages.length}`);
+});
+```
+
+## Handling Multiple Pages
+
+```js
+// Approach 01 - Handling multiple pages using page event handler
+const pagePromise = context.waitForEvent("page");
+await page.locator("#open-popup-btn").click();
+const newPage = await pagePromise;
+await newPage.waitForLoadState();
+
+// Approach 02
+const [newPage] = await Promise.all([
+  context.waitForEvent("page"),
+  link.click(),
+]);
+
+await newPage.waitForLoadState();
+await newPage.title();
+
+// approach 03
+const [newPage] = await Promise.all([page.waitForEvent("popup"), link.click()]);
+
+// Close page
+browser.close();
+```
+
+## 🤖 Tabs & Windows In Selenium
+
+- In selenium tabs and windows are identified by unique identifier
+- Tab switching done by `switchTo()` method
+- To get current current tab
+  - `getWindowHandle()` → current window's handle (single string)
+  - `getWindowHandles()` → all open handles (a Set)
+  - `switchTo().window(handle)` → switch the driver's focus to a handle
+
+```java
+// WindowHandling.java
+String originalWindow = driver.getWindowHandle();
+
+// Trigger an action that opens a new tab/window
+driver.findElement(By.linkText("Open new tab")).click();
+
+// Wait until a second window/tab appears
+new WebDriverWait(driver, Duration.ofSeconds(10))
+    .until(d -> d.getWindowHandles().size() == 2);
+
+// Switch to the new window
+for (String handle : driver.getWindowHandles()) {
+    if (!handle.equals(originalWindow)) {
+        driver.switchTo().window(handle);
+        break;
+    }
+}
+
+// Do work in the new window
+System.out.println(driver.getTitle());
+
+// Close it and switch back
+driver.close();
+driver.switchTo().window(originalWindow);
+```
+
+## Csharp selenium
+
+```c#
+// WindowHandling.cs
+string originalWindow = driver.CurrentWindowHandle;
+
+// Trigger an action that opens a new tab/window
+driver.FindElement(By.LinkText("Open new tab")).Click();
+
+// Wait until a second window/tab appears
+new WebDriverWait(driver, TimeSpan.FromSeconds(10))
+    .Until(d => d.WindowHandles.Count == 2);
+
+// Switch to the new window
+foreach (string handle in driver.WindowHandles)
+{
+    if (handle != originalWindow)
+    {
+        driver.SwitchTo().Window(handle);
+        break;
+    }
+}
+
+// Do work in the new window
+Console.WriteLine(driver.Title);
+
+// Close it and switch back
+driver.Close();
+driver.SwitchTo().Window(originalWindow);
+```
+
+### Selenium 4 changes
+
+```c#
+// WindowHandling.cs and .java is same just text casing difference
+driver.SwitchTo().NewWindow(WindowType.Tab);    // new tab, auto-focused
+driver.SwitchTo().NewWindow(WindowType.Window); // new window, auto-focused
+```
+
+| Java                        | C#                          |
+| --------------------------- | --------------------------- |
+| `getWindowHandle()`         | `CurrentWindowHandle`       |
+| `getWindowHandles()`        | `WindowHandles`             |
+| `switchTo().window(h)`      | `SwitchTo().Window(h)`      |
+| `switchTo().newWindow(...)` | `SwitchTo().NewWindow(...)` |
+| `close()`                   | `Close()`                   |
+| `quit()`                    | `Quit()`                    |
+
+`getWindowHandles()` ordering is not guaranteed. Don't assume index [1] is the newest tab. Diff against your saved original handle, as shown above.
+
+```java
+// WindowHandling.java
+Set<String> before = driver.getWindowHandles();
+
+driver.findElement(By.linkText("Open new tab")).click();
+
+new WebDriverWait(driver, Duration.ofSeconds(10))
+    .until(d -> d.getWindowHandles().size() > before.size());
+
+Set<String> after = driver.getWindowHandles();
+
+after.removeAll(before);
+
+String newWindow = after.iterator().next();
+driver.switchTo().window(newWindow);
+```
+
+## Rules
+
+- Always validate the current tab using title or URL
+- In selenium always switch back to parent window before doing any opereations using its handle identifier
+- In Playwrigh no need to switch back as those are different page
+
+---
+
+# 🎭 Screenshots In Playwright
+
+## Playwright.config.js
+
+To capture screenshot we need to configure them from `playwright.config.js` file
+
+```js
+import { defineConfig, devices } from "@playwright/test";
+export default defineConfig({
+  use: {
+    screenshot: "on",
+  },
+});
+```
+
+- `screenshot:"on"` => capture screenshot every time test runs
+- `screenshot:"off"` => won't capture screenshot
+- `screenshot:"on-first-failure"` => capture screenshot on first failure only not on retries
+- `screenshot:"only-on-failure"` => captures screenshot every time a test fails. If a test fails on its initial run and fails again during its retries, a screenshot will be generated for every failed attempt.
+
+## Different Screenshot supported by Playwright
+
+- Page Screenshot
+- Full Page Screenshot
+- Element Screenshot
+
+## Page Screenshot
+
+```js
+// Test level screenshot
+await page.screenshot({ path: "homePage.png" });
+
+// Test level screenshot
+await page.screenshot({
+  path: `${folder_path}/${imageName}_${Date.now()}.png`,
+});
+```
+
+## Full Page Screenshot
+
+```js
+import path from "node:path";
+
+const screenshotName = (folder_path, imageName) => {
+  return path.join(folder_path, `${imageName}_${Date.now()}.png`);
+};
+
+await page.screenshot({
+  path: screenshotName("screenshots", "Test-Img-Name"),
+  fullPage: true,
+});
+```
+
+## Element Screenshot
+
+```js
+// Element screenshot
+await page.locator("#btn").screenshot({ path: "homePage.png" });
+```
+
+### Helper function to name screenshot
+
+```js
+import path from "node:path";
+import fs from "node:fs";
+
+const SCREENSHOT_DIR = "screenshots";
+
+// e.g. 2026-06-30_14-05-09
+export function dateSuffix() {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+
+  const date = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const time = `${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+
+  return `${date}_${time}`;
+}
+
+export function screenshotDir() {
+  fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
+  return SCREENSHOT_DIR;
+}
+
+export function screenshotName(imgName) {
+  return path.join(screenshotDir(), `${imgName}-${dateSuffix()}.png`);
+}
+```
+
+## 🤖 Screenshot in Selenium
+
+- Screenshot captured in selenium using `TakesScreenshot` interface but it has limitation.
+- Only capture current view-port only
+- To get full page screenshot need third party libs like `ashot`
+
+```java
+WebDriver driver = new ChromeDriver();
+
+File src = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+File dest = new File("screenshot/homepage.png");
+
+FileHandler.copy(src, dest);
+```
+
+## Interview Questions
+
+#### Q: When We capture screenshots?
+
+Ans:
+
+- test failure
+- before and after imp action
+- visual verification
+- reporting
+- debugging
+
+---
+
+# 🎭 Video and trace in playwright
+
+- Video and trace can be recorded in playwright by doing settings in `playwright.config.js` file
+
+```js
+import { defineConfig, devices } from "@playwright/test";
+
+export default defineConfig({
+  use: {
+    video: "on",
+    trace: "on",
+  },
+});
+```
+
+## Video config options
+
+- `off`: Do not record video.
+- `on`: Record and keep a video for every run.
+- `on-first-retry`: Record and keep a video only for the first retry of a test.
+- `on-all-retries`: Record and keep a video for every retry.
+- `retain-on-failure`: Record a video for every run, but keep it only for runs that failed. A failed run's video is kept even when a later retry passes.
+- `retain-on-first-failure`: Record a video only for the first run of a test (not for retries), and keep it only if that run failed.
+- `retain-on-failure-and-retries`: Record a video for every run, and keep it for any run that failed or that is a retry.
+
+```js
+video?: VideoMode | "retry-with-video" | {
+    mode: VideoMode;
+    size?: ViewportSize;
+    show?: {
+        actions?: {
+            duration?: number;
+            position?: "top-left" | "top" | "top-right" | "bottom-left" | "bottom" | "bottom-right";
+            fontSize?: number;
+        };
+        test?: {
+            level?: "file" | "title" | "step";
+            position?: "top-left" | "top" | "top-right" | "bottom-left" | "bottom" | "bottom-right";
+            fontSize?: number;
+        };
+    };
+} | undefined
+```
+
+### Video object terms
+
+| Term                   | Type                          | What it means                                                       |
+| ---------------------- | ----------------------------- | ------------------------------------------------------------------- |
+| `video?`               | optional                      | The whole video setting; can be omitted (`undefined`)               |
+| `VideoMode`            | string union                  | The basic mode value (`"off"`, `"on"`, `"retain-on-failure"`, etc.) |
+| `"retry-with-video"`   | literal string                | Legacy shorthand: record only when a test is retried                |
+| `{ mode, size, show }` | object form                   | Advanced config when you need more than a simple mode string        |
+| `mode`                 | `VideoMode`                   | Required inside the object — same modes as above                    |
+| `size?`                | `ViewportSize`                | Optional video resolution, e.g. `{ width, height }`                 |
+| `show?`                | object                        | Optional overlays drawn on top of the recorded video                |
+| `show.actions?`        | object                        | Visual labels for each Playwright **action** (click, fill…)         |
+| `actions.duration?`    | `number`                      | How long (ms) each action label stays visible                       |
+| `actions.position?`    | string union                  | Where the action label sits (`"top-left"` … `"bottom-right"`)       |
+| `actions.fontSize?`    | `number`                      | Font size of the action label                                       |
+| `show.test?`           | object                        | Visual label showing **test** info on the video                     |
+| `test.level?`          | `"file" \| "title" \| "step"` | How much test detail to display                                     |
+| `test.position?`       | string union                  | Where the test label sits (same 6 positions)                        |
+| `test.fontSize?`       | `number`                      | Font size of the test label                                         |
+| `undefined`            | —                             | Allowed value — feature turned off                                  |
+
+> **Note:** `?` after a key = the property is **optional**. `|` = a **union** (value can be any one of the listed options). The 6 position values are: `top-left`, `top`, `top-right`, `bottom-left`, `bottom`, `bottom-right`.
+
+## Capture videos and store it into another location
+
+```js
+await page.context().close(); // video only finalizes after context closes
+
+const videoPath = await page.video()?.path();
+if (videoPath) {
+  const destination = path.join("videos", `${testInfo.title}.webm`);
+  fs.mkdirSync("my-videos", { recursive: true });
+  fs.copyFileSync(videoPath, destination);
+}
+```
+
+## Trace Mode
+
+Whether to record trace for each test. Defaults to 'off'. The initial run of a test is the "first run"; subsequent runs caused by retries are "retries".
+
+```js
+// playwright.config.ts
+import { defineConfig } from "@playwright/test";
+
+export default defineConfig({
+  use: {
+    trace: "on-first-retry",
+  },
+});
+```
+
+- `off`: Do not record trace.
+- `on`: Record and keep a trace for every run.
+- `on-first-retry`: Record and keep a trace only for the first retry of a test.
+- `on-all-retries`: Record and keep a trace for every retry.
+- `retain-on-failure`: Record a trace for every run, but keep it only for runs that failed. A failed run's trace is kept even when a later retry passes
+- `retain-on-first-failure`: Record a trace only for the first run of a test (not for retries), and keep it only if that run failed.
+- `retain-on-failure-and-retries`: Record a trace for every run, and keep it for any run that failed or that is a retry.
+
+```js
+(property) trace?: TraceMode | "retry-with-trace" | {
+    mode: TraceMode;
+    snapshots?: boolean;
+    screenshots?: boolean;
+    sources?: boolean;
+    attachments?: boolean;
+} | undefined
+```
+
+### Trace object terms
+
+| Term                 | Type           | What it means                                                    |
+| -------------------- | -------------- | ---------------------------------------------------------------- |
+| `trace?`             | optional       | The whole trace setting; can be omitted (`undefined`)            |
+| `TraceMode`          | string union   | The basic mode value (`"off"`, `"on"`, `"on-first-retry"`, etc.) |
+| `"retry-with-trace"` | literal string | Legacy shorthand: record only when a test is retried             |
+| `{ mode, ... }`      | object form    | Advanced config when you need more than a simple mode string     |
+| `mode`               | `TraceMode`    | Required inside the object — same modes as above                 |
+| `snapshots?`         | `boolean`      | Capture DOM snapshots for time-travel debugging                  |
+| `screenshots?`       | `boolean`      | Capture screenshots into the trace timeline                      |
+| `sources?`           | `boolean`      | Include your test source code in the trace                       |
+| `attachments?`       | `boolean`      | Include attachments (e.g. uploaded files) in the trace           |
+| `undefined`          | —              | Allowed value — feature turned off                               |
+
+---

@@ -12,19 +12,22 @@
 - 19 input labels
 - 09 file Uploads
 - 10 file downloads
+- 11 windows & tabs
+- 12 screenshots
+- 13 videos
 
 ## Not completed Notes
 
 - 07 Annotations => few topics are remaining
 - 08 playwright config
-- 11 windows & tabs
-- 12 screenshots
-- 13 videos
 - 14 dropdowns
 - 15 date picker
 - 16 tables
 - 17 paginations & sorting
-- 20
+- 18 locators
+- 20 fixtures
+- 21 filtering
+-
 
 ## Not Read or notes topics
 

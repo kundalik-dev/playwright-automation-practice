@@ -8,5 +8,6 @@ test.describe("handling window and tabs", () => {
     // Act
 
     // Assert
+    await page.waitForTimeout(1500);
   });
 });
