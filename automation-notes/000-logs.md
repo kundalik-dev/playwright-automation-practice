@@ -27,11 +27,11 @@
 - 18 locators
 - 20 fixtures
 - 21 filtering
--
 
 ## Not Read or notes topics
 
 - broken urls
+- hooks
 -
 
 ## List of topics to prepare for playwright automation
@@ -39,23 +39,24 @@
 - dropdowns
   - select
   - without select
-- dialog
+- dialog ✅
   - alert
   - confirm
   - prompt
-- file upload & download
-- screenshot, videos, trace
+- file upload & download ✅
+- screenshot, videos, trace ✅
 - tables
 - pagination & sorting
+- filtering
 - date picker
-- inputs, labels, forms, buttons, heading, paragraph,
+- inputs, labels, forms, buttons, heading, paragraph, ✅
 - links
-- windows & tabs
-- iframes
-- mouse actions, key press
+- windows & tabs ✅
+- iframes ✅
+- mouse actions, key press ✅
 - configuration settings
 - annotations
-- fixtures
+- fixtures ✅
 - locators
   - built-in locators (getByRole, getByText, getByLabel, getByTestId, etc.)
   - css & xpath locators

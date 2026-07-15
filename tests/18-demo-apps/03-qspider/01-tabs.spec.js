@@ -23,4 +23,13 @@ test.describe("handling window and tabs on qspider", () => {
       newPage.getByRole("heading", { level: 1, name: "Luxury Watch" }),
     ).toHaveText("Luxury Watch");
   });
+
+  test("test02 check all pages", async ({ page }) => {
+    // Arrange
+    await page.goto("/");
+
+    // Act
+
+    // Assert
+  });
 });

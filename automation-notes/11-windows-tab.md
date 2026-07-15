@@ -70,6 +70,12 @@ const [newPage] = await Promise.all([page.waitForEvent("popup"), link.click()]);
 browser.close();
 ```
 
+## Playwright Tabs & windows notes
+
+- When we login in page1 and then page2 will auto logged in.
+- to control pages we use respective page
+- We can know number of pages are open using `context.pages().lenght` method
+
 ## 🤖 Tabs & Windows In Selenium
 
 - In selenium tabs and windows are identified by unique identifier
@@ -198,3 +204,10 @@ Ans:-
 - Itterate using loops based on URL or title
 - Switch by URL or title when multiple child window presents
 - Always switch back to parent window after work done.
+
+#### Q3. Will clicking twice open two popups?" —
+
+Ans:-
+
+- No, only one named window exists.
+- Playwright: context.pages() will show just one extra page after two clicks.
