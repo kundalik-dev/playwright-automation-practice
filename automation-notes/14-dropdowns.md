@@ -1,6 +1,99 @@
-# Dropdown in playwright
+# 🎭 Dropdown in playwright
 
-Use toHaveValue() for test assertions because it automatically waits for the element to be ready. Use inputValue() when you need to extract the value as a variable for conditional logic, logging, or math. [1]
+## IMP Methods
+
+- selectOption({label:"txt"})
+- selectOption({value:"txt"})
+- selectOption({index:1})
+- selectOption("visible_txt")
+- toHaveCount(3) => to count the options
+- page.$$("#country option) => to get all options in array
+
+## Different types of dropdowns
+
+- Select tag
+- without select tag
+- multi select
+- boostrap dropdowns
+- auto suggestions
+- dynamic
+
+## select tag dropdown
+
+- to handle select tag dropdown we have `selectOption({key:value})` method
+- which selects using
+  - `{label:visible_txt}` => select using visible text with label
+  - `{value:""}` => use value tags txt here
+  - `visibleText`
+  - `{index:1}` => indexing starts from 0
+
+```html
+<select id="country">
+  <option value="usa">USA</option>
+  <option value="ind">IND</option>
+  <option value="uk">UK</option>
+</select>
+```
+
+```js
+// Approach 01 -
+await page.locator("#country").selectOption({ label: "IND" });
+await page.locator("#country").selectOption({ value: "ind" });
+await page.locator("#country").selectOption({ index: 1 });
+await page.locator("#country").selectOption("IND");
+
+// Approach 02 -
+await page.selectOption("#country", { value: "us" });
+
+// To get all options
+const allOptions = await page.locator("#country option");
+await expect(allOptions).toHaveCount(3);
+```
+
+## Multi Select
+
+- to select multiple option
+
+```js
+await page.selectOption("#country", ["blue", "red"]);
+
+await page
+  .locator("#country")
+  .selectOption([{ label: "IND" }, { label: "usa" }]);
+
+await page
+  .locator("#country")
+  .selectOption([{ value: "ind" }, { value: "usa" }]);
+
+await page.locator("#country").selectOption([{ index: 1 }, { index: 3 }]);
+```
+
+## Boostrap dropdowns
+
+- These are dropdowns dont have any select tags.
+- they use `ul li` or `input`, `button`, `div` tags
+
+```js
+const allOptions = await page.locator("ul>li");
+const allOptions = await page.$$("ul>li");
+
+// Use loop to match and click on li tag
+for (let i; i < allOptions.lenght; i++) {
+  const option = await allOptions.nth(i);
+  const optValue = await option.textContent();
+  if (optValue.includes("ind") || optValue.includes("usa")) {
+    await option.click();
+  }
+}
+```
+
+## Auto suggestion dropdown
+
+## Handling hidden dropdown
+
+## toHaveValue
+
+- Use `toHaveValue()` for test assertions because it automatically waits for the element to be ready. Use inputValue() when you need to extract the value as a variable for conditional logic, logging, or math. [1]
 
 ## Quick Comparison
 
