@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Playwright Assertions Practice</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Assertions — Playwright Practice</h1>
+      <p class="intro">
+        Each card exercises a different <code>expect(locator)</code> assertion.
+        Click the buttons, then assert against the resulting state.
+      </p>
+
+      <div class="grid">
+        <!-- ===================== 1. Visible / Hidden / Enabled / Disabled / Editable ===================== -->
+        <section class="card" id="section-state">
+          <h2>
+            1. <code>toBeVisible</code> / <code>toBeHidden</code> /
+            <code>toBeEnabled</code> / <code>toBeDisabled</code> /
+            <code>toBeEditable</code>
+            <span class="badge badge-green">Beginner</span>
+            <span class="badge badge-blue">Intermediate</span>
+          </h2>
+          <p class="hint">
+            Three independent toggles, one card: visibility, enabled/disabled,
+            and read-only/editable.
+          </p>
+
+          <div class="btn-row">
+            <button id="toggle-panel-btn">Toggle Panel</button>
+            <button class="secondary" id="terms-toggle-btn">
+              Toggle Terms Accepted
+            </button>
+            <button class="secondary" id="toggle-readonly-btn">
+              Toggle Edit Mode
+            </button>
+          </div>
+
+          <div class="field-row">
+            <div
+              id="hidden-panel"
+              data-testid="hidden-panel"
+              style="display: none"
+            >
+              This panel was hidden — now <code>toBeVisible()</code>.
+            </div>
+
+            <div class="inline-field">
+              <input
+                type="checkbox"
+                id="terms-checkbox"
+                data-testid="terms-checkbox"
+              />
+              <label for="terms-checkbox">Accept terms</label>
+              <button id="submit-btn" data-testid="submit-btn" disabled>
+                Submit
+              </button>
+            </div>
+
+            <textarea
+              id="notes-textarea"
+              data-testid="notes-textarea"
+              rows="2"
+              readonly
+            >
+This textarea starts read-only.</textarea
+            >
+          </div>
+
+          <div class="output-box" id="state-output">
+            State: panel hidden · terms unchecked (Submit disabled) · textarea
+            read-only
+          </div>
+
+          <details class="tips">
+            <summary>⤵ Show tips</summary>
+            <ul>
+              <li>
+                <code>expect(panel).toBeVisible()</code> /
+                <code>toBeHidden()</code>
+              </li>
+              <li>
+                <code>expect(submitBtn).toBeEnabled()</code> /
+                <code>toBeDisabled()</code>
+              </li>
+              <li>
+                <code>expect(textarea).toBeEditable()</code> requires it to be
+                enabled and not readonly
+              </li>
+            </ul>
+          </details>
+        </section>
+
+        <!-- ===================== 2. Text Content ===================== -->
+        <section class="card" id="section-text">
+          <h2>
+            2. <code>toHaveText</code> / <code>toContainText</code>
+            <span class="badge badge-green">Beginner</span>
+          </h2>
+          <p class="hint">Click increments the counter text.</p>
+          <div class="btn-row">
+            <button id="increment-btn">Increment</button>
+          </div>
+          <p class="output-box" id="counter-text">Count: 0</p>
+        </section>
+
+        <!-- ===================== 3. Input Value ===================== -->
+        <section class="card" id="section-value">
+          <h2>
+            3. <code>toHaveValue</code>
+            <span class="badge badge-green">Beginner</span>
+          </h2>
+          <p class="hint">
+            Type in the box, or click to fill it programmatically.
+          </p>
+          <div class="field-row">
+            <label for="username-input">Username</label>
+            <input
+              type="text"
+              id="username-input"
+              placeholder="Enter username"
+            />
+          </div>
+          <div class="btn-row">
+            <button id="fill-username-btn">Fill "qa_engineer"</button>
+            <button class="secondary" id="clear-username-btn">Clear</button>
+          </div>
+        </section>
+
+        <!-- ===================== 4. Checkbox State ===================== -->
+        <section class="card" id="section-checkbox">
+          <h2>
+            4. <code>toBeChecked</code>
+            <span class="badge badge-green">Beginner</span>
+          </h2>
+          <p class="hint">Toggle to assert checked / unchecked state.</p>
+          <div class="inline-field">
+            <input type="checkbox" id="subscribe-checkbox" />
+            <label for="subscribe-checkbox">Subscribe to newsletter</label>
+          </div>
+        </section>
+
+        <!-- ===================== 5. Class & CSS ===================== -->
+        <section class="card" id="section-status">
+          <h2>
+            5. <code>toHaveClass</code> / <code>toHaveCSS</code>
+            <span class="badge badge-blue">Intermediate</span>
+          </h2>
+          <p class="hint">
+            Toggle the status badge between Active (green) and Inactive (red).
+          </p>
+          <div class="btn-row">
+            <button id="toggle-status-btn">Toggle Status</button>
+          </div>
+          <span id="status-badge" class="badge badge-status inactive"
+            >Inactive</span
+          >
+        </section>
+
+        <!-- ===================== 6. Attribute ===================== -->
+        <section class="card" id="section-attribute">
+          <h2>
+            6. <code>toHaveAttribute</code>
+            <span class="badge badge-blue">Intermediate</span>
+          </h2>
+          <p class="hint">
+            Clicking swaps the link's <code>href</code> and
+            <code>title</code> attributes.
+          </p>
+          <div class="btn-row">
+            <button id="switch-user-btn">Switch to Admin</button>
+          </div>
+          <a id="profile-link" href="/profile/guest" title="Guest profile"
+            >View Profile</a
+          >
+        </section>
+
+        <!-- ===================== 7. Element Count ===================== -->
+        <section class="card" id="section-count">
+          <h2>
+            7. <code>toHaveCount</code>
+            <span class="badge badge-blue">Intermediate</span>
+          </h2>
+          <p class="hint">Add/remove list items and assert the item count.</p>
+          <div class="btn-row">
+            <button id="add-item-btn">Add Item</button>
+            <button class="secondary" id="remove-item-btn">Remove Item</button>
+          </div>
+          <ul id="todo-list">
+            <li class="todo-item">Write tests</li>
+            <li class="todo-item">Review PR</li>
+          </ul>
+        </section>
+
+        <!-- ===================== 8. Focus ===================== -->
+        <section class="card" id="section-focus">
+          <h2>
+            8. <code>toBeFocused</code>
+            <span class="badge badge-green">Beginner</span>
+          </h2>
+          <p class="hint">
+            Click the button to programmatically focus the input.
+          </p>
+          <div class="field-row">
+            <input
+              type="text"
+              id="focus-target-input"
+              placeholder="I can be focused"
+            />
+          </div>
+          <div class="btn-row">
+            <button id="focus-input-btn">Focus Input</button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
